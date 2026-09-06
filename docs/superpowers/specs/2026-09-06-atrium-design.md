@@ -46,6 +46,8 @@ Bench `docs/<app>/REQUIREMENTS.md` and `IMPLEMENTATION.md` are the behavior bibl
 - Merging Atrium into Cascade or ReconIQ
 - Bench teaching-repo controls (gitleaks, knip, jscpd, 80% coverage gate)
 - SQLite, better-sqlite3, Express, Vite MPA
+- TanStack Router (Next.js owns routing)
+- TanStack Query in v1 (RSC + server actions; add later only if client cache becomes a real problem)
 
 OAuth and signup are deferred, not forbidden. The user/session schema must not block adding them later.
 
@@ -88,7 +90,7 @@ Theme: `data-theme` on the document element, remembered in `localStorage` under 
 
 Server work is Route Handlers and server actions. No Express. No long-lived process.
 
-Vercel hosts the Next app as usual. Postgres is Neon or Vercel Postgres (whichever is connected). Local dev uses the same driver against a local Postgres or a Neon branch.
+Vercel hosts the Next app as usual. The database engine is PostgreSQL, hosted on Neon (not the Vercel Postgres wrapper). Local and production both use `DATABASE_URL` against Neon (a dev branch locally). Docker Postgres is not required.
 
 ---
 
@@ -207,15 +209,25 @@ Feature granularity: independently shippable, hours to a couple of days, numbere
 
 - Next.js App Router (current stable at implementation time)
 - TypeScript strict
-- Postgres
-- Drizzle ORM + drizzle-kit migrations
+- PostgreSQL hosted on Neon (`DATABASE_URL`)
+- Drizzle ORM + drizzle-kit migrations (TypeScript schema, SQL-shaped queries, no Prisma engine)
 - Auth.js (Credentials now)
 - Vitest + Playwright
 - Vercel
 
+### TanStack
+
+Bench used `@tanstack/react-table` for CRM/Space grids. Atrium does the same, and only that:
+
+- **Table:** yes, when CRM (phase 1) and Space table views (phase 2) ship. Not in phase 0.
+- **Router:** no. Next.js App Router.
+- **Query:** no in v1. Server Components and server actions load and mutate data. Revisit if a screen needs rich client cache.
+
+Do not add TanStack packages until the feature that uses them.
+
 ## Environment (phase 0)
 
-- `DATABASE_URL`
+- `DATABASE_URL` (Neon Postgres connection string)
 - `AUTH_SECRET`
 - `AUTH_OWNER_EMAIL` / `AUTH_OWNER_PASSWORD`
 - `AUTH_DEMO_EMAIL` / `AUTH_DEMO_PASSWORD`
