@@ -13,8 +13,8 @@ function createStorage(initial: Record<string, string> = {}) {
   };
 }
 
-function createDocument() {
-  const attrs: Record<string, string> = {};
+function createDocument(initial: Record<string, string> = {}) {
+  const attrs: Record<string, string> = { ...initial };
   return {
     documentElement: {
       setAttribute(name: string, value: string) {
@@ -66,6 +66,18 @@ describe("initTheme", () => {
 
   it("uses a stored dark theme instead of the OS preference", () => {
     const document = createDocument();
+
+    initTheme({
+      storage: createStorage({ [THEME_STORAGE_KEY]: "dark" }),
+      document,
+      matchMedia: () => ({ matches: false }),
+    });
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+  });
+
+  it("prefers a stored dark theme over an SSR data-theme attribute", () => {
+    const document = createDocument({ "data-theme": "light" });
 
     initTheme({
       storage: createStorage({ [THEME_STORAGE_KEY]: "dark" }),

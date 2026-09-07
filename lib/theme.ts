@@ -50,8 +50,12 @@ function readAppliedTheme(deps: ThemeDeps): Theme | null {
   }
 }
 
+function resolvedTheme(deps: ThemeDeps): Theme {
+  return readStoredTheme(deps) ?? readOsTheme(deps) ?? "light";
+}
+
 function currentTheme(deps: ThemeDeps): Theme {
-  return readAppliedTheme(deps) ?? readStoredTheme(deps) ?? readOsTheme(deps) ?? "light";
+  return readAppliedTheme(deps) ?? resolvedTheme(deps);
 }
 
 function applyTheme(theme: Theme, deps: ThemeDeps): void {
@@ -59,7 +63,7 @@ function applyTheme(theme: Theme, deps: ThemeDeps): void {
 }
 
 export function initTheme(deps: ThemeDeps = {}): void {
-  applyTheme(currentTheme(deps), deps);
+  applyTheme(resolvedTheme(deps), deps);
 }
 
 export function toggleTheme(deps: ThemeDeps = {}): Theme {
