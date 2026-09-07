@@ -8,7 +8,10 @@ export type ThemeDeps = {
     setItem: (key: string, value: string) => void;
   };
   document?: {
-    documentElement: { setAttribute: (name: string, value: string) => void };
+    documentElement: {
+      setAttribute: (name: string, value: string) => void;
+      getAttribute?: (name: string) => string | null;
+    };
   };
   matchMedia?: (query: string) => { matches: boolean };
 };
@@ -38,8 +41,17 @@ function readOsTheme(deps: ThemeDeps): Theme | null {
   }
 }
 
+function readAppliedTheme(deps: ThemeDeps): Theme | null {
+  try {
+    const applied = deps.document?.documentElement.getAttribute?.("data-theme");
+    return isTheme(applied) ? applied : null;
+  } catch {
+    return null;
+  }
+}
+
 function currentTheme(deps: ThemeDeps): Theme {
-  return readStoredTheme(deps) ?? readOsTheme(deps) ?? "light";
+  return readAppliedTheme(deps) ?? readStoredTheme(deps) ?? readOsTheme(deps) ?? "light";
 }
 
 function applyTheme(theme: Theme, deps: ThemeDeps): void {

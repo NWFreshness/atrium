@@ -250,6 +250,31 @@ describe("toggleTheme", () => {
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
+  it("flips data-theme on each toggle when storage setItem throws", () => {
+    const document = createDocument();
+    const deps = {
+      storage: {
+        getItem() {
+          return "dark";
+        },
+        setItem() {
+          throw new Error("private mode");
+        },
+      },
+      document,
+      matchMedia: () => ({ matches: true }),
+    };
+
+    initTheme(deps);
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+
+    expect(() => toggleTheme(deps)).not.toThrow();
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+
+    expect(() => toggleTheme(deps)).not.toThrow();
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+  });
+
   it("does not throw when storage is omitted", () => {
     const document = createDocument();
     const deps = {
