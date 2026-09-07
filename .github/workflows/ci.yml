@@ -16,3 +16,42 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+        env:
+          AUTH_SECRET: ci-build-placeholder
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Detect e2e secrets
+        id: e2e
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          AUTH_OWNER_EMAIL: ${{ secrets.AUTH_OWNER_EMAIL }}
+          AUTH_OWNER_PASSWORD: ${{ secrets.AUTH_OWNER_PASSWORD }}
+        run: |
+          if [ -n "$DATABASE_URL" ] && [ -n "$AUTH_SECRET" ] && [ -n "$AUTH_OWNER_EMAIL" ] && [ -n "$AUTH_OWNER_PASSWORD" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping e2e; DATABASE_URL, AUTH_SECRET, AUTH_OWNER_EMAIL, and AUTH_OWNER_PASSWORD are required."
+          fi
+      - name: Install Playwright Chromium
+        if: steps.e2e.outputs.ready == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Run Playwright
+        if: steps.e2e.outputs.ready == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          AUTH_OWNER_EMAIL: ${{ secrets.AUTH_OWNER_EMAIL }}
+          AUTH_OWNER_PASSWORD: ${{ secrets.AUTH_OWNER_PASSWORD }}
+          AUTH_DEMO_EMAIL: ${{ secrets.AUTH_DEMO_EMAIL }}
+          AUTH_DEMO_PASSWORD: ${{ secrets.AUTH_DEMO_PASSWORD }}
+        run: npx playwright test e2e/login.spec.ts
