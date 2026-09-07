@@ -1,0 +1,96 @@
+import { describe, expect, it } from "vitest";
+import { hashPassword } from "./password";
+import {
+  applySeed,
+  createMemorySeedRepository,
+  isUserRole,
+  parseSeedEnv,
+} from "./seed";
+
+const seedEnv = {
+  AUTH_OWNER_EMAIL: "owner@atrium.local",
+  AUTH_OWNER_PASSWORD: "owner-secret",
+  AUTH_DEMO_PASSWORD: "demo-secret",
+};
+
+describe("user roles", () => {
+  it("accepts only owner and demo", () => {
+    expect(isUserRole("owner")).toBe(true);
+    expect(isUserRole("demo")).toBe(true);
+    expect(isUserRole("admin")).toBe(false);
+    expect(isUserRole("user")).toBe(false);
+  });
+});
+
+describe("hashPassword", () => {
+  it("does not return or contain the plaintext password", async () => {
+    const plaintext = "owner-secret";
+    const passwordHash = await hashPassword(plaintext);
+    expect(passwordHash).not.toBe(plaintext);
+    expect(passwordHash).not.toContain(plaintext);
+  });
+});
+
+describe("parseSeedEnv", () => {
+  it("maps env credentials to owner and demo users", () => {
+    const plan = parseSeedEnv({
+      ...seedEnv,
+      AUTH_DEMO_EMAIL: "demo@example.com",
+    });
+    expect(plan.users.map((user) => user.role).sort()).toEqual(["demo", "owner"]);
+    expect(plan.users.every((user) => isUserRole(user.role))).toBe(true);
+    expect(plan.users.find((user) => user.role === "owner")?.email).toBe(
+      "owner@atrium.local",
+    );
+    expect(plan.users.find((user) => user.role === "demo")?.email).toBe(
+      "demo@example.com",
+    );
+  });
+
+  it("defaults demo email to demo@atrium.local when unset", () => {
+    const plan = parseSeedEnv(seedEnv);
+    expect(plan.users.find((user) => user.role === "demo")?.email).toBe(
+      "demo@atrium.local",
+    );
+  });
+
+  it("throws when owner credentials are missing", () => {
+    expect(() => parseSeedEnv({ AUTH_DEMO_PASSWORD: "demo-secret" })).toThrow(
+      /AUTH_OWNER_EMAIL and AUTH_OWNER_PASSWORD/,
+    );
+  });
+
+  it("throws when demo password is missing", () => {
+    expect(() =>
+      parseSeedEnv({
+        AUTH_OWNER_EMAIL: "owner@atrium.local",
+        AUTH_OWNER_PASSWORD: "owner-secret",
+      }),
+    ).toThrow(/AUTH_DEMO_PASSWORD/);
+  });
+});
+
+describe("applySeed", () => {
+  it("is idempotent and stores hashes instead of plaintext", async () => {
+    const repo = createMemorySeedRepository();
+    const plan = parseSeedEnv(seedEnv);
+
+    await applySeed(repo, plan, hashPassword);
+    await applySeed(repo, plan, hashPassword);
+
+    const tenants = await repo.listTenants();
+    const users = await repo.listUsers();
+
+    expect(tenants).toHaveLength(2);
+    expect(users).toHaveLength(2);
+    expect(new Set(users.map((user) => user.email)).size).toBe(2);
+
+    for (const user of users) {
+      const input = plan.users.find((entry) => entry.email === user.email);
+      expect(input).toBeDefined();
+      expect(isUserRole(user.role)).toBe(true);
+      expect(user.passwordHash).not.toBe(input!.password);
+      expect(user.passwordHash).not.toContain(input!.password);
+    }
+  });
+});

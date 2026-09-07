@@ -17,12 +17,15 @@ npm ci
 cp .env.example .env
 ```
 
-Fill in `.env` when auth and the database land. Names only live in `.env.example`.
+Fill in `.env`. `DATABASE_URL` is a Neon Postgres connection string. Names only live in `.env.example`.
 
 ## Commands
 
 ```bash
-npm test        # Vitest
-npm run dev     # Next.js dev server
-npm run build   # production build
+npm test           # Vitest (no live database required)
+npm run dev        # Next.js dev server
+npm run build      # production build
+npm run db:generate  # drizzle-kit generate migrations from lib/db/schema.ts
+npm run db:migrate   # apply migrations (needs DATABASE_URL)
+npm run db:seed      # loads .env; idempotent owner + demo tenants/users
 ```

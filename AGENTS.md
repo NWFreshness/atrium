@@ -2,6 +2,8 @@
 
 Stack: Next.js App Router, Neon Postgres, Drizzle. No Express. No SQLite.
 
+All SQL goes through Drizzle in `lib/db`.
+
 Do not query the database without `tenantId` from the session. Never take tenant id from the request body or query string.
 
 Keep CSS scoped per app. Shared nav classes use the `atrium-nav-` prefix and do not rely on app theme variables.
