@@ -10,4 +10,19 @@ Phase/feature board: [features/INDEX.md](features/INDEX.md)
 
 Current feature: [CURRENT_FEATURE.md](CURRENT_FEATURE.md)
 
-No application code yet. Phase 0 specs are written; implementation starts at 0.1.
+## Setup
+
+```bash
+npm ci
+cp .env.example .env
+```
+
+Fill in `.env` when auth and the database land. Names only live in `.env.example`.
+
+## Commands
+
+```bash
+npm test        # Vitest
+npm run dev     # Next.js dev server
+npm run build   # production build
+```
