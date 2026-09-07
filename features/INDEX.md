@@ -15,7 +15,7 @@ Nothing in phase 0 runs in parallel (shared root files).
 
 | ID | Feature | Status | Depends on |
 | --- | --- | --- | --- |
-| 0.1 | [Next.js scaffold + AGENTS.md + CI](./phase-0-platform/0.1-next-scaffold.md) | pending | nothing |
+| 0.1 | [Next.js scaffold + AGENTS.md + CI](./phase-0-platform/0.1-next-scaffold.md) | completed | nothing |
 | 0.2 | [Drizzle + Neon users and tenants](./phase-0-platform/0.2-drizzle-neon-users.md) | pending | 0.1 |
 | 0.3 | [Auth.js credentials login](./phase-0-platform/0.3-authjs-credentials.md) | pending | 0.2 |
 | 0.4 | [Nav, theme, launcher](./phase-0-platform/0.4-nav-theme-launcher.md) | pending | 0.3 |
