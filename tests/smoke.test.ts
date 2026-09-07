@@ -4,7 +4,10 @@ import { describe, expect, it } from "vitest";
 
 describe("home page", () => {
   it("includes the word Atrium", () => {
-    const source = readFileSync(resolve(process.cwd(), "app/page.tsx"), "utf8");
+    const source = readFileSync(
+      resolve(process.cwd(), "app/(authenticated)/page.tsx"),
+      "utf8",
+    );
     expect(source).toContain("Atrium");
   });
 });

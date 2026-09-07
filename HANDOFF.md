@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Next work is feature 0.4.** Do not start 0.5 or CRM. Do not push to `main`.
+**Stop. Next work is feature 0.5.** Do not start CRM. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
@@ -13,8 +13,8 @@ Phase 0 of Atrium. Repo: https://github.com/NWFreshness/atrium.git
 | 0.1 Next.js scaffold + CI | completed (PR #1) |
 | 0.2 Drizzle + Neon users/tenants | completed (PR #2) |
 | 0.3 Auth.js credentials login | completed (PR #3) |
-| **0.4 Nav, theme, launcher** | **next** |
-| 0.5 Tenancy helper + Reset demo | pending, after 0.4 |
+| 0.4 Nav, theme, launcher | completed |
+| **0.5 Tenancy helper + Reset demo** | **next** |
 
 CRM / Space / Rolodex / Groove specs are not written. INDEX says so. Do not invent them.
 
@@ -29,14 +29,14 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-0-platform/0.4-nav-theme-launcher.md` — implement that spec, nothing else
+6. `features/phase-0-platform/0.5-tenancy-demo-reset.md` — implement that spec, nothing else
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
 ## How we ship
 
 - One feature at a time. Mark it `in_progress` in the spec, INDEX, and CURRENT_FEATURE before coding.
-- Branch `feat/0.4-…` from current `main`. Never commit or push to `main`. Open a GitHub PR. Do not merge unless the user asks.
+- Branch `feat/0.5-…` from current `main`. Never commit or push to `main`. Open a GitHub PR. Do not merge unless the user asks.
 - TDD on domain logic. Playwright for flows that already have a spec for it.
 - Preferred execution: subagent-driven-development — implementer, then spec-compliance review, then quality review. Controller (the parent agent) re-runs `npm test` and `npm run build` and does not trust a subagent “tests passed” claim.
 - When the feature is done: check acceptance boxes, set status `completed`, append a short summary to the CURRENT_FEATURE log (never delete old log entries), then PR.
@@ -57,7 +57,7 @@ Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/be
 
 Next.js App Router, Neon Postgres, Drizzle, Auth.js Credentials + JWT. No Express, no SQLite, no Tailwind, no TanStack until a CRM/Space table spec. Session `user` has `id`, `email`, `tenantId`, `role`. Never take `tenantId` from the client.
 
-Next 16 warns that `middleware.ts` is deprecated in favor of `proxy`. 0.3 left middleware because the spec required that file. Do not rename it in 0.4 unless 0.4’s spec says so.
+Next 16 warns that `middleware.ts` is deprecated in favor of `proxy`. Leave middleware unless a feature spec says to rename it.
 
 ## First command after clone
 
@@ -69,4 +69,4 @@ npm test
 npm run build
 ```
 
-Then implement 0.4 from its spec.
+Then implement 0.5 from its spec.
