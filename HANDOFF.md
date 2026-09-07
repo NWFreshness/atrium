@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Next work is feature 0.5.** Do not start CRM. Do not push to `main`.
+**Stop. Phase 0 is complete. Next work is Phase 1 CRM specs.** Do not invent CRM/Space/Rolodex/Groove specs. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
@@ -13,8 +13,9 @@ Phase 0 of Atrium. Repo: https://github.com/NWFreshness/atrium.git
 | 0.1 Next.js scaffold + CI | completed (PR #1) |
 | 0.2 Drizzle + Neon users/tenants | completed (PR #2) |
 | 0.3 Auth.js credentials login | completed (PR #3) |
-| 0.4 Nav, theme, launcher | completed |
-| **0.5 Tenancy helper + Reset demo** | **next** |
+| 0.4 Nav, theme, launcher | completed (PR #5) |
+| 0.5 Tenancy helper + Reset demo | completed |
+| **Phase 1 CRM specs** | **next (not written)** |
 
 CRM / Space / Rolodex / Groove specs are not written. INDEX says so. Do not invent them.
 
@@ -29,14 +30,14 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-0-platform/0.5-tenancy-demo-reset.md` — implement that spec, nothing else
+6. Wait for Phase 1 CRM feature specs. Do not invent them.
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
 ## How we ship
 
 - One feature at a time. Mark it `in_progress` in the spec, INDEX, and CURRENT_FEATURE before coding.
-- Branch `feat/0.5-…` from current `main`. Never commit or push to `main`. Open a GitHub PR. Do not merge unless the user asks.
+- Branch `feat/…` from current `main`. Never commit or push to `main`. Open a GitHub PR. Do not merge unless the user asks.
 - TDD on domain logic. Playwright for flows that already have a spec for it.
 - Preferred execution: subagent-driven-development — implementer, then spec-compliance review, then quality review. Controller (the parent agent) re-runs `npm test` and `npm run build` and does not trust a subagent “tests passed” claim.
 - When the feature is done: check acceptance boxes, set status `completed`, append a short summary to the CURRENT_FEATURE log (never delete old log entries), then PR.
@@ -69,4 +70,4 @@ npm test
 npm run build
 ```
 
-Then implement 0.5 from its spec.
+Then wait for Phase 1 CRM specs. Do not invent them.

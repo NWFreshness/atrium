@@ -20,7 +20,7 @@ Nothing in phase 0 runs in parallel (shared root files).
 | 0.2 | [Drizzle + Neon users and tenants](./phase-0-platform/0.2-drizzle-neon-users.md) | completed | 0.1 |
 | 0.3 | [Auth.js credentials login](./phase-0-platform/0.3-authjs-credentials.md) | completed | 0.2 |
 | 0.4 | [Nav, theme, launcher](./phase-0-platform/0.4-nav-theme-launcher.md) | completed | 0.3 |
-| 0.5 | [Tenancy helper + Reset demo](./phase-0-platform/0.5-tenancy-demo-reset.md) | pending | 0.4 |
+| 0.5 | [Tenancy helper + Reset demo](./phase-0-platform/0.5-tenancy-demo-reset.md) | completed | 0.4 |
 
 ### Phase 1 — CRM
 
