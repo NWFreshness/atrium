@@ -54,4 +54,4 @@ jobs:
           AUTH_OWNER_PASSWORD: ${{ secrets.AUTH_OWNER_PASSWORD }}
           AUTH_DEMO_EMAIL: ${{ secrets.AUTH_DEMO_EMAIL }}
           AUTH_DEMO_PASSWORD: ${{ secrets.AUTH_DEMO_PASSWORD }}
-        run: npx playwright test e2e/login.spec.ts
+        run: npx playwright test
