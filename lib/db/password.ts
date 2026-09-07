@@ -1,7 +1,14 @@
-import { hash } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 
 const BCRYPT_ROUNDS = 10;
 
 export async function hashPassword(plaintext: string): Promise<string> {
   return hash(plaintext, BCRYPT_ROUNDS);
+}
+
+export async function verifyPassword(
+  plaintext: string,
+  passwordHash: string,
+): Promise<boolean> {
+  return compare(plaintext, passwordHash);
 }
