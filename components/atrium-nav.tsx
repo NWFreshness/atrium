@@ -4,6 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLayoutEffect } from "react";
 import { initTheme, toggleTheme } from "@/lib/theme";
+import {
+  ResetDemoButton,
+  type ResetDemoState,
+} from "./reset-demo-button";
 import styles from "./atrium-nav.module.css";
 
 const APPS = [
@@ -33,10 +37,15 @@ export function AtriumNav({
   email,
   role,
   logout,
+  resetDemo,
 }: {
   email?: string | null;
   role?: string | null;
   logout: () => Promise<void>;
+  resetDemo: (
+    prevState: ResetDemoState,
+    formData: FormData,
+  ) => Promise<ResetDemoState>;
 }) {
   const pathname = usePathname();
 
@@ -84,6 +93,7 @@ export function AtriumNav({
         ) : role ? (
           <span className={styles["atrium-nav-identity"]}>{role}</span>
         ) : null}
+        {role === "demo" ? <ResetDemoButton action={resetDemo} /> : null}
         <form action={logout}>
           <button type="submit" className={styles["atrium-nav-logout"]}>
             Logout
