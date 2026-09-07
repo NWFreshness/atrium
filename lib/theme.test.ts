@@ -64,6 +64,102 @@ describe("initTheme", () => {
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
   });
 
+  it("uses a stored dark theme instead of the OS preference", () => {
+    const document = createDocument();
+
+    initTheme({
+      storage: createStorage({ [THEME_STORAGE_KEY]: "dark" }),
+      document,
+      matchMedia: () => ({ matches: false }),
+    });
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+  });
+
+  it("falls back to the OS preference when storage is omitted", () => {
+    const document = createDocument();
+
+    initTheme({
+      document,
+      matchMedia: () => ({ matches: true }),
+    });
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+  });
+
+  it("falls back to light when matchMedia is omitted and nothing is stored", () => {
+    const document = createDocument();
+
+    initTheme({
+      storage: createStorage(),
+      document,
+    });
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+  });
+
+  it("does not throw when document is omitted", () => {
+    expect(() =>
+      initTheme({
+        storage: createStorage({ [THEME_STORAGE_KEY]: "dark" }),
+        matchMedia: () => ({ matches: false }),
+      }),
+    ).not.toThrow();
+  });
+
+  it("falls back to the OS preference when storage getItem throws", () => {
+    const document = createDocument();
+
+    expect(() =>
+      initTheme({
+        storage: {
+          getItem() {
+            throw new Error("private mode");
+          },
+          setItem() {},
+        },
+        document,
+        matchMedia: () => ({ matches: true }),
+      }),
+    ).not.toThrow();
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+  });
+
+  it("falls back to light when storage getItem throws and matchMedia is unavailable", () => {
+    const document = createDocument();
+
+    expect(() =>
+      initTheme({
+        storage: {
+          getItem() {
+            throw new Error("private mode");
+          },
+          setItem() {},
+        },
+        document,
+      }),
+    ).not.toThrow();
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+  });
+
+  it("falls back to light when matchMedia throws and nothing is stored", () => {
+    const document = createDocument();
+
+    expect(() =>
+      initTheme({
+        storage: createStorage(),
+        document,
+        matchMedia: () => {
+          throw new Error("private mode");
+        },
+      }),
+    ).not.toThrow();
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+  });
+
   it("falls back to the OS preference when the stored value is invalid", () => {
     const document = createDocument();
 
@@ -88,8 +184,9 @@ describe("toggleTheme", () => {
     };
 
     initTheme(deps);
-    toggleTheme(deps);
+    const next = toggleTheme(deps);
 
+    expect(next).toBe("dark");
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
     expect(storage.getItem(THEME_STORAGE_KEY)).toBe("dark");
   });
@@ -104,8 +201,9 @@ describe("toggleTheme", () => {
     };
 
     initTheme(deps);
-    toggleTheme(deps);
+    const next = toggleTheme(deps);
 
+    expect(next).toBe("light");
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
     expect(storage.getItem(THEME_STORAGE_KEY)).toBe("light");
   });
@@ -120,9 +218,117 @@ describe("toggleTheme", () => {
     };
 
     initTheme(deps);
-    toggleTheme(deps);
+    const next = toggleTheme(deps);
 
+    expect(next).toBe("light");
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
     expect(storage.getItem(THEME_STORAGE_KEY)).toBe("light");
+  });
+
+  it("still applies data-theme when storage setItem throws", () => {
+    const document = createDocument();
+    const deps = {
+      storage: {
+        getItem() {
+          return "light";
+        },
+        setItem() {
+          throw new Error("private mode");
+        },
+      },
+      document,
+      matchMedia: () => ({ matches: false }),
+    };
+
+    initTheme(deps);
+    let next: string | undefined;
+    expect(() => {
+      next = toggleTheme(deps);
+    }).not.toThrow();
+
+    expect(next).toBe("dark");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+  });
+
+  it("does not throw when storage is omitted", () => {
+    const document = createDocument();
+    const deps = {
+      document,
+      matchMedia: () => ({ matches: true }),
+    };
+
+    initTheme(deps);
+    let next: string | undefined;
+    expect(() => {
+      next = toggleTheme(deps);
+    }).not.toThrow();
+
+    expect(next).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+  });
+
+  it("does not throw when matchMedia is omitted", () => {
+    const storage = createStorage();
+    const document = createDocument();
+    const deps = { storage, document };
+
+    initTheme(deps);
+    let next: string | undefined;
+    expect(() => {
+      next = toggleTheme(deps);
+    }).not.toThrow();
+
+    expect(next).toBe("dark");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(storage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+  });
+
+  it("does not throw when document is omitted", () => {
+    const storage = createStorage({ [THEME_STORAGE_KEY]: "light" });
+
+    expect(() => toggleTheme({ storage })).not.toThrow();
+    expect(storage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+  });
+
+  it("does not throw when storage getItem throws", () => {
+    const document = createDocument();
+    const deps = {
+      storage: {
+        getItem() {
+          throw new Error("private mode");
+        },
+        setItem() {},
+      },
+      document,
+      matchMedia: () => ({ matches: true }),
+    };
+
+    let next: string | undefined;
+    expect(() => {
+      next = toggleTheme(deps);
+    }).not.toThrow();
+
+    expect(next).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+  });
+
+  it("does not throw when matchMedia throws", () => {
+    const storage = createStorage();
+    const document = createDocument();
+    const deps = {
+      storage,
+      document,
+      matchMedia: () => {
+        throw new Error("private mode");
+      },
+    };
+
+    let next: string | undefined;
+    expect(() => {
+      next = toggleTheme(deps);
+    }).not.toThrow();
+
+    expect(next).toBe("dark");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 });

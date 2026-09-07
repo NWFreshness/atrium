@@ -17,27 +17,44 @@ function isTheme(value: string | null | undefined): value is Theme {
   return value === "light" || value === "dark";
 }
 
-function currentTheme(deps: ThemeDeps): Theme {
-  const stored = deps.storage?.getItem(THEME_STORAGE_KEY);
-  if (isTheme(stored)) {
-    return stored;
+function readStoredTheme(deps: ThemeDeps): Theme | null {
+  try {
+    const stored = deps.storage?.getItem(THEME_STORAGE_KEY);
+    return isTheme(stored) ? stored : null;
+  } catch {
+    return null;
   }
-  return deps.matchMedia?.("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
 }
 
-function applyTheme(theme: Theme, deps: ThemeDeps) {
+function readOsTheme(deps: ThemeDeps): Theme | null {
+  try {
+    const media = deps.matchMedia?.("(prefers-color-scheme: dark)");
+    if (!media) {
+      return null;
+    }
+    return media.matches ? "dark" : "light";
+  } catch {
+    return null;
+  }
+}
+
+function currentTheme(deps: ThemeDeps): Theme {
+  return readStoredTheme(deps) ?? readOsTheme(deps) ?? "light";
+}
+
+function applyTheme(theme: Theme, deps: ThemeDeps): void {
   deps.document?.documentElement.setAttribute("data-theme", theme);
 }
 
-export function initTheme(deps: ThemeDeps = {}) {
+export function initTheme(deps: ThemeDeps = {}): void {
   applyTheme(currentTheme(deps), deps);
 }
 
-export function toggleTheme(deps: ThemeDeps = {}) {
+export function toggleTheme(deps: ThemeDeps = {}): Theme {
   const next: Theme = currentTheme(deps) === "dark" ? "light" : "dark";
   applyTheme(next, deps);
-  deps.storage?.setItem(THEME_STORAGE_KEY, next);
+  try {
+    deps.storage?.setItem(THEME_STORAGE_KEY, next);
+  } catch {}
   return next;
 }
