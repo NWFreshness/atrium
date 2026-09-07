@@ -46,13 +46,24 @@
 }
 
 .atrium-nav-theme,
-.atrium-nav-logout {
+.atrium-nav-logout,
+.atrium-nav-reset {
   background: #2a2a2a;
   color: #f5f5f5;
   border: 1px solid #444444;
   border-radius: 4px;
   padding: 0.3rem 0.6rem;
   cursor: pointer;
+}
+
+.atrium-nav-reset-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.atrium-nav-reset-status {
+  color: #d4d4d4;
 }
 
 .atrium-nav-identity {
