@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { initTheme, THEME_STORAGE_KEY, toggleTheme } from "./theme";
+import {
+  initTheme,
+  THEME_INIT_SCRIPT,
+  THEME_STORAGE_KEY,
+  toggleTheme,
+} from "./theme";
 
 function createStorage(initial: Record<string, string> = {}) {
   const store = { ...initial };
@@ -367,5 +372,12 @@ describe("toggleTheme", () => {
 
     expect(next).toBe("dark");
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+  });
+});
+
+describe("THEME_INIT_SCRIPT", () => {
+  it("mentions atrium.theme and data-theme", () => {
+    expect(THEME_INIT_SCRIPT).toContain("atrium.theme");
+    expect(THEME_INIT_SCRIPT).toContain("data-theme");
   });
 });
