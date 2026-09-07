@@ -1,6 +1,7 @@
 # Atrium — Feature Index
 
 Board for phases and features. Status here is the source of truth for what is done.
+Cold start: [HANDOFF.md](../HANDOFF.md)
 Design: [docs/superpowers/specs/2026-09-06-atrium-design.md](../docs/superpowers/specs/2026-09-06-atrium-design.md)
 In progress: [CURRENT_FEATURE.md](../CURRENT_FEATURE.md)
 

@@ -10,6 +10,8 @@ Phase/feature board: [features/INDEX.md](features/INDEX.md)
 
 Current feature: [CURRENT_FEATURE.md](CURRENT_FEATURE.md)
 
+Agent handoff (read this first if you are new): [HANDOFF.md](HANDOFF.md)
+
 ## Setup
 
 ```bash

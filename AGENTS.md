@@ -14,6 +14,12 @@ Do not add Tailwind, shadcn, TanStack Router, or TanStack Query unless a feature
 
 Follow `features/INDEX.md` and `CURRENT_FEATURE.md`. Do not start the next feature while one is in progress.
 
+Ship on a feature branch and a GitHub PR. Never push commits to `main`. Do not merge unless the user asks.
+
+Use subagent-driven-development when implementing a feature spec: implementer, then spec-compliance review, then quality review. The controller re-runs `npm test` and `npm run build`; do not trust a subagent “tests passed” report.
+
+Cold start: `HANDOFF.md`.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
