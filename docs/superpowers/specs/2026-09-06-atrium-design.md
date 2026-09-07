@@ -241,4 +241,4 @@ Do not add TanStack packages until the feature that uses them.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-No application code ships before step 3.
+Progress: `features/INDEX.md`. Phase 0 specs 0.1–0.5 exist. 0.1–0.3 are completed on `main`. Next implementable unit is 0.4. Do not treat the three steps above as outstanding work.

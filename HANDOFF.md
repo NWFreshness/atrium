@@ -1,0 +1,72 @@
+# Handoff
+
+Read this first if you did not write the previous session.
+
+**Stop. Next work is feature 0.4.** Do not start 0.5 or CRM. Do not push to `main`.
+
+## Where we are (2026-09-06)
+
+Phase 0 of Atrium. Repo: https://github.com/NWFreshness/atrium.git
+
+| ID | Status |
+| --- | --- |
+| 0.1 Next.js scaffold + CI | completed (PR #1) |
+| 0.2 Drizzle + Neon users/tenants | completed (PR #2) |
+| 0.3 Auth.js credentials login | completed (PR #3) |
+| **0.4 Nav, theme, launcher** | **next** |
+| 0.5 Tenancy helper + Reset demo | pending, after 0.4 |
+
+CRM / Space / Rolodex / Groove specs are not written. INDEX says so. Do not invent them.
+
+Board: `features/INDEX.md` (source of truth for done vs not).
+Pointer + log: `CURRENT_FEATURE.md`.
+Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved). If a spec and the design disagree, update the design first.
+
+## Read order
+
+1. This file
+2. `AGENTS.md`
+3. `README.md`
+4. Design doc above
+5. `features/INDEX.md` and `CURRENT_FEATURE.md`
+6. `features/phase-0-platform/0.4-nav-theme-launcher.md` — implement that spec, nothing else
+
+Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
+
+## How we ship
+
+- One feature at a time. Mark it `in_progress` in the spec, INDEX, and CURRENT_FEATURE before coding.
+- Branch `feat/0.4-…` from current `main`. Never commit or push to `main`. Open a GitHub PR. Do not merge unless the user asks.
+- TDD on domain logic. Playwright for flows that already have a spec for it.
+- Preferred execution: subagent-driven-development — implementer, then spec-compliance review, then quality review. Controller (the parent agent) re-runs `npm test` and `npm run build` and does not trust a subagent “tests passed” claim.
+- When the feature is done: check acceptance boxes, set status `completed`, append a short summary to the CURRENT_FEATURE log (never delete old log entries), then PR.
+- `AGENTS.md` is a protected instruction file in some agent runtimes; the user has allowed writes to it in this repo. Leave the `nextjs-agent-rules` block in place (`next dev` re-adds it).
+
+## Env and database
+
+`.env` is gitignored. Do not commit it. Do not paste connection strings or passwords into chat or tickets.
+
+- **Dev:** local `.env` points at a Neon **dev** branch. Schema `0000` has been migrated and seeded there. Dummy local users live only on that branch.
+- **Prod:** production `DATABASE_URL` belongs in Vercel only. Git `drizzle/` is the schema source of truth. Apply the same `npm run db:migrate` against prod when deploying; do not copy data from dev. Seed prod with the real owner email/password via env, not the dummy local pair.
+- Unit tests must pass **without** `DATABASE_URL`.
+- CI job `ci`: `npm ci`, `npm test`, `npm run build` (dummy `AUTH_SECRET` for build). Job `e2e`: Playwright, skips unless GitHub secrets `DATABASE_URL`, `AUTH_SECRET`, `AUTH_OWNER_EMAIL`, `AUTH_OWNER_PASSWORD` exist.
+
+`.env.example` lists names only.
+
+## Stack locks
+
+Next.js App Router, Neon Postgres, Drizzle, Auth.js Credentials + JWT. No Express, no SQLite, no Tailwind, no TanStack until a CRM/Space table spec. Session `user` has `id`, `email`, `tenantId`, `role`. Never take `tenantId` from the client.
+
+Next 16 warns that `middleware.ts` is deprecated in favor of `proxy`. 0.3 left middleware because the spec required that file. Do not rename it in 0.4 unless 0.4’s spec says so.
+
+## First command after clone
+
+```bash
+git checkout main && git pull
+npm ci
+cp .env.example .env   # fill from the user’s Neon dev URL; do not use prod
+npm test
+npm run build
+```
+
+Then implement 0.4 from its spec.
