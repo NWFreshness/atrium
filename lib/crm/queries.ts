@@ -1,10 +1,12 @@
 import {
   and,
+  desc,
   eq,
   getTableColumns,
   ilike,
   max,
   or,
+  sql,
   type InferSelectModel,
 } from "drizzle-orm";
 import { getDb } from "../db";
@@ -189,6 +191,30 @@ export type ListDealsOpts = {
   organizationId?: string;
   contactId?: string;
 };
+
+export type ListActivitiesOpts = {
+  contactId?: string;
+  dealId?: string;
+};
+
+function compareActivitiesNewestFirst(a: Activity, b: Activity): number {
+  const aOccurred = a.occurredAt?.getTime();
+  const bOccurred = b.occurredAt?.getTime();
+  if (aOccurred != null && bOccurred != null && aOccurred !== bOccurred) {
+    return bOccurred - aOccurred;
+  }
+  if (aOccurred != null && bOccurred == null) {
+    return -1;
+  }
+  if (aOccurred == null && bOccurred != null) {
+    return 1;
+  }
+  const created = b.createdAt.getTime() - a.createdAt.getTime();
+  if (created !== 0) {
+    return created;
+  }
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+}
 
 function dealMatchesSearch(
   row: Deal,
@@ -735,15 +761,36 @@ export async function deleteDeal(
 export async function listActivities(
   tenantId: string,
   repo?: CrmRepository,
+  opts?: ListActivitiesOpts,
 ): Promise<Activity[]> {
   const scoped = requireTenantId(tenantId);
   if (repo) {
-    return repo.activities.filter((row) => row.tenantId === scoped).map(clone);
+    return repo.activities
+      .filter(
+        (row) =>
+          row.tenantId === scoped &&
+          (opts?.contactId === undefined || row.contactId === opts.contactId) &&
+          (opts?.dealId === undefined || row.dealId === opts.dealId),
+      )
+      .map(clone)
+      .sort(compareActivitiesNewestFirst);
   }
+  const filters = [
+    eq(activities.tenantId, scoped),
+    ...(opts?.contactId !== undefined
+      ? [eq(activities.contactId, opts.contactId)]
+      : []),
+    ...(opts?.dealId !== undefined ? [eq(activities.dealId, opts.dealId)] : []),
+  ];
   return requireCrmDb()
     .select()
     .from(activities)
-    .where(eq(activities.tenantId, scoped));
+    .where(and(...filters))
+    .orderBy(
+      sql`${activities.occurredAt} DESC NULLS LAST`,
+      desc(activities.createdAt),
+      activities.id,
+    );
 }
 
 export async function getActivity(

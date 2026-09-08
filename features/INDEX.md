@@ -35,7 +35,7 @@ Jobs-to-be-done from Bench `docs/crm/`. Tenant-scoped. Demo seed. Not pixel-iden
 | 1.4 | [Contacts table and detail](./phase-1-crm/1.4-contacts.md) | completed | 1.3 |
 | 1.5 | [Deals table](./phase-1-crm/1.5-deals.md) | completed | 1.4 |
 | 1.6 | [Pipeline board](./phase-1-crm/1.6-pipeline.md) | completed | 1.5 |
-| 1.7 | [Activities and follow-ups](./phase-1-crm/1.7-activities.md) | pending | 1.4, 1.5 |
+| 1.7 | [Activities and follow-ups](./phase-1-crm/1.7-activities.md) | completed | 1.4, 1.5 |
 | 1.8 | [Dashboard](./phase-1-crm/1.8-dashboard.md) | pending | 1.6, 1.7 |
 | 1.9 | [Playwright smoke](./phase-1-crm/1.9-playwright-smoke.md) | pending | 1.8 |
 

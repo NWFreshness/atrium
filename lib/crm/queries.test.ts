@@ -814,6 +814,149 @@ describe("activities CRUD", () => {
     expect(deleted?.id).toBe(created.id);
     expect(await getActivity(tenantA, created.id, memory)).toBeNull();
   });
+
+  it("filters by contactId and dealId", async () => {
+    const memory = repo();
+    const ada = await createContact(
+      tenantA,
+      { name: "Ada", status: "lead" },
+      memory,
+    );
+    const bob = await createContact(
+      tenantA,
+      { name: "Bob", status: "lead" },
+      memory,
+    );
+    const deal = await createDeal(
+      tenantA,
+      {
+        name: "Widget",
+        stage: "New",
+        value: 1000,
+        probability: 10,
+        boardOrder: 0,
+      },
+      memory,
+    );
+    const otherDeal = await createDeal(
+      tenantA,
+      {
+        name: "Other",
+        stage: "New",
+        value: 500,
+        probability: 10,
+        boardOrder: 1,
+      },
+      memory,
+    );
+    const adaNote = await createActivity(
+      tenantA,
+      { type: "note", contactId: ada.id, description: "Ada note", done: false },
+      memory,
+    );
+    await createActivity(
+      tenantA,
+      { type: "call", contactId: bob.id, description: "Bob call", done: false },
+      memory,
+    );
+    const dealEmail = await createActivity(
+      tenantA,
+      { type: "email", dealId: deal.id, description: "Deal email", done: false },
+      memory,
+    );
+    await createActivity(
+      tenantA,
+      {
+        type: "note",
+        dealId: otherDeal.id,
+        description: "Other deal",
+        done: false,
+      },
+      memory,
+    );
+
+    expect(await listActivities(tenantA, memory, { contactId: ada.id })).toEqual(
+      [adaNote],
+    );
+    expect(await listActivities(tenantA, memory, { dealId: deal.id })).toEqual([
+      dealEmail,
+    ]);
+  });
+
+  it("sorts newest first: occurredAt desc, null last, then createdAt desc, then id", async () => {
+    const memory = repo();
+    const oldest = await createActivity(
+      tenantA,
+      {
+        type: "note",
+        description: "oldest occurred",
+        occurredAt: new Date("2026-01-01T00:00:00.000Z"),
+        done: false,
+      },
+      memory,
+    );
+    const newest = await createActivity(
+      tenantA,
+      {
+        type: "call",
+        description: "newest occurred",
+        occurredAt: new Date("2026-06-01T00:00:00.000Z"),
+        done: false,
+      },
+      memory,
+    );
+    const missingOccurred = await createActivity(
+      tenantA,
+      { type: "email", description: "no occurredAt", done: false },
+      memory,
+    );
+    const sameOccurredFirst = await createActivity(
+      tenantA,
+      {
+        type: "note",
+        description: "same occurred earlier created",
+        occurredAt: new Date("2026-03-01T00:00:00.000Z"),
+        done: false,
+      },
+      memory,
+    );
+    const sameOccurredLater = await createActivity(
+      tenantA,
+      {
+        type: "note",
+        description: "same occurred later created",
+        occurredAt: new Date("2026-03-01T00:00:00.000Z"),
+        done: false,
+      },
+      memory,
+    );
+    for (const row of memory.activities) {
+      if (row.id === oldest.id) {
+        row.createdAt = new Date("2026-01-01T00:00:00.000Z");
+      } else if (row.id === newest.id) {
+        row.createdAt = new Date("2026-01-02T00:00:00.000Z");
+      } else if (row.id === missingOccurred.id) {
+        row.createdAt = new Date("2026-01-03T00:00:00.000Z");
+      } else if (row.id === sameOccurredFirst.id) {
+        row.createdAt = new Date("2026-01-04T00:00:00.000Z");
+      } else if (row.id === sameOccurredLater.id) {
+        row.createdAt = new Date("2026-01-05T00:00:00.000Z");
+      }
+    }
+    oldest.createdAt = new Date("2026-01-01T00:00:00.000Z");
+    newest.createdAt = new Date("2026-01-02T00:00:00.000Z");
+    missingOccurred.createdAt = new Date("2026-01-03T00:00:00.000Z");
+    sameOccurredFirst.createdAt = new Date("2026-01-04T00:00:00.000Z");
+    sameOccurredLater.createdAt = new Date("2026-01-05T00:00:00.000Z");
+
+    expect(await listActivities(tenantA, memory)).toEqual([
+      newest,
+      sameOccurredLater,
+      sameOccurredFirst,
+      oldest,
+      missingOccurred,
+    ]);
+  });
 });
 
 describe("tenant isolation", () => {
