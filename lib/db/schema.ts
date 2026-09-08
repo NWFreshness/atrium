@@ -7,6 +7,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import * as crm from "../crm/schema";
+import * as space from "../space/schema";
 
 export const userRoles = ["owner", "demo"] as const;
 export type UserRole = (typeof userRoles)[number];
@@ -80,6 +81,17 @@ export const activities = crm.activities;
 export const dealStageEnum = crm.dealStageEnum;
 export const contactStatusEnum = crm.contactStatusEnum;
 export const activityTypeEnum = crm.activityTypeEnum;
+
+export const pages = space.pages;
+export const blocks = space.blocks;
+export const properties = space.properties;
+export const propertyOptions = space.propertyOptions;
+export const rowValues = space.rowValues;
+export const views = space.views;
+export const pageTypeEnum = space.pageTypeEnum;
+export const blockTypeEnum = space.blockTypeEnum;
+export const propertyTypeEnum = space.propertyTypeEnum;
+export const viewKindEnum = space.viewKindEnum;
 
 export const verificationTokens = pgTable(
   "verificationTokens",

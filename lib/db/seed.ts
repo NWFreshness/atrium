@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import { eq } from "drizzle-orm";
 import type { CrmRepository } from "../crm/queries";
 import { seedCrm } from "../crm/seed";
+import type { SpaceRepository } from "../space/queries";
+import { seedSpace } from "../space/seed";
 import { getDb, type Database } from "./index";
 import { hashPassword } from "./password";
 import { tenants, users, type UserRole, userRoles } from "./schema";
@@ -231,6 +233,19 @@ export async function seedDemoCrm(
   await seedCrm(demoTenantId, crmRepo);
 }
 
+export async function seedDemoSpace(
+  getTenantId: (
+    name: string,
+  ) => string | undefined | Promise<string | undefined>,
+  spaceRepo?: SpaceRepository,
+): Promise<void> {
+  const demoTenantId = await getTenantId("Demo");
+  if (!demoTenantId) {
+    throw new Error("Demo tenant not found");
+  }
+  await seedSpace(demoTenantId, spaceRepo);
+}
+
 export async function runSeed(
   env: Record<string, string | undefined> = process.env,
 ): Promise<void> {
@@ -239,9 +254,10 @@ export async function runSeed(
   const repo = createDrizzleSeedRepository(db);
   await applySeed(repo, plan, hashPassword);
   const seededTenants = await repo.listTenants();
-  await seedDemoCrm(
-    (name) => seededTenants.find((tenant) => tenant.name === name)?.id,
-  );
+  const demoTenantId = (name: string) =>
+    seededTenants.find((tenant) => tenant.name === name)?.id;
+  await seedDemoCrm(demoTenantId);
+  await seedDemoSpace(demoTenantId);
 }
 
 function isDirectRun(): boolean {
