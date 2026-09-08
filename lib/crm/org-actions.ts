@@ -1,3 +1,5 @@
+"use server";
+
 import { requireTenant, type GetSession } from "../tenancy";
 import {
   createOrganization,
@@ -64,7 +66,6 @@ export async function deleteOrganizationForSession(
 export async function listOrganizationsAction(
   q?: string,
 ): Promise<Organization[]> {
-  "use server";
   const { auth } = await import("@/auth");
   return listOrganizationsForSession(auth, { q });
 }
@@ -72,7 +73,6 @@ export async function listOrganizationsAction(
 export async function getOrganizationAction(
   id: string,
 ): Promise<Organization | null> {
-  "use server";
   const { auth } = await import("@/auth");
   return getOrganizationForSession(auth, id);
 }
@@ -80,7 +80,6 @@ export async function getOrganizationAction(
 export async function createOrganizationAction(
   input: CreateOrganizationInput,
 ): Promise<Organization> {
-  "use server";
   const { auth } = await import("@/auth");
   return createOrganizationForSession(auth, input);
 }
@@ -89,7 +88,6 @@ export async function updateOrganizationAction(
   id: string,
   input: UpdateOrganizationInput,
 ): Promise<Organization | null> {
-  "use server";
   const { auth } = await import("@/auth");
   return updateOrganizationForSession(auth, id, input);
 }
@@ -97,7 +95,6 @@ export async function updateOrganizationAction(
 export async function deleteOrganizationAction(
   id: string,
 ): Promise<Organization | null> {
-  "use server";
   const { auth } = await import("@/auth");
   return deleteOrganizationForSession(auth, id);
 }
