@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: Phase 1 CRM specs (not written). Do not invent them.
+Next up: [1.1 CRM schema, seed, resetter](features/phase-1-crm/1.1-schema-seed-resetter.md)
 
 ---
 
@@ -27,3 +27,7 @@ Authenticated route group with launcher at `/` (four cards: CRM, Space, Rolodex,
 ### 0.5 Tenancy helper + Reset demo (completed)
 
 `requireTenant()` returns `{ userId, tenantId, role }` from the Auth.js session only (client tenantId ignored). `resetDemo` throws for owner without running resetters; demo succeeds with an empty resetter registry. Thrown resetter + injected transaction rolls back. `registerDemoResetter` is the phase-1 hook. Nav shows “Reset demo” only when `role === demo`. Server action calls `resetDemo(() => auth())` with no client extra. No CRM/Space/Rolodex tables. Controller: npm test 53 passed, npm run build exit 0. Spec PASS, quality APPROVED. AGENTS.md already forbids tenantId from body/query; extra requireTenant sentence was blocked by the instruction-file write gate.
+
+### Phase 1 CRM specs (written, not implemented)
+
+Nine feature specs in `features/phase-1-crm/` (1.1–1.9): schema/seed/resetter, shell, orgs, contacts, deals, pipeline, activities, dashboard, Playwright smoke. Next implementable unit is 1.1.
