@@ -1,10 +1,18 @@
 import { describe, expect, it } from "vitest";
+import {
+  createMemoryCrmRepository,
+  listActivities,
+  listContacts,
+  listDeals,
+  listOrganizations,
+} from "../crm/queries";
 import { hashPassword } from "./password";
 import {
   applySeed,
   createMemorySeedRepository,
   isUserRole,
   parseSeedEnv,
+  seedDemoCrm,
 } from "./seed";
 
 const seedEnv = {
@@ -92,5 +100,39 @@ describe("applySeed", () => {
       expect(user.passwordHash).not.toBe(input!.password);
       expect(user.passwordHash).not.toContain(input!.password);
     }
+  });
+});
+
+describe("seedDemoCrm", () => {
+  it("seeds CRM rows for Demo only and leaves Owner empty", async () => {
+    const seedRepo = createMemorySeedRepository();
+    const crmRepo = createMemoryCrmRepository();
+    const plan = parseSeedEnv(seedEnv);
+
+    await applySeed(seedRepo, plan, hashPassword);
+    await seedDemoCrm(
+      (name) => seedRepo.tenants.find((tenant) => tenant.name === name)?.id,
+      crmRepo,
+    );
+
+    const demoId = seedRepo.tenants.find((tenant) => tenant.name === "Demo")!.id;
+    const ownerId = seedRepo.tenants.find((tenant) => tenant.name === "Owner")!.id;
+
+    expect((await listOrganizations(demoId, crmRepo)).length).toBeGreaterThan(0);
+    expect((await listContacts(demoId, crmRepo)).length).toBeGreaterThan(0);
+    expect((await listDeals(demoId, crmRepo)).length).toBeGreaterThan(0);
+    expect((await listActivities(demoId, crmRepo)).length).toBeGreaterThan(0);
+
+    expect(await listOrganizations(ownerId, crmRepo)).toEqual([]);
+    expect(await listContacts(ownerId, crmRepo)).toEqual([]);
+    expect(await listDeals(ownerId, crmRepo)).toEqual([]);
+    expect(await listActivities(ownerId, crmRepo)).toEqual([]);
+  });
+
+  it("throws when Demo tenant is missing", async () => {
+    const crmRepo = createMemoryCrmRepository();
+    await expect(seedDemoCrm(() => undefined, crmRepo)).rejects.toThrow(
+      /Demo tenant/,
+    );
   });
 });
