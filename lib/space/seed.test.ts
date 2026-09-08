@@ -27,8 +27,11 @@ describe("seedSpace", () => {
         "Kyoto Notes",
       ]),
     );
-    expect(demoPages.every((page) => page.icon)).toBe(true);
-    expect(demoPages.every((page) => page.type === "page")).toBe(true);
+    expect(
+      demoPages
+        .filter((page) => page.type !== "row")
+        .every((page) => page.icon),
+    ).toBe(true);
 
     const projects = demoPages.find((page) => page.title === "Projects");
     const garden = demoPages.find((page) => page.title === "Balcony Garden");
@@ -52,6 +55,23 @@ describe("seedSpace", () => {
     const blocks = await listBlocks(demoTenant, repo, { pageId: home!.id });
     expect(new Set(blocks.map((block) => block.type))).toEqual(
       new Set(BLOCK_TYPES),
+    );
+  });
+
+  it("seeds Trip Planner with five rows and a Reading List database", async () => {
+    const repo = createMemorySpaceRepository();
+    await seedSpace(demoTenant, repo);
+    const pages = await listPages(demoTenant, repo);
+    const trip = pages.find((page) => page.title === "Trip Planner");
+    const reading = pages.find((page) => page.title === "Reading List");
+    expect(trip?.type).toBe("database");
+    expect(reading?.type).toBe("database");
+    const tripRows = pages.filter(
+      (page) => page.parentId === trip?.id && page.type === "row",
+    );
+    expect(tripRows).toHaveLength(5);
+    expect(tripRows.map((row) => row.title)).toEqual(
+      expect.arrayContaining(["Japan, ten days", "Scottish Highlands"]),
     );
   });
 

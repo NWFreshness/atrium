@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [2.5 Databases and table view](features/phase-2-space/2.5-databases-table.md)
+Next up: [2.6 Board, list, filters, sorts](features/phase-2-space/2.6-views-board-list.md)
 
-Do not implement 2.6+ until 2.5 is done. Do not invent Rolodex/Groove specs.
+Do not implement 2.7 in parallel with 2.6. Do not invent Rolodex/Groove specs.
 
 ---
 
@@ -72,7 +72,7 @@ Note/call/email from contact and deal detail. Timeline newest first. Optional du
 
 ### Phase 2 Space specs (written, not implemented)
 
-Eight feature specs in `features/phase-2-space/` (2.1–2.8): schema/seed/resetter, shell, pages tree, block editor, databases/table, board/list/filters, search, Playwright smoke. Next implementable unit is 2.5.
+Eight feature specs in `features/phase-2-space/` (2.1–2.8): schema/seed/resetter, shell, pages tree, block editor, databases/table, board/list/filters, search, Playwright smoke. Next implementable unit is 2.6.
 
 ### 2.1 Space schema, seed, resetter (completed)
 
@@ -89,3 +89,7 @@ Session-scoped page actions; sidebar tree omits `row` pages. Create navigates to
 ### 2.4 Block editor (completed)
 
 Vanilla per-block editor (textarea, no extra editor library). Slash menu (`/`) filters by keyboard and mouse. Autosave, Enter/Backspace, todo checkbox, drag reorder via `@hello-pangea/dnd`. Demo Home seed includes every block type. Controller: npm test 213 passed, npm run build exit 0. Spec PASS.
+
+### 2.5 Databases and table view (completed)
+
+Database pages in the sidebar; TanStack table with in-place editors for seven property types; rows open as properties + block editor. Demo seed: Trip Planner (5 rows) and Reading List. Controller: npm test 219 passed, npm run build exit 0. Spec PASS.

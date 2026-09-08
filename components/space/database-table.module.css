@@ -1,0 +1,117 @@
+.space-database {
+  margin-top: 1rem;
+}
+
+.space-db-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.space-db-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.space-db-form input,
+.space-db-form select,
+.space-cell-input {
+  font: inherit;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid #525252;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+}
+
+.space-table-wrap {
+  overflow-x: auto;
+}
+
+.space-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.space-table th,
+.space-table td {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #333;
+  vertical-align: top;
+}
+
+.space-prop-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.space-icon-button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.space-row-link {
+  color: #f59e0b;
+}
+
+.space-empty {
+  color: #a3a3a3;
+}
+
+.space-multi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.space-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.space-option-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.space-legend-chip {
+  padding: 0.1rem 0.45rem;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.space-row-props {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1rem 0;
+}
+
+.space-row-prop {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.space-row-prop dt {
+  color: #a3a3a3;
+  font-size: 0.8rem;
+}
+
+.space-row-prop dd {
+  margin: 0;
+}

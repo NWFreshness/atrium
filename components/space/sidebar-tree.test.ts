@@ -10,6 +10,7 @@ const source = readFileSync(
 describe("SidebarTree", () => {
   it("uses the required accessible names", () => {
     expect(source).toContain('aria-label="New page"');
+    expect(source).toContain('aria-label="New database"');
     expect(source).toContain("Rename ${label}");
     expect(source).toContain("Delete ${label}");
   });
