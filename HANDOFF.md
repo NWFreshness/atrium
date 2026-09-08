@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Next work is feature 1.7.** Do not start 1.8+ until 1.7 is done. Do not invent Space/Rolodex/Groove specs. Do not push to `main`.
+**Stop. Next work is feature 1.8.** Do not start 1.9 until 1.8 is done. Do not invent Space/Rolodex/Groove specs. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
@@ -20,8 +20,9 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | 1.3 Organizations table and detail | completed (PR #10) |
 | 1.4 Contacts table and detail | completed (PR #11) |
 | 1.5 Deals table | completed (PR #12) |
-| 1.6 Pipeline board | completed |
-| **1.7 Activities and follow-ups** | **next** |
+| 1.6 Pipeline board | completed (PR #13) |
+| 1.7 Activities and follow-ups | completed |
+| **1.8 Dashboard** | **next** |
 
 Phase 1 CRM specs 1.1–1.9 are written. Space / Rolodex / Groove specs are not. Do not invent them.
 
@@ -36,7 +37,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-1-crm/1.7-activities.md` — implement that spec, nothing else
+6. `features/phase-1-crm/1.8-dashboard.md` — implement that spec, nothing else
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -76,4 +77,4 @@ npm test
 npm run build
 ```
 
-Then implement 1.7 from its spec.
+Then implement 1.8 from its spec.

@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [1.7 Activities and follow-ups](features/phase-1-crm/1.7-activities.md)
+Next up: [1.8 Dashboard](features/phase-1-crm/1.8-dashboard.md)
 
 ---
 
@@ -55,3 +55,7 @@ TanStack deals table with stage, USD value, close date, org, contact. Search by 
 ### 1.6 Pipeline board (completed)
 
 Six-column `@hello-pangea/dnd` board. Drag to stage persists via `moveDeal`; stage change rebases probability; same-column reorder does not. Open pipeline totals exclude Won/Lost. Controller: npm test 145 passed, build includes `/crm/pipeline`. Spec PASS, quality APPROVED.
+
+### 1.7 Activities and follow-ups (completed)
+
+Note/call/email from contact and deal detail. Timeline newest first. Optional due date and boolean done toggle, tenant-scoped. Controller: npm test 155 passed. Spec PASS, quality APPROVED.
