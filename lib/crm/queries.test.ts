@@ -237,6 +237,160 @@ describe("organizations CRUD", () => {
   });
 });
 
+describe("listContacts filters", () => {
+  it("returns all tenant contacts when opts are omitted or q is empty", async () => {
+    const memory = repo();
+    const ada = await createContact(
+      tenantA,
+      {
+        name: "Ada Lovelace",
+        email: "ada@acme.test",
+        jobTitle: "Analyst",
+        status: "lead",
+      },
+      memory,
+    );
+    const bob = await createContact(
+      tenantA,
+      {
+        name: "Bob Martin",
+        email: "bob@acme.test",
+        jobTitle: "Engineer",
+        status: "customer",
+      },
+      memory,
+    );
+    await createContact(
+      tenantB,
+      {
+        name: "Ada East",
+        email: "ada@east.test",
+        jobTitle: "Analyst",
+        status: "lead",
+      },
+      memory,
+    );
+
+    expect(await listContacts(tenantA, memory)).toEqual([ada, bob]);
+    expect(await listContacts(tenantA, memory, {})).toEqual([ada, bob]);
+    expect(await listContacts(tenantA, memory, { q: "" })).toEqual([ada, bob]);
+    expect(await listContacts(tenantA, memory, { q: "   " })).toEqual([
+      ada,
+      bob,
+    ]);
+  });
+
+  it("filters name, email, and jobTitle case-insensitively without leaking other tenants", async () => {
+    const memory = repo();
+    const ada = await createContact(
+      tenantA,
+      {
+        name: "Ada Lovelace",
+        email: "ada@acme.test",
+        jobTitle: "Analyst",
+        status: "lead",
+      },
+      memory,
+    );
+    const bob = await createContact(
+      tenantA,
+      {
+        name: "Bob Martin",
+        email: "bob@bluepeak.example",
+        jobTitle: "Principal Engineer",
+        status: "qualified",
+      },
+      memory,
+    );
+    await createContact(
+      tenantB,
+      {
+        name: "Ada Rival",
+        email: "ada@rival.example",
+        jobTitle: "Engineer",
+        status: "lead",
+      },
+      memory,
+    );
+
+    expect(await listContacts(tenantA, memory, { q: "ADA" })).toEqual([ada]);
+    expect(
+      await listContacts(tenantA, memory, { q: "bluepeak.example" }),
+    ).toEqual([bob]);
+    expect(await listContacts(tenantA, memory, { q: "analyst" })).toEqual([
+      ada,
+    ]);
+    expect(await listContacts(tenantA, memory, { q: "engineer" })).toEqual([
+      bob,
+    ]);
+    expect(
+      await listContacts(tenantA, memory, { q: "no-such-contact" }),
+    ).toEqual([]);
+  });
+
+  it("filters by exact status", async () => {
+    const memory = repo();
+    const lead = await createContact(
+      tenantA,
+      { name: "Ada", status: "lead" },
+      memory,
+    );
+    await createContact(tenantA, { name: "Bob", status: "qualified" }, memory);
+    const customer = await createContact(
+      tenantA,
+      { name: "Cara", status: "customer" },
+      memory,
+    );
+    await createContact(
+      tenantB,
+      { name: "Other Lead", status: "lead" },
+      memory,
+    );
+
+    expect(await listContacts(tenantA, memory, { status: "lead" })).toEqual([
+      lead,
+    ]);
+    expect(await listContacts(tenantA, memory, { status: "customer" })).toEqual(
+      [customer],
+    );
+  });
+
+  it("filters by organizationId within the tenant", async () => {
+    const memory = repo();
+    const acme = await createOrganization(tenantA, { name: "Acme" }, memory);
+    const beta = await createOrganization(tenantA, { name: "Beta" }, memory);
+    const otherOrg = await createOrganization(
+      tenantB,
+      { name: "East" },
+      memory,
+    );
+    const ada = await createContact(
+      tenantA,
+      { name: "Ada", organizationId: acme.id, status: "lead" },
+      memory,
+    );
+    await createContact(
+      tenantA,
+      { name: "Bob", organizationId: beta.id, status: "lead" },
+      memory,
+    );
+    await createContact(
+      tenantA,
+      { name: "Unaffiliated", status: "lead" },
+      memory,
+    );
+    await createContact(
+      tenantB,
+      { name: "Other", organizationId: otherOrg.id, status: "lead" },
+      memory,
+    );
+
+    expect(
+      await listContacts(tenantA, memory, { organizationId: acme.id }),
+    ).toEqual([ada]);
+  });
+});
+
 describe("contacts CRUD", () => {
   it("creates, lists, gets, updates, and deletes within a tenant", async () => {
     const memory = repo();
