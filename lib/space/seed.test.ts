@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createMemorySpaceRepository, listPages } from "./queries";
+import { BLOCK_TYPES } from "./constants";
+import { createMemorySpaceRepository, listBlocks, listPages } from "./queries";
 import { seedSpace } from "./seed";
 
 const demoTenant = "tenant-demo";
@@ -39,6 +40,19 @@ describe("seedSpace", () => {
     expect(calendar?.parentId).toBe(garden?.id);
 
     expect(ownerPages).toEqual([]);
+  });
+
+  it("seeds every block type onto the Home page", async () => {
+    const repo = createMemorySpaceRepository();
+    await seedSpace(demoTenant, repo);
+    const home = (await listPages(demoTenant, repo)).find(
+      (page) => page.title === "Home",
+    );
+    expect(home).toBeDefined();
+    const blocks = await listBlocks(demoTenant, repo, { pageId: home!.id });
+    expect(new Set(blocks.map((block) => block.type))).toEqual(
+      new Set(BLOCK_TYPES),
+    );
   });
 
   it("is a no-op when the tenant already has Space pages", async () => {

@@ -1,4 +1,10 @@
-import { createPage, listPages, type SpaceRepository } from "./queries";
+import { BLOCK_TYPES, type BlockType } from "./constants";
+import {
+  createBlock,
+  createPage,
+  listPages,
+  type SpaceRepository,
+} from "./queries";
 
 type PageSpec = {
   title: string;
@@ -134,4 +140,56 @@ export async function seedSpace(
     return;
   }
   await seedTree(tenantId, null, DEMO_TREE, repo);
+  const pages = await listPages(tenantId, repo);
+  const home = pages.find(
+    (page) => page.title === "Home" && page.parentId === null,
+  );
+  if (!home) {
+    return;
+  }
+  const showcase: { type: BlockType; content: Record<string, unknown> }[] = [
+    { type: "heading1", content: { text: "Welcome back" } },
+    {
+      type: "paragraph",
+      content: {
+        text: "This is your personal space: notes, plans and lists in one place.",
+      },
+    },
+    { type: "heading2", content: { text: "This week" } },
+    { type: "heading3", content: { text: "Tips" } },
+    {
+      type: "callout",
+      content: {
+        text: "Type / anywhere in an empty block to change its type.",
+      },
+    },
+    {
+      type: "todo",
+      content: { text: "Water the balcony garden", checked: true },
+    },
+    {
+      type: "bulleted_list",
+      content: { text: "Projects — anything with an outcome" },
+    },
+    { type: "numbered_list", content: { text: "Write the slow tools draft" } },
+    { type: "quote", content: { text: "Slow is smooth, smooth is fast." } },
+    { type: "divider", content: {} },
+    {
+      type: "code",
+      content: { text: "hostnamectl set-hostname node-01" },
+    },
+  ];
+  for (const spec of showcase) {
+    await createBlock(
+      tenantId,
+      { pageId: home.id, type: spec.type, content: spec.content },
+      repo,
+    );
+  }
+  const seededTypes = new Set(showcase.map((spec) => spec.type));
+  for (const type of BLOCK_TYPES) {
+    if (!seededTypes.has(type)) {
+      await createBlock(tenantId, { pageId: home.id, type, content: {} }, repo);
+    }
+  }
 }
