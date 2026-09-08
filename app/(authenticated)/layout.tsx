@@ -1,6 +1,7 @@
 import { auth, signOut } from "@/auth";
 import { AtriumNav } from "@/components/atrium-nav";
 import type { ResetDemoState } from "@/components/reset-demo-button";
+import "@/lib/crm/reset";
 import { resetDemo } from "@/lib/tenancy/reset-demo";
 
 export default async function AuthenticatedLayout({

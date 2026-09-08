@@ -1,6 +1,8 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { eq } from "drizzle-orm";
+import type { CrmRepository } from "../crm/queries";
+import { seedCrm } from "../crm/seed";
 import { getDb, type Database } from "./index";
 import { hashPassword } from "./password";
 import { tenants, users, type UserRole, userRoles } from "./schema";
@@ -216,12 +218,30 @@ export async function applySeed(
   }
 }
 
+export async function seedDemoCrm(
+  getTenantId: (
+    name: string,
+  ) => string | undefined | Promise<string | undefined>,
+  crmRepo?: CrmRepository,
+): Promise<void> {
+  const demoTenantId = await getTenantId("Demo");
+  if (!demoTenantId) {
+    throw new Error("Demo tenant not found");
+  }
+  await seedCrm(demoTenantId, crmRepo);
+}
+
 export async function runSeed(
   env: Record<string, string | undefined> = process.env,
 ): Promise<void> {
   const plan = parseSeedEnv(env);
   const db = getDb();
-  await applySeed(createDrizzleSeedRepository(db), plan, hashPassword);
+  const repo = createDrizzleSeedRepository(db);
+  await applySeed(repo, plan, hashPassword);
+  const seededTenants = await repo.listTenants();
+  await seedDemoCrm(
+    (name) => seededTenants.find((tenant) => tenant.name === name)?.id,
+  );
 }
 
 function isDirectRun(): boolean {

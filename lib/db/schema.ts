@@ -6,6 +6,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+import * as crm from "../crm/schema";
 
 export const userRoles = ["owner", "demo"] as const;
 export type UserRole = (typeof userRoles)[number];
@@ -71,6 +72,14 @@ export const sessions = pgTable("sessions", {
     .references(() => users.id, { onDelete: "cascade" }),
   expires: timestamp("expires", { mode: "date" }).notNull(),
 });
+
+export const organizations = crm.organizations;
+export const contacts = crm.contacts;
+export const deals = crm.deals;
+export const activities = crm.activities;
+export const dealStageEnum = crm.dealStageEnum;
+export const contactStatusEnum = crm.contactStatusEnum;
+export const activityTypeEnum = crm.activityTypeEnum;
 
 export const verificationTokens = pgTable(
   "verificationTokens",
