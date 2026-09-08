@@ -20,7 +20,8 @@
 }
 
 .crm-field input,
-.crm-field textarea {
+.crm-field textarea,
+.crm-field select {
   font: inherit;
   padding: 0.4rem 0.5rem;
 }
