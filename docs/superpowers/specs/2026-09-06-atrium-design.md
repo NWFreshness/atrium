@@ -155,6 +155,8 @@ Next.js app, AGENTS.md, Drizzle/Postgres, Auth.js two accounts, launcher, shared
 
 Organizations, contacts, deals, drag-and-drop pipeline, activities, dashboard. Tenant-scoped. Demo seed included.
 
+Feature specs: `features/phase-1-crm/` (1.1–1.9). Board: `features/INDEX.md`.
+
 ### Phase 2 — Space
 
 Pages + blocks, databases with table / board / list views, search. Tenant-scoped.
@@ -241,4 +243,4 @@ Do not add TanStack packages until the feature that uses them.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-Progress: `features/INDEX.md`. Phase 0 specs 0.1–0.5 exist. 0.1–0.3 are completed on `main`. Next implementable unit is 0.4. Do not treat the three steps above as outstanding work.
+Progress: `features/INDEX.md`. Phase 0 is complete (0.1–0.5). Phase 1 CRM specs 1.1–1.9 exist. Next implementable unit is 1.1. Do not invent Space/Rolodex/Groove specs.

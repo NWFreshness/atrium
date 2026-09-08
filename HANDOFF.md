@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 0 is complete. Next work is Phase 1 CRM specs.** Do not invent CRM/Space/Rolodex/Groove specs. Do not push to `main`.
+**Stop. Next work is feature 1.1.** Do not start 1.2+ until 1.1 is done. Do not invent Space/Rolodex/Groove specs. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
-Phase 0 of Atrium. Repo: https://github.com/NWFreshness/atrium.git
+Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.git
 
 | ID | Status |
 | --- | --- |
@@ -14,10 +14,10 @@ Phase 0 of Atrium. Repo: https://github.com/NWFreshness/atrium.git
 | 0.2 Drizzle + Neon users/tenants | completed (PR #2) |
 | 0.3 Auth.js credentials login | completed (PR #3) |
 | 0.4 Nav, theme, launcher | completed (PR #5) |
-| 0.5 Tenancy helper + Reset demo | completed |
-| **Phase 1 CRM specs** | **next (not written)** |
+| 0.5 Tenancy helper + Reset demo | completed (PR #6) |
+| **1.1 CRM schema, seed, resetter** | **next** |
 
-CRM / Space / Rolodex / Groove specs are not written. INDEX says so. Do not invent them.
+Phase 1 CRM specs 1.1–1.9 are written. Space / Rolodex / Groove specs are not. Do not invent them.
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
@@ -30,7 +30,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Wait for Phase 1 CRM feature specs. Do not invent them.
+6. `features/phase-1-crm/1.1-schema-seed-resetter.md` — implement that spec, nothing else
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -70,4 +70,4 @@ npm test
 npm run build
 ```
 
-Then wait for Phase 1 CRM specs. Do not invent them.
+Then implement 1.1 from its spec.
