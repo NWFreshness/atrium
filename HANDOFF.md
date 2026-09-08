@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Next work is feature 2.2.** Do not start 2.3+ until 2.2 is done. Do not invent Rolodex/Groove specs. Do not push to `main`.
+**Stop. Next work is feature 2.3.** Do not start 2.4+ until 2.3 is done. Do not invent Rolodex/Groove specs. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
@@ -24,8 +24,9 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | 1.7 Activities and follow-ups | completed (PR #14) |
 | 1.8 Dashboard | completed (PR #15) |
 | 1.9 Playwright smoke | completed (PR #16) |
-| 2.1 Space schema, seed, resetter | completed |
-| **2.2 Space shell** | **next** |
+| 2.1 Space schema, seed, resetter | completed (PR #18) |
+| 2.2 Space shell | completed |
+| **2.3 Pages tree in the sidebar** | **next** |
 
 Phase 1 CRM is complete. Phase 2 Space specs 2.1–2.8 are written. Rolodex / Groove specs are not. Do not invent them.
 
@@ -40,7 +41,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-2-space/2.2-space-shell.md` — implement that spec, nothing else
+6. `features/phase-2-space/2.3-pages-sidebar.md` — implement that spec, nothing else
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -80,4 +81,4 @@ npm test
 npm run build
 ```
 
-Then implement 2.2 from its spec.
+Then implement 2.3 from its spec.

@@ -1,8 +1,8 @@
-export default function SpacePage() {
+export default function SpaceLandingPage() {
   return (
     <main>
       <h1>Space</h1>
-      <p>Coming soon</p>
+      <p>Pick a page</p>
     </main>
   );
 }

@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [2.2 Space shell](features/phase-2-space/2.2-space-shell.md)
+Next up: [2.3 Pages tree in the sidebar](features/phase-2-space/2.3-pages-sidebar.md)
 
-Do not implement 2.3+ until 2.2 is done. Do not invent Rolodex/Groove specs.
+Do not implement 2.4+ until 2.3 is done. Do not invent Rolodex/Groove specs.
 
 ---
 
@@ -72,8 +72,12 @@ Note/call/email from contact and deal detail. Timeline newest first. Optional du
 
 ### Phase 2 Space specs (written, not implemented)
 
-Eight feature specs in `features/phase-2-space/` (2.1–2.8): schema/seed/resetter, shell, pages tree, block editor, databases/table, board/list/filters, search, Playwright smoke. Next implementable unit is 2.2.
+Eight feature specs in `features/phase-2-space/` (2.1–2.8): schema/seed/resetter, shell, pages tree, block editor, databases/table, board/list/filters, search, Playwright smoke. Next implementable unit is 2.3.
 
 ### 2.1 Space schema, seed, resetter (completed)
 
 Drizzle tables pages/blocks/properties/propertyOptions/rowValues/views with tenantId, UUID ids, cascade FKs. Query helpers require tenantId (memory + Drizzle). Demo seed is a nested Bench page tree with icons; owner empty. Reset demo registers Space wipe+reseed. Migration `drizzle/0002_panoramic_smasher.sql`. `/space` still Coming soon. Controller: npm test 188 passed, npm run build exit 0. Spec PASS.
+
+### 2.2 Space shell (completed)
+
+Sidebar + page columns under `app/(authenticated)/space/`. Landing is “Pick a page”; `/space/[id]` is a placeholder body. Space CSS is `space-` prefixed and imported only from Space files. Atrium nav still wraps. No page tree yet (2.3). Controller: npm test 197 passed, build lists `/space` and `/space/[id]`. Spec PASS.
