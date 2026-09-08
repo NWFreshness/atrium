@@ -141,6 +141,36 @@ function organizationSearchSql(q?: string) {
   );
 }
 
+export type ListContactsOpts = {
+  q?: string;
+  status?: ContactStatus;
+  organizationId?: string;
+};
+
+function contactMatchesSearch(row: Contact, q?: string): boolean {
+  const term = organizationSearchTerm(q);
+  if (!term) {
+    return true;
+  }
+  const needle = term.toLowerCase();
+  return [row.name, row.email, row.jobTitle].some((value) =>
+    value?.toLowerCase().includes(needle),
+  );
+}
+
+function contactSearchSql(q?: string) {
+  const term = organizationSearchTerm(q);
+  if (!term) {
+    return undefined;
+  }
+  const pattern = `%${term}%`;
+  return or(
+    ilike(contacts.name, pattern),
+    ilike(contacts.email, pattern),
+    ilike(contacts.jobTitle, pattern),
+  );
+}
+
 export async function listOrganizations(
   tenantId: string,
   repo?: CrmRepository,
@@ -276,15 +306,34 @@ export async function deleteOrganization(
 export async function listContacts(
   tenantId: string,
   repo?: CrmRepository,
+  opts?: ListContactsOpts,
 ): Promise<Contact[]> {
   const scoped = requireTenantId(tenantId);
   if (repo) {
-    return repo.contacts.filter((row) => row.tenantId === scoped).map(clone);
+    return repo.contacts
+      .filter(
+        (row) =>
+          row.tenantId === scoped &&
+          contactMatchesSearch(row, opts?.q) &&
+          (opts?.status === undefined || row.status === opts.status) &&
+          (opts?.organizationId === undefined ||
+            row.organizationId === opts.organizationId),
+      )
+      .map(clone);
   }
+  const search = contactSearchSql(opts?.q);
+  const filters = [
+    eq(contacts.tenantId, scoped),
+    ...(search ? [search] : []),
+    ...(opts?.status !== undefined ? [eq(contacts.status, opts.status)] : []),
+    ...(opts?.organizationId !== undefined
+      ? [eq(contacts.organizationId, opts.organizationId)]
+      : []),
+  ];
   return requireCrmDb()
     .select()
     .from(contacts)
-    .where(eq(contacts.tenantId, scoped));
+    .where(and(...filters));
 }
 
 export async function getContact(

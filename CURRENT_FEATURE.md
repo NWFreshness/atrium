@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [1.4 Contacts table and detail](features/phase-1-crm/1.4-contacts.md)
+Next up: [1.5 Deals table](features/phase-1-crm/1.5-deals.md)
 
 ---
 
@@ -43,3 +43,7 @@ Five-section CRM subnav (Dashboard, Organizations, Contacts, Deals, Pipeline) un
 ### 1.3 Organizations table and detail (completed)
 
 TanStack Table list with search (name/website/industry), add/edit dialog, confirm delete. Session tenant only. Detail `/crm/organizations/[id]` 404s for missing/other-tenant. Controller: npm test 92 passed, build includes `/crm/organizations/[id]`. Spec PASS, quality APPROVED.
+
+### 1.4 Contacts table and detail (completed)
+
+TanStack contacts table with search (name/email/job title), status filter, add/edit dialog, org select limited to session tenant. Detail shows org link. Org detail lists contacts. Controller: npm test 103 passed, build includes `/crm/contacts/[id]`. Spec PASS, quality APPROVED.
