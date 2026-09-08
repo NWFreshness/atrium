@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 1 CRM is complete.** Do not invent Space/Rolodex/Groove specs. Do not push to `main`. Wait for the user.
+**Stop. Next work is feature 2.1.** Do not start 2.2+ until 2.1 is done. Do not invent Rolodex/Groove specs. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
@@ -23,9 +23,10 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | 1.6 Pipeline board | completed (PR #13) |
 | 1.7 Activities and follow-ups | completed (PR #14) |
 | 1.8 Dashboard | completed (PR #15) |
-| 1.9 Playwright smoke | completed |
+| 1.9 Playwright smoke | completed (PR #16) |
+| **2.1 Space schema, seed, resetter** | **next** |
 
-Phase 1 CRM specs 1.1–1.9 are written. Space / Rolodex / Groove specs are not. Do not invent them.
+Phase 1 CRM is complete. Phase 2 Space specs 2.1–2.8 are written. Rolodex / Groove specs are not. Do not invent them.
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
@@ -38,7 +39,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Wait for the user. Phase 1 is done. Do not invent Space/Rolodex/Groove specs.
+6. `features/phase-2-space/2.1-schema-seed-resetter.md` — implement that spec, nothing else
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -78,4 +79,4 @@ npm test
 npm run build
 ```
 
-Wait for the user. Do not invent Space/Rolodex/Groove specs.
+Then implement 2.1 from its spec.
