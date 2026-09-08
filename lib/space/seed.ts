@@ -2,6 +2,9 @@ import { BLOCK_TYPES, type BlockType } from "./constants";
 import {
   createBlock,
   createPage,
+  createProperty,
+  createPropertyOption,
+  createRowValue,
   listPages,
   type SpaceRepository,
 } from "./queries";
@@ -192,4 +195,202 @@ export async function seedSpace(
       await createBlock(tenantId, { pageId: home.id, type, content: {} }, repo);
     }
   }
+  await seedDemoDatabases(tenantId, pages, repo);
+}
+
+async function seedDemoDatabases(
+  tenantId: string,
+  pages: Awaited<ReturnType<typeof listPages>>,
+  repo?: SpaceRepository,
+): Promise<void> {
+  const travel = pages.find((page) => page.title === "Travel");
+  const trip = await createPage(
+    tenantId,
+    {
+      title: "Trip Planner",
+      icon: "🧭",
+      type: "database",
+      parentId: travel?.id ?? null,
+    },
+    repo,
+  );
+  const status = await createProperty(
+    tenantId,
+    { databaseId: trip.id, name: "Status", type: "select" },
+    repo,
+  );
+  const booked = await createPropertyOption(
+    tenantId,
+    { propertyId: status.id, name: "Booked", color: "green" },
+    repo,
+  );
+  const planning = await createPropertyOption(
+    tenantId,
+    { propertyId: status.id, name: "Planning", color: "blue" },
+    repo,
+  );
+  const dreaming = await createPropertyOption(
+    tenantId,
+    { propertyId: status.id, name: "Dreaming", color: "gray" },
+    repo,
+  );
+  const done = await createPropertyOption(
+    tenantId,
+    { propertyId: status.id, name: "Done", color: "purple" },
+    repo,
+  );
+  const region = await createProperty(
+    tenantId,
+    { databaseId: trip.id, name: "Region", type: "select" },
+    repo,
+  );
+  const asia = await createPropertyOption(
+    tenantId,
+    { propertyId: region.id, name: "Asia", color: "pink" },
+    repo,
+  );
+  const europe = await createPropertyOption(
+    tenantId,
+    { propertyId: region.id, name: "Europe", color: "teal" },
+    repo,
+  );
+  const americas = await createPropertyOption(
+    tenantId,
+    { propertyId: region.id, name: "Americas", color: "orange" },
+    repo,
+  );
+  const vibes = await createProperty(
+    tenantId,
+    { databaseId: trip.id, name: "Vibes", type: "multi_select" },
+    repo,
+  );
+  const food = await createPropertyOption(
+    tenantId,
+    { propertyId: vibes.id, name: "Food", color: "amber" },
+    repo,
+  );
+  const hiking = await createPropertyOption(
+    tenantId,
+    { propertyId: vibes.id, name: "Hiking", color: "green" },
+    repo,
+  );
+  const culture = await createPropertyOption(
+    tenantId,
+    { propertyId: vibes.id, name: "Culture", color: "purple" },
+    repo,
+  );
+  const budget = await createProperty(
+    tenantId,
+    { databaseId: trip.id, name: "Budget", type: "number" },
+    repo,
+  );
+  const depart = await createProperty(
+    tenantId,
+    { databaseId: trip.id, name: "Depart", type: "date" },
+    repo,
+  );
+  const flights = await createProperty(
+    tenantId,
+    { databaseId: trip.id, name: "Flights booked", type: "checkbox" },
+    repo,
+  );
+  const guide = await createProperty(
+    tenantId,
+    { databaseId: trip.id, name: "Guide", type: "url" },
+    repo,
+  );
+
+  async function tripRow(
+    title: string,
+    values: Record<string, unknown>,
+  ): Promise<void> {
+    const row = await createPage(
+      tenantId,
+      { title, type: "row", parentId: trip.id },
+      repo,
+    );
+    for (const [propertyId, value] of Object.entries(values)) {
+      await createRowValue(
+        tenantId,
+        { rowId: row.id, propertyId, value },
+        repo,
+      );
+    }
+  }
+
+  await tripRow("Japan, ten days", {
+    [status.id]: booked.id,
+    [region.id]: asia.id,
+    [vibes.id]: [food.id, culture.id],
+    [budget.id]: 4800,
+    [depart.id]: "2026-10-14",
+    [flights.id]: true,
+    [guide.id]: "https://japan-guide.com",
+  });
+  await tripRow("Lisbon long weekend", {
+    [status.id]: planning.id,
+    [region.id]: europe.id,
+    [vibes.id]: [food.id],
+    [budget.id]: 900,
+    [depart.id]: "2026-09-05",
+    [flights.id]: false,
+  });
+  await tripRow("Dolomites hut to hut", {
+    [status.id]: dreaming.id,
+    [region.id]: europe.id,
+    [vibes.id]: [hiking.id],
+    [budget.id]: 1500,
+    [flights.id]: false,
+  });
+  await tripRow("Mexico City", {
+    [status.id]: dreaming.id,
+    [region.id]: americas.id,
+    [vibes.id]: [food.id, culture.id],
+    [budget.id]: 1700,
+    [flights.id]: false,
+  });
+  await tripRow("Scottish Highlands", {
+    [status.id]: done.id,
+    [region.id]: europe.id,
+    [vibes.id]: [hiking.id],
+    [budget.id]: 700,
+    [depart.id]: "2026-04-18",
+    [flights.id]: true,
+  });
+
+  const reading = await createPage(
+    tenantId,
+    { title: "Reading List", icon: "📚", type: "database" },
+    repo,
+  );
+  const author = await createProperty(
+    tenantId,
+    { databaseId: reading.id, name: "Author", type: "text" },
+    repo,
+  );
+  const readStatus = await createProperty(
+    tenantId,
+    { databaseId: reading.id, name: "Status", type: "select" },
+    repo,
+  );
+  const finished = await createPropertyOption(
+    tenantId,
+    { propertyId: readStatus.id, name: "Finished", color: "green" },
+    repo,
+  );
+  const dune = await createPage(
+    tenantId,
+    { title: "Dune", type: "row", parentId: reading.id },
+    repo,
+  );
+  await createRowValue(
+    tenantId,
+    { rowId: dune.id, propertyId: author.id, value: "Frank Herbert" },
+    repo,
+  );
+  await createRowValue(
+    tenantId,
+    { rowId: dune.id, propertyId: readStatus.id, value: finished.id },
+    repo,
+  );
 }

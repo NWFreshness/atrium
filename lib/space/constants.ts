@@ -56,6 +56,17 @@ export const PROPERTY_TYPES = [
 
 export type PropertyType = (typeof PROPERTY_TYPES)[number];
 
+export const OPTION_COLORS = [
+  "gray",
+  "blue",
+  "amber",
+  "green",
+  "red",
+  "purple",
+  "teal",
+  "orange",
+] as const;
+
 export const VIEW_KINDS = ["table", "board", "list"] as const;
 
 export type ViewKind = (typeof VIEW_KINDS)[number];

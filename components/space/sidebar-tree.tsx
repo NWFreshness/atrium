@@ -8,6 +8,7 @@ import {
   deletePageAction,
   renamePageAction,
 } from "@/lib/space/page-actions";
+import { createDatabaseAction } from "@/lib/space/database-actions";
 import { spacePageIdFromPath } from "@/lib/space/nav";
 import {
   collectPageIds,
@@ -180,6 +181,15 @@ export function SidebarTree({ tree }: { tree: PageTreeNode[] }) {
     router.refresh();
   }
 
+  async function createDatabase() {
+    const created = await createDatabaseAction({
+      title: "",
+      parentId: currentId,
+    });
+    router.push(`/space/${created.id}`);
+    router.refresh();
+  }
+
   async function commitRename(id: string) {
     if (editingId !== id) {
       return;
@@ -215,6 +225,16 @@ export function SidebarTree({ tree }: { tree: PageTreeNode[] }) {
           }}
         >
           New page
+        </button>
+        <button
+          type="button"
+          className={styles["space-sidebar-new"]}
+          aria-label="New database"
+          onClick={() => {
+            void createDatabase();
+          }}
+        >
+          New database
         </button>
       </div>
       {tree.length === 0 ? (
