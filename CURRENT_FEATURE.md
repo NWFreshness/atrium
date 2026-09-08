@@ -2,7 +2,9 @@
 
 **None in progress.**
 
-Phase 1 CRM is complete. Do not start Space / Rolodex / Groove specs unless the user asks.
+Next up: [2.1 Space schema, seed, resetter](features/phase-2-space/2.1-schema-seed-resetter.md)
+
+Do not implement 2.2+ until 2.1 is done. Do not invent Rolodex/Groove specs.
 
 ---
 
@@ -67,3 +69,7 @@ Note/call/email from contact and deal detail. Timeline newest first. Optional du
 ### 1.9 Playwright smoke (completed)
 
 `e2e/crm.spec.ts`: unauth `/crm` → login; demo dashboard + subnav + seed orgs; create org persists; owner does not see demo seed names. Controller: npm test 168, Playwright 10 passed. Spec PASS, quality APPROVED.
+
+### Phase 2 Space specs (written, not implemented)
+
+Eight feature specs in `features/phase-2-space/` (2.1–2.8): schema/seed/resetter, shell, pages tree, block editor, databases/table, board/list/filters, search, Playwright smoke. Next implementable unit is 2.1.

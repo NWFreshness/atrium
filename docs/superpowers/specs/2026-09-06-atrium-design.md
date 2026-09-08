@@ -161,6 +161,8 @@ Feature specs: `features/phase-1-crm/` (1.1–1.9). Board: `features/INDEX.md`.
 
 Pages + blocks, databases with table / board / list views, search. Tenant-scoped.
 
+Feature specs: `features/phase-2-space/` (2.1–2.8). Board: `features/INDEX.md`.
+
 ### Phase 3 — Rolodex
 
 People, circles, cadences, birthdays, conversation timeline, CSV and vCard import. Tenant-scoped.

@@ -9,9 +9,9 @@ Only one feature `in_progress`. Later phases get specs when that phase starts.
 
 ## Build order
 
-Critical path: 0.1 → … → 0.5 → 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 → 1.8 → 1.9.
-1.7 (activities) starts after 1.5 and must not run in parallel with 1.5–1.6 (shared contact/deal detail files).
-Phase 1 is sequential. Do not run two CRM features in parallel.
+Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → 2.2 → 2.3 → 2.4 → 2.5 → 2.6 → 2.8.
+2.7 (search) starts after 2.5 and must not run in parallel with 2.6 if they share the database page.
+Phase 2 is sequential. Do not run two Space features in parallel.
 
 ### Phase 0 — Atrium platform
 
@@ -43,7 +43,20 @@ Long pole: 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 → 1.8 → 1.9. 1.7 can 
 
 ### Phase 2 — Space
 
-Specs not written yet. Blocked on Phase 1 (product order; not a code dependency on CRM tables).
+Jobs-to-be-done from Bench `docs/space/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite.
+
+| ID | Feature | Status | Depends on |
+| --- | --- | --- | --- |
+| 2.1 | [Schema, seed, demo resetter](./phase-2-space/2.1-schema-seed-resetter.md) | pending | 0.5 |
+| 2.2 | [Space shell](./phase-2-space/2.2-space-shell.md) | pending | 2.1 |
+| 2.3 | [Pages tree in the sidebar](./phase-2-space/2.3-pages-sidebar.md) | pending | 2.1, 2.2 |
+| 2.4 | [Block editor](./phase-2-space/2.4-block-editor.md) | pending | 2.3 |
+| 2.5 | [Databases and table view](./phase-2-space/2.5-databases-table.md) | pending | 2.3, 2.4 |
+| 2.6 | [Board, list, filters, sorts](./phase-2-space/2.6-views-board-list.md) | pending | 2.5 |
+| 2.7 | [Quick-find search](./phase-2-space/2.7-search.md) | pending | 2.5 |
+| 2.8 | [Playwright smoke](./phase-2-space/2.8-playwright-smoke.md) | pending | 2.6, 2.7 |
+
+Long pole: 2.1 → 2.2 → 2.3 → 2.4 → 2.5 → 2.6 → 2.8. 2.7 can start after 2.5 (same database page as 2.6 — do not parallel).
 
 ### Phase 3 — Rolodex
 
