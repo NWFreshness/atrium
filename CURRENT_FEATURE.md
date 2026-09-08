@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [1.8 Dashboard](features/phase-1-crm/1.8-dashboard.md)
+Next up: [1.9 Playwright smoke](features/phase-1-crm/1.9-playwright-smoke.md)
 
 ---
 
@@ -59,3 +59,7 @@ Six-column `@hello-pangea/dnd` board. Drag to stage persists via `moveDeal`; sta
 ### 1.7 Activities and follow-ups (completed)
 
 Note/call/email from contact and deal detail. Timeline newest first. Optional due date and boolean done toggle, tenant-scoped. Controller: npm test 155 passed. Spec PASS, quality APPROVED.
+
+### 1.8 Dashboard (completed)
+
+`/crm` tiles, recharts (animation off), recent activity, overdue/upcoming follow-ups. Aggregations in `lib/crm/dashboard.ts` (trailing 6-month wins, cumulative funnel, tenant-scoped). Controller: npm test 168 passed. Spec PASS, quality APPROVED.
