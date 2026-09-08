@@ -4,6 +4,7 @@ import {
   createContact,
   createDeal,
   createOrganization,
+  listOrganizations,
   type CrmRepository,
 } from "./queries";
 
@@ -11,6 +12,11 @@ export async function seedCrm(
   tenantId: string,
   repo?: CrmRepository,
 ): Promise<void> {
+  const existing = await listOrganizations(tenantId, repo);
+  if (existing.length > 0) {
+    return;
+  }
+
   const northwind = await createOrganization(
     tenantId,
     {

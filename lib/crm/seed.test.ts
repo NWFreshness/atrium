@@ -55,4 +55,16 @@ describe("seedCrm", () => {
     expect(await listDeals(ownerTenant, repo)).toEqual([]);
     expect(await listActivities(ownerTenant, repo)).toEqual([]);
   });
+
+  it("is a no-op when the tenant already has organizations", async () => {
+    const repo = createMemoryCrmRepository();
+
+    await seedCrm(demoTenant, repo);
+    const afterFirst = (await listOrganizations(demoTenant, repo)).length;
+
+    await seedCrm(demoTenant, repo);
+    const afterSecond = (await listOrganizations(demoTenant, repo)).length;
+
+    expect(afterSecond).toBe(afterFirst);
+  });
 });
