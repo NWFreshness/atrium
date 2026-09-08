@@ -1,0 +1,153 @@
+.space-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 44rem;
+}
+
+.space-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  position: relative;
+}
+
+.space-block-handle {
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+  padding: 0.1rem 0.2rem;
+  border: none;
+  background: transparent;
+  color: #737373;
+  cursor: grab;
+  font-size: 0.75rem;
+  letter-spacing: -0.15em;
+}
+
+.space-block-handle:active {
+  cursor: grabbing;
+}
+
+.space-block-body {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.space-block-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  resize: none;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.5;
+  padding: 0.25rem 0;
+}
+
+.space-block-input:focus {
+  outline: none;
+}
+
+.space-block-heading1 .space-block-input {
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.space-block-heading2 .space-block-input {
+  font-size: 1.4rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.space-block-heading3 .space-block-input {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.space-block-quote {
+  border-left: 3px solid #f59e0b;
+  padding-left: 0.65rem;
+  color: #a3a3a3;
+  font-style: italic;
+}
+
+.space-block-code .space-block-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9rem;
+  background: #171717;
+  color: #e5e5e5;
+  padding: 0.65rem 0.75rem;
+  border-radius: 6px;
+}
+
+.space-block-callout .space-block-body {
+  background: #2a2416;
+  border: 1px solid #f59e0b55;
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+}
+
+.space-block-mark {
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+  width: 1.2rem;
+  color: #a3a3a3;
+}
+
+.space-block-check {
+  margin-top: 0.5rem;
+  flex-shrink: 0;
+}
+
+.space-block-rule {
+  flex: 1;
+  margin: 0.85rem 0;
+  border: none;
+  border-top: 1px solid #525252;
+}
+
+.space-slash {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  top: calc(100% + 0.2rem);
+  min-width: 14rem;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  background: #171717;
+  color: #f5f5f5;
+  border: 1px solid #404040;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px #0008;
+}
+
+.space-slash-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.4rem 0.55rem;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.space-slash-item-current,
+.space-slash-item:hover {
+  background: #2a2416;
+  color: #f59e0b;
+}
+
+.space-slash-empty {
+  margin: 0;
+  padding: 0.4rem 0.55rem;
+  color: #a3a3a3;
+}

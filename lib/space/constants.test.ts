@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   BLOCK_TYPES,
+  filterBlockMenu,
   PAGE_TYPES,
   PROPERTY_TYPES,
   VIEW_KINDS,
@@ -26,6 +27,20 @@ describe("BLOCK_TYPES", () => {
       "divider",
       "code",
       "callout",
+    ]);
+  });
+});
+
+describe("filterBlockMenu", () => {
+  it("filters by label and type", () => {
+    expect(filterBlockMenu("head").map((item) => item.type)).toEqual([
+      "heading1",
+      "heading2",
+      "heading3",
+    ]);
+    expect(filterBlockMenu("todo").map((item) => item.type)).toEqual(["todo"]);
+    expect(filterBlockMenu("").map((item) => item.type)).toEqual([
+      ...BLOCK_TYPES,
     ]);
   });
 });

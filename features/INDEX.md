@@ -50,7 +50,7 @@ Jobs-to-be-done from Bench `docs/space/`. Tenant-scoped. Demo seed. Not pixel-id
 | 2.1 | [Schema, seed, demo resetter](./phase-2-space/2.1-schema-seed-resetter.md) | completed   | 0.5        |
 | 2.2 | [Space shell](./phase-2-space/2.2-space-shell.md)                          | completed   | 2.1        |
 | 2.3 | [Pages tree in the sidebar](./phase-2-space/2.3-pages-sidebar.md)          | completed   | 2.1, 2.2   |
-| 2.4 | [Block editor](./phase-2-space/2.4-block-editor.md)                        | pending     | 2.3        |
+| 2.4 | [Block editor](./phase-2-space/2.4-block-editor.md)                        | completed   | 2.3        |
 | 2.5 | [Databases and table view](./phase-2-space/2.5-databases-table.md)         | pending     | 2.3, 2.4   |
 | 2.6 | [Board, list, filters, sorts](./phase-2-space/2.6-views-board-list.md)     | pending     | 2.5        |
 | 2.7 | [Quick-find search](./phase-2-space/2.7-search.md)                         | pending     | 2.5        |

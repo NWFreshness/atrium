@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [2.4 Block editor](features/phase-2-space/2.4-block-editor.md)
+Next up: [2.5 Databases and table view](features/phase-2-space/2.5-databases-table.md)
 
-Do not implement 2.5+ until 2.4 is done. Do not invent Rolodex/Groove specs.
+Do not implement 2.6+ until 2.5 is done. Do not invent Rolodex/Groove specs.
 
 ---
 
@@ -72,7 +72,7 @@ Note/call/email from contact and deal detail. Timeline newest first. Optional du
 
 ### Phase 2 Space specs (written, not implemented)
 
-Eight feature specs in `features/phase-2-space/` (2.1–2.8): schema/seed/resetter, shell, pages tree, block editor, databases/table, board/list/filters, search, Playwright smoke. Next implementable unit is 2.4.
+Eight feature specs in `features/phase-2-space/` (2.1–2.8): schema/seed/resetter, shell, pages tree, block editor, databases/table, board/list/filters, search, Playwright smoke. Next implementable unit is 2.5.
 
 ### 2.1 Space schema, seed, resetter (completed)
 
@@ -85,3 +85,7 @@ Sidebar + page columns under `app/(authenticated)/space/`. Landing is “Pick a 
 ### 2.3 Pages tree in the sidebar (completed)
 
 Session-scoped page actions; sidebar tree omits `row` pages. Create navigates to the new id then refreshes. Rename/delete from the tree; parent delete cascades after confirm. `/space/[id]` 404s for missing/other-tenant. `/space` redirects to the first tree page. Controller: npm test 207 passed, npm run build exit 0. Spec PASS.
+
+### 2.4 Block editor (completed)
+
+Vanilla per-block editor (textarea, no extra editor library). Slash menu (`/`) filters by keyboard and mouse. Autosave, Enter/Backspace, todo checkbox, drag reorder via `@hello-pangea/dnd`. Demo Home seed includes every block type. Controller: npm test 213 passed, npm run build exit 0. Spec PASS.

@@ -564,6 +564,56 @@ export async function deleteBlock(
   return removed ?? null;
 }
 
+export async function insertBlockAt(
+  tenantId: string,
+  pageId: string,
+  index: number,
+  input: Pick<CreateBlockInput, "type" | "content">,
+  repo?: SpaceRepository,
+): Promise<Block> {
+  const scoped = requireTenantId(tenantId);
+  const existing = await listBlocks(scoped, repo, { pageId });
+  const insertAt = Math.max(0, Math.min(index, existing.length));
+  for (const row of existing) {
+    if (row.position >= insertAt) {
+      await updateBlock(scoped, row.id, { position: row.position + 1 }, repo);
+    }
+  }
+  return createBlock(
+    scoped,
+    {
+      pageId,
+      type: input.type,
+      content: input.content,
+      position: insertAt,
+    },
+    repo,
+  );
+}
+
+export async function reorderBlocks(
+  tenantId: string,
+  pageId: string,
+  orderedIds: string[],
+  repo?: SpaceRepository,
+): Promise<Block[] | null> {
+  const scoped = requireTenantId(tenantId);
+  const current = await listBlocks(scoped, repo, { pageId });
+  const currentIds = [...current.map((row) => row.id)].sort();
+  const nextIds = [...orderedIds].sort();
+  if (
+    currentIds.length !== nextIds.length ||
+    currentIds.some((id, i) => id !== nextIds[i])
+  ) {
+    return null;
+  }
+  for (let position = 0; position < orderedIds.length; position += 1) {
+    const id = orderedIds[position]!;
+    await updateBlock(scoped, id, { position }, repo);
+  }
+  return listBlocks(scoped, repo, { pageId });
+}
+
 export async function listProperties(
   tenantId: string,
   repo?: SpaceRepository,
