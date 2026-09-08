@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Next work is feature 2.1.** Do not start 2.2+ until 2.1 is done. Do not invent Rolodex/Groove specs. Do not push to `main`.
+**Stop. Next work is feature 2.2.** Do not start 2.3+ until 2.2 is done. Do not invent Rolodex/Groove specs. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
@@ -24,7 +24,8 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | 1.7 Activities and follow-ups | completed (PR #14) |
 | 1.8 Dashboard | completed (PR #15) |
 | 1.9 Playwright smoke | completed (PR #16) |
-| **2.1 Space schema, seed, resetter** | **next** |
+| 2.1 Space schema, seed, resetter | completed |
+| **2.2 Space shell** | **next** |
 
 Phase 1 CRM is complete. Phase 2 Space specs 2.1–2.8 are written. Rolodex / Groove specs are not. Do not invent them.
 
@@ -39,7 +40,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-2-space/2.1-schema-seed-resetter.md` — implement that spec, nothing else
+6. `features/phase-2-space/2.2-space-shell.md` — implement that spec, nothing else
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -56,7 +57,7 @@ Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/be
 
 `.env` is gitignored. Do not commit it. Do not paste connection strings or passwords into chat or tickets.
 
-- **Dev:** local `.env` points at a Neon **dev** branch. Schema through `drizzle/0001_light_saracen.sql` (CRM tables) must be migrated there. If CRM pages 500 on missing tables, run `npm run db:migrate` then `npm run db:seed` against the dev URL. Dummy local users live only on that branch.
+- **Dev:** local `.env` points at a Neon **dev** branch. Schema through `drizzle/0002_panoramic_smasher.sql` (Space tables) must be migrated there. If CRM pages 500 on missing tables, run `npm run db:migrate` then `npm run db:seed` against the dev URL. Dummy local users live only on that branch.
 - **Prod:** production `DATABASE_URL` belongs in Vercel only. Git `drizzle/` is the schema source of truth. Apply the same `npm run db:migrate` against prod when deploying; do not copy data from dev. Seed prod with the real owner email/password via env, not the dummy local pair.
 - Unit tests must pass **without** `DATABASE_URL`.
 - CI job `ci`: `npm ci`, `npm test`, `npm run build` (dummy `AUTH_SECRET` for build). Job `e2e`: Playwright, skips unless GitHub secrets `DATABASE_URL`, `AUTH_SECRET`, `AUTH_OWNER_EMAIL`, `AUTH_OWNER_PASSWORD` exist.
@@ -79,4 +80,4 @@ npm test
 npm run build
 ```
 
-Then implement 2.1 from its spec.
+Then implement 2.2 from its spec.

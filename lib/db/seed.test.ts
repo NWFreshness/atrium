@@ -6,6 +6,7 @@ import {
   listDeals,
   listOrganizations,
 } from "../crm/queries";
+import { createMemorySpaceRepository, listPages } from "../space/queries";
 import { hashPassword } from "./password";
 import {
   applySeed,
@@ -13,6 +14,7 @@ import {
   isUserRole,
   parseSeedEnv,
   seedDemoCrm,
+  seedDemoSpace,
 } from "./seed";
 
 const seedEnv = {
@@ -45,7 +47,10 @@ describe("parseSeedEnv", () => {
       ...seedEnv,
       AUTH_DEMO_EMAIL: "demo@example.com",
     });
-    expect(plan.users.map((user) => user.role).sort()).toEqual(["demo", "owner"]);
+    expect(plan.users.map((user) => user.role).sort()).toEqual([
+      "demo",
+      "owner",
+    ]);
     expect(plan.users.every((user) => isUserRole(user.role))).toBe(true);
     expect(plan.users.find((user) => user.role === "owner")?.email).toBe(
       "owner@atrium.local",
@@ -115,10 +120,16 @@ describe("seedDemoCrm", () => {
       crmRepo,
     );
 
-    const demoId = seedRepo.tenants.find((tenant) => tenant.name === "Demo")!.id;
-    const ownerId = seedRepo.tenants.find((tenant) => tenant.name === "Owner")!.id;
+    const demoId = seedRepo.tenants.find(
+      (tenant) => tenant.name === "Demo",
+    )!.id;
+    const ownerId = seedRepo.tenants.find(
+      (tenant) => tenant.name === "Owner",
+    )!.id;
 
-    expect((await listOrganizations(demoId, crmRepo)).length).toBeGreaterThan(0);
+    expect((await listOrganizations(demoId, crmRepo)).length).toBeGreaterThan(
+      0,
+    );
     expect((await listContacts(demoId, crmRepo)).length).toBeGreaterThan(0);
     expect((await listDeals(demoId, crmRepo)).length).toBeGreaterThan(0);
     expect((await listActivities(demoId, crmRepo)).length).toBeGreaterThan(0);
@@ -132,6 +143,37 @@ describe("seedDemoCrm", () => {
   it("throws when Demo tenant is missing", async () => {
     const crmRepo = createMemoryCrmRepository();
     await expect(seedDemoCrm(() => undefined, crmRepo)).rejects.toThrow(
+      /Demo tenant/,
+    );
+  });
+});
+
+describe("seedDemoSpace", () => {
+  it("seeds Space pages for Demo only and leaves Owner empty", async () => {
+    const seedRepo = createMemorySeedRepository();
+    const spaceRepo = createMemorySpaceRepository();
+    const plan = parseSeedEnv(seedEnv);
+
+    await applySeed(seedRepo, plan, hashPassword);
+    await seedDemoSpace(
+      (name) => seedRepo.tenants.find((tenant) => tenant.name === name)?.id,
+      spaceRepo,
+    );
+
+    const demoId = seedRepo.tenants.find(
+      (tenant) => tenant.name === "Demo",
+    )!.id;
+    const ownerId = seedRepo.tenants.find(
+      (tenant) => tenant.name === "Owner",
+    )!.id;
+
+    expect((await listPages(demoId, spaceRepo)).length).toBeGreaterThan(0);
+    expect(await listPages(ownerId, spaceRepo)).toEqual([]);
+  });
+
+  it("throws when Demo tenant is missing", async () => {
+    const spaceRepo = createMemorySpaceRepository();
+    await expect(seedDemoSpace(() => undefined, spaceRepo)).rejects.toThrow(
       /Demo tenant/,
     );
   });

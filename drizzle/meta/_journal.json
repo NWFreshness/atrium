@@ -15,6 +15,13 @@
       "when": 1788826704771,
       "tag": "0001_light_saracen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788897761237,
+      "tag": "0002_panoramic_smasher",
+      "breakpoints": true
     }
   ]
 }
