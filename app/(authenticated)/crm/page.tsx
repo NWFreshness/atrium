@@ -1,7 +1,7 @@
 export default function CrmPage() {
   return (
     <main>
-      <h1>CRM</h1>
+      <h1>Dashboard</h1>
       <p>Coming soon</p>
     </main>
   );

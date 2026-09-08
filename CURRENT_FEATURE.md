@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [1.2 CRM shell and subnav](features/phase-1-crm/1.2-crm-shell.md)
+Next up: [1.3 Organizations table and detail](features/phase-1-crm/1.3-organizations.md)
 
 ---
 
@@ -35,3 +35,7 @@ Nine feature specs in `features/phase-1-crm/` (1.1–1.9): schema/seed/resetter,
 ### 1.1 CRM schema, seed, resetter (completed)
 
 Drizzle tables organizations/contacts/deals/activities with tenantId, UUID ids, SET NULL FKs. Query helpers require tenantId (memory + Drizzle). STAGE_PROBABILITY and expectedValue match Bench. Demo seed (Northwind, Bluepeak, Harbor & Lane) is idempotent; owner empty. Reset demo registers CRM wipe+reseed. Migration `drizzle/0001_light_saracen.sql`. `/crm` still Coming soon. Controller: npm test 78 passed, npm run build exit 0. Spec PASS, quality APPROVED.
+
+### 1.2 CRM shell and subnav (completed)
+
+Five-section CRM subnav (Dashboard, Organizations, Contacts, Deals, Pipeline) under `app/(authenticated)/crm/`. Dashboard is `/crm`. Current section amber + glyphs. CRM CSS is `crm-` prefixed and imported only from the CRM layout. Atrium nav still wraps. No TanStack. Controller: npm test 85 passed, npm run build lists the five CRM routes. Spec PASS, quality APPROVED.
