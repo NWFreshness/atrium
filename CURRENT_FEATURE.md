@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [1.6 Pipeline board](features/phase-1-crm/1.6-pipeline.md)
+Next up: [1.7 Activities and follow-ups](features/phase-1-crm/1.7-activities.md)
 
 ---
 
@@ -51,3 +51,7 @@ TanStack contacts table with search (name/email/job title), status filter, add/e
 ### 1.5 Deals table (completed)
 
 TanStack deals table with stage, USD value, close date, org, contact. Search by deal/org/contact name. Default probability from STAGE_PROBABILITY; stage change rebases unless probability is explicit. Org and contact details list related deals. No pipeline dnd. Controller: npm test 127 passed, build includes `/crm/deals/[id]`. Spec PASS, quality APPROVED.
+
+### 1.6 Pipeline board (completed)
+
+Six-column `@hello-pangea/dnd` board. Drag to stage persists via `moveDeal`; stage change rebases probability; same-column reorder does not. Open pipeline totals exclude Won/Lost. Controller: npm test 145 passed, build includes `/crm/pipeline`. Spec PASS, quality APPROVED.
