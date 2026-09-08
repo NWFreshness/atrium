@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [1.3 Organizations table and detail](features/phase-1-crm/1.3-organizations.md)
+Next up: [1.4 Contacts table and detail](features/phase-1-crm/1.4-contacts.md)
 
 ---
 
@@ -39,3 +39,7 @@ Drizzle tables organizations/contacts/deals/activities with tenantId, UUID ids, 
 ### 1.2 CRM shell and subnav (completed)
 
 Five-section CRM subnav (Dashboard, Organizations, Contacts, Deals, Pipeline) under `app/(authenticated)/crm/`. Dashboard is `/crm`. Current section amber + glyphs. CRM CSS is `crm-` prefixed and imported only from the CRM layout. Atrium nav still wraps. No TanStack. Controller: npm test 85 passed, npm run build lists the five CRM routes. Spec PASS, quality APPROVED.
+
+### 1.3 Organizations table and detail (completed)
+
+TanStack Table list with search (name/website/industry), add/edit dialog, confirm delete. Session tenant only. Detail `/crm/organizations/[id]` 404s for missing/other-tenant. Controller: npm test 92 passed, build includes `/crm/organizations/[id]`. Spec PASS, quality APPROVED.
