@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [1.9 Playwright smoke](features/phase-1-crm/1.9-playwright-smoke.md)
+Phase 1 CRM is complete. Do not start Space / Rolodex / Groove specs unless the user asks.
 
 ---
 
@@ -63,3 +63,7 @@ Note/call/email from contact and deal detail. Timeline newest first. Optional du
 ### 1.8 Dashboard (completed)
 
 `/crm` tiles, recharts (animation off), recent activity, overdue/upcoming follow-ups. Aggregations in `lib/crm/dashboard.ts` (trailing 6-month wins, cumulative funnel, tenant-scoped). Controller: npm test 168 passed. Spec PASS, quality APPROVED.
+
+### 1.9 Playwright smoke (completed)
+
+`e2e/crm.spec.ts`: unauth `/crm` → login; demo dashboard + subnav + seed orgs; create org persists; owner does not see demo seed names. Controller: npm test 168, Playwright 10 passed. Spec PASS, quality APPROVED.
