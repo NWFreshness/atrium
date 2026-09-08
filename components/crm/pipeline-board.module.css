@@ -1,0 +1,113 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+.headerStat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.headerLabel {
+  font-size: 0.8rem;
+}
+
+.headerValue {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid currentColor;
+  border-top-width: 3px;
+  border-radius: 6px;
+}
+
+.columnHeader {
+  padding: 0.6rem 0.7rem 0.5rem;
+  border-bottom: 1px solid currentColor;
+}
+
+.columnName {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.columnTotals {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+}
+
+.list {
+  flex: 1;
+  min-height: 8rem;
+  max-height: calc(100vh - 14rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card {
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 0.55rem 0.6rem;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.cardName {
+  display: block;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.cardMeta {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+}
+
+.stageNew {
+  border-top-color: #6b7280;
+}
+
+.stageQualified {
+  border-top-color: #2563eb;
+}
+
+.stageProposal {
+  border-top-color: #7c3aed;
+}
+
+.stageNegotiation {
+  border-top-color: #d97706;
+}
+
+.stageWon {
+  border-top-color: #16a34a;
+}
+
+.stageLost {
+  border-top-color: #dc2626;
+}
