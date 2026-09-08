@@ -136,6 +136,69 @@ describe("tenantId is required", () => {
   });
 });
 
+describe("listOrganizations search", () => {
+  it("returns all tenant orgs when q is empty or omitted", async () => {
+    const memory = repo();
+    const acme = await createOrganization(
+      tenantA,
+      { name: "Acme", website: "https://acme.test", industry: "Widgets" },
+      memory,
+    );
+    const beta = await createOrganization(
+      tenantA,
+      { name: "Beta Co", website: "https://beta.test", industry: "Software" },
+      memory,
+    );
+    await createOrganization(tenantB, { name: "Acme East" }, memory);
+
+    expect(await listOrganizations(tenantA, memory)).toEqual([acme, beta]);
+    expect(await listOrganizations(tenantA, memory, "")).toEqual([acme, beta]);
+    expect(await listOrganizations(tenantA, memory, "   ")).toEqual([
+      acme,
+      beta,
+    ]);
+  });
+
+  it("filters name, website, and industry case-insensitively without leaking other tenants", async () => {
+    const memory = repo();
+    const acme = await createOrganization(
+      tenantA,
+      { name: "Acme", website: "https://acme.test", industry: "Widgets" },
+      memory,
+    );
+    const bluepeak = await createOrganization(
+      tenantA,
+      {
+        name: "Bluepeak Software",
+        website: "https://bluepeak.example",
+        industry: "Software",
+      },
+      memory,
+    );
+    await createOrganization(
+      tenantB,
+      {
+        name: "Bluepeak Rival",
+        website: "https://rival.example",
+        industry: "Software",
+      },
+      memory,
+    );
+
+    expect(await listOrganizations(tenantA, memory, "BLUE")).toEqual([
+      bluepeak,
+    ]);
+    expect(
+      await listOrganizations(tenantA, memory, "bluepeak.example"),
+    ).toEqual([bluepeak]);
+    expect(await listOrganizations(tenantA, memory, "widgets")).toEqual([acme]);
+    expect(await listOrganizations(tenantA, memory, "software")).toEqual([
+      bluepeak,
+    ]);
+    expect(await listOrganizations(tenantA, memory, "no-such-org")).toEqual([]);
+  });
+});
+
 describe("organizations CRUD", () => {
   it("creates, lists, gets, updates, and deletes within a tenant", async () => {
     const memory = repo();

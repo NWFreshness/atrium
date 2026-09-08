@@ -1,4 +1,4 @@
-import { and, eq, type InferSelectModel } from "drizzle-orm";
+import { and, eq, ilike, or, type InferSelectModel } from "drizzle-orm";
 import { getDb } from "../db";
 import type { ActivityType, ContactStatus, DealStage } from "./constants";
 import { activities, contacts, deals, organizations } from "./schema";
@@ -112,20 +112,57 @@ function tenantRow(
   return and(eq(table.tenantId, tenantId), eq(table.id, id));
 }
 
+function organizationSearchTerm(q?: string): string | undefined {
+  const term = q?.trim();
+  return term ? term : undefined;
+}
+
+function organizationMatchesSearch(row: Organization, q?: string): boolean {
+  const term = organizationSearchTerm(q);
+  if (!term) {
+    return true;
+  }
+  const needle = term.toLowerCase();
+  return [row.name, row.website, row.industry].some((value) =>
+    value?.toLowerCase().includes(needle),
+  );
+}
+
+function organizationSearchSql(q?: string) {
+  const term = organizationSearchTerm(q);
+  if (!term) {
+    return undefined;
+  }
+  const pattern = `%${term}%`;
+  return or(
+    ilike(organizations.name, pattern),
+    ilike(organizations.website, pattern),
+    ilike(organizations.industry, pattern),
+  );
+}
+
 export async function listOrganizations(
   tenantId: string,
   repo?: CrmRepository,
+  q?: string,
 ): Promise<Organization[]> {
   const scoped = requireTenantId(tenantId);
   if (repo) {
     return repo.organizations
-      .filter((row) => row.tenantId === scoped)
+      .filter(
+        (row) => row.tenantId === scoped && organizationMatchesSearch(row, q),
+      )
       .map(clone);
   }
+  const search = organizationSearchSql(q);
   return requireCrmDb()
     .select()
     .from(organizations)
-    .where(eq(organizations.tenantId, scoped));
+    .where(
+      search
+        ? and(eq(organizations.tenantId, scoped), search)
+        : eq(organizations.tenantId, scoped),
+    );
 }
 
 export async function getOrganization(
