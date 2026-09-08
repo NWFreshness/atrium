@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ActivityForm } from "@/components/crm/activity-form";
+import { ActivityTimeline } from "@/components/crm/activity-timeline";
 import styles from "@/components/crm/org.module.css";
+import { listActivitiesAction } from "@/lib/crm/activity-actions";
 import { getContactAction } from "@/lib/crm/contact-actions";
 import { getDealAction } from "@/lib/crm/deal-actions";
 import { formatDate, formatMoney } from "@/lib/crm/format";
@@ -17,11 +20,12 @@ export default async function DealDetailPage({
     notFound();
   }
 
-  const [organization, contact] = await Promise.all([
+  const [organization, contact, activities] = await Promise.all([
     deal.organizationId
       ? getOrganizationAction(deal.organizationId)
       : Promise.resolve(null),
     deal.contactId ? getContactAction(deal.contactId) : Promise.resolve(null),
+    listActivitiesAction({ dealId: id }),
   ]);
 
   return (
@@ -63,6 +67,9 @@ export default async function DealDetailPage({
           )}
         </dd>
       </dl>
+      <h2>Activities</h2>
+      <ActivityForm dealId={id} />
+      <ActivityTimeline activities={activities} />
     </main>
   );
 }
