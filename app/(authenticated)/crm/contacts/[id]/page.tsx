@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import styles from "@/components/crm/org.module.css";
 import { getContactAction } from "@/lib/crm/contact-actions";
+import { listDealsAction } from "@/lib/crm/deal-actions";
 import { getOrganizationAction } from "@/lib/crm/org-actions";
 
 export default async function ContactDetailPage({
@@ -15,9 +16,12 @@ export default async function ContactDetailPage({
     notFound();
   }
 
-  const organization = contact.organizationId
-    ? await getOrganizationAction(contact.organizationId)
-    : null;
+  const [organization, deals] = await Promise.all([
+    contact.organizationId
+      ? getOrganizationAction(contact.organizationId)
+      : Promise.resolve(null),
+    listDealsAction({ contactId: id }),
+  ]);
 
   return (
     <main>
@@ -45,6 +49,23 @@ export default async function ContactDetailPage({
           )}
         </dd>
       </dl>
+      <h2>Deals</h2>
+      {deals.length === 0 ? (
+        <p className={styles["crm-empty"]}>No deals</p>
+      ) : (
+        <ul>
+          {deals.map((deal) => (
+            <li key={deal.id}>
+              <Link
+                className={styles["crm-table-link"]}
+                href={`/crm/deals/${deal.id}`}
+              >
+                {deal.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   );
 }

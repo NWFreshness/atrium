@@ -1,6 +1,19 @@
-import { and, eq, ilike, or, type InferSelectModel } from "drizzle-orm";
+import {
+  and,
+  eq,
+  getTableColumns,
+  ilike,
+  max,
+  or,
+  type InferSelectModel,
+} from "drizzle-orm";
 import { getDb } from "../db";
-import type { ActivityType, ContactStatus, DealStage } from "./constants";
+import {
+  STAGE_PROBABILITY,
+  type ActivityType,
+  type ContactStatus,
+  type DealStage,
+} from "./constants";
 import { activities, contacts, deals, organizations } from "./schema";
 
 export type Organization = InferSelectModel<typeof organizations>;
@@ -41,9 +54,9 @@ export type CreateDealInput = {
   contactId?: string | null;
   stage: DealStage;
   value: number;
-  probability: number;
+  probability?: number;
   closeDate?: Date | null;
-  boardOrder: number;
+  boardOrder?: number;
 };
 
 export type UpdateDealInput = Partial<CreateDealInput>;
@@ -169,6 +182,94 @@ function contactSearchSql(q?: string) {
     ilike(contacts.email, pattern),
     ilike(contacts.jobTitle, pattern),
   );
+}
+
+export type ListDealsOpts = {
+  q?: string;
+  organizationId?: string;
+  contactId?: string;
+};
+
+function dealMatchesSearch(
+  row: Deal,
+  repo: CrmRepository,
+  q?: string,
+): boolean {
+  const term = organizationSearchTerm(q);
+  if (!term) {
+    return true;
+  }
+  const needle = term.toLowerCase();
+  if (row.name.toLowerCase().includes(needle)) {
+    return true;
+  }
+  if (row.organizationId) {
+    const org = repo.organizations.find(
+      (organization) =>
+        organization.tenantId === row.tenantId &&
+        organization.id === row.organizationId,
+    );
+    if (org?.name.toLowerCase().includes(needle)) {
+      return true;
+    }
+  }
+  if (row.contactId) {
+    const contact = repo.contacts.find(
+      (person) =>
+        person.tenantId === row.tenantId && person.id === row.contactId,
+    );
+    if (contact?.name.toLowerCase().includes(needle)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function dealSearchSql(q?: string) {
+  const term = organizationSearchTerm(q);
+  if (!term) {
+    return undefined;
+  }
+  const pattern = `%${term}%`;
+  return or(
+    ilike(deals.name, pattern),
+    ilike(organizations.name, pattern),
+    ilike(contacts.name, pattern),
+  );
+}
+
+function nextProbabilityOnStageChange(
+  currentStage: DealStage,
+  input: UpdateDealInput,
+): number | undefined {
+  if (input.probability !== undefined) {
+    return input.probability;
+  }
+  if (input.stage !== undefined && input.stage !== currentStage) {
+    return STAGE_PROBABILITY[input.stage];
+  }
+  return undefined;
+}
+
+async function nextBoardOrder(
+  tenantId: string,
+  stage: DealStage,
+  repo?: CrmRepository,
+): Promise<number> {
+  if (repo) {
+    const orders = repo.deals
+      .filter((row) => row.tenantId === tenantId && row.stage === stage)
+      .map((row) => row.boardOrder);
+    if (orders.length === 0) {
+      return 0;
+    }
+    return Math.max(...orders) + 1;
+  }
+  const [agg] = await requireCrmDb()
+    .select({ maxOrder: max(deals.boardOrder) })
+    .from(deals)
+    .where(and(eq(deals.tenantId, tenantId), eq(deals.stage, stage)));
+  return agg?.maxOrder == null ? 0 : agg.maxOrder + 1;
 }
 
 export async function listOrganizations(
@@ -457,12 +558,53 @@ export async function deleteContact(
 export async function listDeals(
   tenantId: string,
   repo?: CrmRepository,
+  opts?: ListDealsOpts,
 ): Promise<Deal[]> {
   const scoped = requireTenantId(tenantId);
   if (repo) {
-    return repo.deals.filter((row) => row.tenantId === scoped).map(clone);
+    return repo.deals
+      .filter(
+        (row) =>
+          row.tenantId === scoped &&
+          dealMatchesSearch(row, repo, opts?.q) &&
+          (opts?.organizationId === undefined ||
+            row.organizationId === opts.organizationId) &&
+          (opts?.contactId === undefined || row.contactId === opts.contactId),
+      )
+      .map(clone);
   }
-  return requireCrmDb().select().from(deals).where(eq(deals.tenantId, scoped));
+  const search = dealSearchSql(opts?.q);
+  const filters = [
+    eq(deals.tenantId, scoped),
+    ...(search ? [search] : []),
+    ...(opts?.organizationId !== undefined
+      ? [eq(deals.organizationId, opts.organizationId)]
+      : []),
+    ...(opts?.contactId !== undefined
+      ? [eq(deals.contactId, opts.contactId)]
+      : []),
+  ];
+  if (!search) {
+    return requireCrmDb()
+      .select()
+      .from(deals)
+      .where(and(...filters));
+  }
+  return requireCrmDb()
+    .select(getTableColumns(deals))
+    .from(deals)
+    .leftJoin(
+      organizations,
+      and(
+        eq(deals.organizationId, organizations.id),
+        eq(organizations.tenantId, scoped),
+      ),
+    )
+    .leftJoin(
+      contacts,
+      and(eq(deals.contactId, contacts.id), eq(contacts.tenantId, scoped)),
+    )
+    .where(and(...filters));
 }
 
 export async function getDeal(
@@ -497,9 +639,10 @@ export async function createDeal(
     contactId: input.contactId ?? null,
     stage: input.stage,
     value: input.value,
-    probability: input.probability,
+    probability: input.probability ?? STAGE_PROBABILITY[input.stage],
     closeDate: input.closeDate ?? null,
-    boardOrder: input.boardOrder,
+    boardOrder:
+      input.boardOrder ?? (await nextBoardOrder(scoped, input.stage, repo)),
     createdAt: now(),
   };
   if (repo) {
@@ -522,6 +665,7 @@ export async function updateDeal(
     if (!row) {
       return null;
     }
+    const probability = nextProbabilityOnStageChange(row.stage, input);
     if (input.name !== undefined) row.name = input.name;
     if (input.organizationId !== undefined) {
       row.organizationId = input.organizationId;
@@ -529,11 +673,16 @@ export async function updateDeal(
     if (input.contactId !== undefined) row.contactId = input.contactId;
     if (input.stage !== undefined) row.stage = input.stage;
     if (input.value !== undefined) row.value = input.value;
-    if (input.probability !== undefined) row.probability = input.probability;
+    if (probability !== undefined) row.probability = probability;
     if (input.closeDate !== undefined) row.closeDate = input.closeDate;
     if (input.boardOrder !== undefined) row.boardOrder = input.boardOrder;
     return clone(row);
   }
+  const current = await getDeal(scoped, id);
+  if (!current) {
+    return null;
+  }
+  const probability = nextProbabilityOnStageChange(current.stage, input);
   const [row] = await requireCrmDb()
     .update(deals)
     .set({
@@ -544,9 +693,7 @@ export async function updateDeal(
       ...(input.contactId !== undefined ? { contactId: input.contactId } : {}),
       ...(input.stage !== undefined ? { stage: input.stage } : {}),
       ...(input.value !== undefined ? { value: input.value } : {}),
-      ...(input.probability !== undefined
-        ? { probability: input.probability }
-        : {}),
+      ...(probability !== undefined ? { probability } : {}),
       ...(input.closeDate !== undefined ? { closeDate: input.closeDate } : {}),
       ...(input.boardOrder !== undefined
         ? { boardOrder: input.boardOrder }

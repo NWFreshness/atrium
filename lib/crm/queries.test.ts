@@ -478,6 +478,286 @@ describe("deals CRUD", () => {
   });
 });
 
+describe("listDeals filters", () => {
+  it("returns all tenant deals when opts are omitted or q is empty", async () => {
+    const memory = repo();
+    const widget = await createDeal(
+      tenantA,
+      { name: "Widget rollout", stage: "New", value: 1000, boardOrder: 0 },
+      memory,
+    );
+    const service = await createDeal(
+      tenantA,
+      { name: "Service contract", stage: "Qualified", value: 5000 },
+      memory,
+    );
+    await createDeal(
+      tenantB,
+      { name: "Widget east", stage: "New", value: 100 },
+      memory,
+    );
+
+    expect(await listDeals(tenantA, memory)).toEqual([widget, service]);
+    expect(await listDeals(tenantA, memory, {})).toEqual([widget, service]);
+    expect(await listDeals(tenantA, memory, { q: "" })).toEqual([
+      widget,
+      service,
+    ]);
+    expect(await listDeals(tenantA, memory, { q: "   " })).toEqual([
+      widget,
+      service,
+    ]);
+  });
+
+  it("filters deal, organization, and contact names case-insensitively without leaking other tenants", async () => {
+    const memory = repo();
+    const acme = await createOrganization(tenantA, { name: "Acme" }, memory);
+    const ada = await createContact(
+      tenantA,
+      { name: "Ada Lovelace", status: "lead" },
+      memory,
+    );
+    const widget = await createDeal(
+      tenantA,
+      {
+        name: "Widget rollout",
+        organizationId: acme.id,
+        contactId: ada.id,
+        stage: "New",
+        value: 1000,
+      },
+      memory,
+    );
+    const service = await createDeal(
+      tenantA,
+      { name: "Service contract", stage: "New", value: 500 },
+      memory,
+    );
+    await createOrganization(tenantB, { name: "Acme East" }, memory);
+    await createContact(tenantB, { name: "Ada Rival", status: "lead" }, memory);
+    await createDeal(
+      tenantB,
+      { name: "Widget east", stage: "New", value: 100 },
+      memory,
+    );
+
+    expect(await listDeals(tenantA, memory, { q: "WIDGET" })).toEqual([widget]);
+    expect(await listDeals(tenantA, memory, { q: "acme" })).toEqual([widget]);
+    expect(await listDeals(tenantA, memory, { q: "lovelace" })).toEqual([
+      widget,
+    ]);
+    expect(await listDeals(tenantA, memory, { q: "service" })).toEqual([
+      service,
+    ]);
+    expect(await listDeals(tenantA, memory, { q: "no-such-deal" })).toEqual([]);
+  });
+
+  it("filters by organizationId and contactId within the tenant", async () => {
+    const memory = repo();
+    const acme = await createOrganization(tenantA, { name: "Acme" }, memory);
+    const beta = await createOrganization(tenantA, { name: "Beta" }, memory);
+    const ada = await createContact(
+      tenantA,
+      { name: "Ada", status: "lead" },
+      memory,
+    );
+    const bob = await createContact(
+      tenantA,
+      { name: "Bob", status: "lead" },
+      memory,
+    );
+    const otherOrg = await createOrganization(
+      tenantB,
+      { name: "East" },
+      memory,
+    );
+    const otherContact = await createContact(
+      tenantB,
+      { name: "Other", status: "lead" },
+      memory,
+    );
+    const acmeDeal = await createDeal(
+      tenantA,
+      {
+        name: "Acme deal",
+        organizationId: acme.id,
+        contactId: ada.id,
+        stage: "New",
+        value: 1000,
+      },
+      memory,
+    );
+    await createDeal(
+      tenantA,
+      {
+        name: "Beta deal",
+        organizationId: beta.id,
+        contactId: bob.id,
+        stage: "New",
+        value: 500,
+      },
+      memory,
+    );
+    await createDeal(
+      tenantA,
+      { name: "Unaffiliated", stage: "New", value: 1 },
+      memory,
+    );
+    await createDeal(
+      tenantB,
+      {
+        name: "Other deal",
+        organizationId: otherOrg.id,
+        contactId: otherContact.id,
+        stage: "New",
+        value: 100,
+      },
+      memory,
+    );
+
+    expect(
+      await listDeals(tenantA, memory, { organizationId: acme.id }),
+    ).toEqual([acmeDeal]);
+    expect(await listDeals(tenantA, memory, { contactId: ada.id })).toEqual([
+      acmeDeal,
+    ]);
+  });
+});
+
+describe("createDeal defaults", () => {
+  it("defaults probability from STAGE_PROBABILITY when omitted", async () => {
+    const memory = repo();
+    const created = await createDeal(
+      tenantA,
+      { name: "Widget", stage: "Proposal", value: 1000 },
+      memory,
+    );
+    expect(created.probability).toBe(50);
+  });
+
+  it("keeps an explicit probability", async () => {
+    const memory = repo();
+    const created = await createDeal(
+      tenantA,
+      { name: "Widget", stage: "Proposal", value: 1000, probability: 40 },
+      memory,
+    );
+    expect(created.probability).toBe(40);
+  });
+
+  it("defaults boardOrder to 0 when the tenant+stage has no deals", async () => {
+    const memory = repo();
+    await createDeal(
+      tenantA,
+      { name: "Other stage", stage: "Won", value: 1, boardOrder: 9 },
+      memory,
+    );
+    await createDeal(
+      tenantB,
+      { name: "Other tenant", stage: "New", value: 1, boardOrder: 4 },
+      memory,
+    );
+    const created = await createDeal(
+      tenantA,
+      { name: "First new", stage: "New", value: 1000 },
+      memory,
+    );
+    expect(created.boardOrder).toBe(0);
+  });
+
+  it("defaults boardOrder to max in that tenant+stage plus one", async () => {
+    const memory = repo();
+    await createDeal(
+      tenantA,
+      { name: "First", stage: "New", value: 1, boardOrder: 0 },
+      memory,
+    );
+    await createDeal(
+      tenantA,
+      { name: "Third", stage: "New", value: 1, boardOrder: 2 },
+      memory,
+    );
+    const created = await createDeal(
+      tenantA,
+      { name: "Next", stage: "New", value: 1 },
+      memory,
+    );
+    expect(created.boardOrder).toBe(3);
+  });
+});
+
+describe("updateDeal probability rebase", () => {
+  it("rebases probability when stage changes and probability is omitted", async () => {
+    const memory = repo();
+    const deal = await createDeal(
+      tenantA,
+      {
+        name: "Widget",
+        stage: "New",
+        value: 1000,
+        probability: 10,
+        boardOrder: 0,
+      },
+      memory,
+    );
+    const updated = await updateDeal(
+      tenantA,
+      deal.id,
+      { stage: "Negotiation" },
+      memory,
+    );
+    expect(updated?.stage).toBe("Negotiation");
+    expect(updated?.probability).toBe(75);
+  });
+
+  it("keeps an explicit probability when stage changes", async () => {
+    const memory = repo();
+    const deal = await createDeal(
+      tenantA,
+      {
+        name: "Widget",
+        stage: "New",
+        value: 1000,
+        probability: 10,
+        boardOrder: 0,
+      },
+      memory,
+    );
+    const updated = await updateDeal(
+      tenantA,
+      deal.id,
+      { stage: "Negotiation", probability: 80 },
+      memory,
+    );
+    expect(updated?.stage).toBe("Negotiation");
+    expect(updated?.probability).toBe(80);
+  });
+
+  it("does not rebase probability on a same-stage update", async () => {
+    const memory = repo();
+    const deal = await createDeal(
+      tenantA,
+      {
+        name: "Widget",
+        stage: "Proposal",
+        value: 1000,
+        probability: 40,
+        boardOrder: 0,
+      },
+      memory,
+    );
+    const updated = await updateDeal(
+      tenantA,
+      deal.id,
+      { stage: "Proposal", name: "Widget v2" },
+      memory,
+    );
+    expect(updated?.name).toBe("Widget v2");
+    expect(updated?.stage).toBe("Proposal");
+    expect(updated?.probability).toBe(40);
+  });
+});
+
 describe("activities CRUD", () => {
   it("creates, lists, gets, updates, and deletes within a tenant", async () => {
     const memory = repo();
