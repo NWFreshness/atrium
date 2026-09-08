@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [1.5 Deals table](features/phase-1-crm/1.5-deals.md)
+Next up: [1.6 Pipeline board](features/phase-1-crm/1.6-pipeline.md)
 
 ---
 
@@ -47,3 +47,7 @@ TanStack Table list with search (name/website/industry), add/edit dialog, confir
 ### 1.4 Contacts table and detail (completed)
 
 TanStack contacts table with search (name/email/job title), status filter, add/edit dialog, org select limited to session tenant. Detail shows org link. Org detail lists contacts. Controller: npm test 103 passed, build includes `/crm/contacts/[id]`. Spec PASS, quality APPROVED.
+
+### 1.5 Deals table (completed)
+
+TanStack deals table with stage, USD value, close date, org, contact. Search by deal/org/contact name. Default probability from STAGE_PROBABILITY; stage change rebases unless probability is explicit. Org and contact details list related deals. No pipeline dnd. Controller: npm test 127 passed, build includes `/crm/deals/[id]`. Spec PASS, quality APPROVED.
