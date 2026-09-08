@@ -16,6 +16,7 @@ describe("Space shell", () => {
       "app/(authenticated)/space/[id]/page.tsx",
       "components/space/space-shell.tsx",
       "components/space/space-shell.module.css",
+      "components/space/sidebar-tree.tsx",
     ];
 
     for (const file of files) {

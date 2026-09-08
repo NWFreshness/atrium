@@ -24,19 +24,81 @@
   color: #a3a3a3;
 }
 
+.space-sidebar-toolbar {
+  display: flex;
+  margin: 0 0 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.space-sidebar-new {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #525252;
+  border-radius: 4px;
+  background: transparent;
+  color: #e5e5e5;
+  font: inherit;
+  cursor: pointer;
+}
+
 .space-sidebar-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
+.space-sidebar-list .space-sidebar-list {
+  padding-left: 0.75rem;
+}
+
 .space-sidebar-item {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.5rem;
+  gap: 0.25rem;
+  padding: 0.25rem 0.35rem;
   border-radius: 4px;
   color: #e5e5e5;
+}
+
+.space-sidebar-toggle,
+.space-sidebar-action {
+  flex-shrink: 0;
+  padding: 0.1rem 0.25rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.space-sidebar-toggle-spacer {
+  display: inline-block;
+  width: 1rem;
+  flex-shrink: 0;
+}
+
+.space-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.space-sidebar-rename {
+  flex: 1;
+  min-width: 0;
+  padding: 0.15rem 0.3rem;
+  border: 1px solid #f59e0b;
+  border-radius: 3px;
+  background: #111;
+  color: #f5f5f5;
+  font: inherit;
 }
 
 .space-sidebar-item-current {

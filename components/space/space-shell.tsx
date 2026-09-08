@@ -1,38 +1,22 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { usePathname } from "next/navigation";
-import { spacePageIdFromPath } from "@/lib/space/nav";
+import { SidebarTree } from "./sidebar-tree";
+import type { PageTreeNode } from "@/lib/space/tree";
 import styles from "./space-shell.module.css";
 
-export function SpaceShell({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  const pageId = spacePageIdFromPath(pathname);
-
+export function SpaceShell({
+  tree,
+  children,
+}: {
+  tree: PageTreeNode[];
+  children: ReactNode;
+}) {
   return (
     <div className={styles["space-shell"]}>
       <aside className={styles["space-sidebar"]} aria-label="Space pages">
         <p className={styles["space-sidebar-title"]}>Pages</p>
-        {pageId ? (
-          <ul className={styles["space-sidebar-list"]}>
-            <li>
-              <div
-                className={`${styles["space-sidebar-item"]} ${styles["space-sidebar-item-current"]}`}
-                aria-current="page"
-              >
-                <span
-                  className={styles["space-sidebar-glyph"]}
-                  aria-hidden="true"
-                >
-                  ▣
-                </span>
-                Page
-              </div>
-            </li>
-          </ul>
-        ) : (
-          <p className={styles["space-sidebar-empty"]}>No page selected</p>
-        )}
+        <SidebarTree tree={tree} />
       </aside>
       <div className={styles["space-page"]}>{children}</div>
     </div>
