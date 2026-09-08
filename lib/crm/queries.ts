@@ -1,6 +1,7 @@
-import type { InferSelectModel } from "drizzle-orm";
+import { and, eq, type InferSelectModel } from "drizzle-orm";
+import { getDb } from "../db";
 import type { ActivityType, ContactStatus, DealStage } from "./constants";
-import type { activities, contacts, deals, organizations } from "./schema";
+import { activities, contacts, deals, organizations } from "./schema";
 
 export type Organization = InferSelectModel<typeof organizations>;
 export type Contact = InferSelectModel<typeof contacts>;
@@ -75,6 +76,13 @@ function requireTenantId(tenantId: string): string {
   return tenantId;
 }
 
+function requireCrmDb() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("CRM store required");
+  }
+  return getDb();
+}
+
 function newId(): string {
   return crypto.randomUUID();
 }
@@ -95,28 +103,53 @@ function findScoped<T extends { id: string; tenantId: string }>(
   return rows.find((row) => row.tenantId === tenantId && row.id === id);
 }
 
+function tenantRow(
+  table:
+    typeof organizations | typeof contacts | typeof deals | typeof activities,
+  tenantId: string,
+  id: string,
+) {
+  return and(eq(table.tenantId, tenantId), eq(table.id, id));
+}
+
 export async function listOrganizations(
   tenantId: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Organization[]> {
   const scoped = requireTenantId(tenantId);
-  return repo.organizations.filter((row) => row.tenantId === scoped).map(clone);
+  if (repo) {
+    return repo.organizations
+      .filter((row) => row.tenantId === scoped)
+      .map(clone);
+  }
+  return requireCrmDb()
+    .select()
+    .from(organizations)
+    .where(eq(organizations.tenantId, scoped));
 }
 
 export async function getOrganization(
   tenantId: string,
   id: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Organization | null> {
   const scoped = requireTenantId(tenantId);
-  const row = findScoped(repo.organizations, scoped, id);
-  return row ? clone(row) : null;
+  if (repo) {
+    const row = findScoped(repo.organizations, scoped, id);
+    return row ? clone(row) : null;
+  }
+  const [row] = await requireCrmDb()
+    .select()
+    .from(organizations)
+    .where(tenantRow(organizations, scoped, id))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function createOrganization(
   tenantId: string,
   input: CreateOrganizationInput,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Organization> {
   const scoped = requireTenantId(tenantId);
   const row: Organization = {
@@ -128,76 +161,117 @@ export async function createOrganization(
     notes: input.notes ?? null,
     createdAt: now(),
   };
-  repo.organizations.push(row);
-  return clone(row);
+  if (repo) {
+    repo.organizations.push(row);
+    return clone(row);
+  }
+  const [inserted] = await requireCrmDb()
+    .insert(organizations)
+    .values(row)
+    .returning();
+  return inserted;
 }
 
 export async function updateOrganization(
   tenantId: string,
   id: string,
   input: UpdateOrganizationInput,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Organization | null> {
   const scoped = requireTenantId(tenantId);
-  const row = findScoped(repo.organizations, scoped, id);
-  if (!row) {
-    return null;
+  if (repo) {
+    const row = findScoped(repo.organizations, scoped, id);
+    if (!row) {
+      return null;
+    }
+    if (input.name !== undefined) row.name = input.name;
+    if (input.website !== undefined) row.website = input.website;
+    if (input.industry !== undefined) row.industry = input.industry;
+    if (input.notes !== undefined) row.notes = input.notes;
+    return clone(row);
   }
-  if (input.name !== undefined) row.name = input.name;
-  if (input.website !== undefined) row.website = input.website;
-  if (input.industry !== undefined) row.industry = input.industry;
-  if (input.notes !== undefined) row.notes = input.notes;
-  return clone(row);
+  const [row] = await requireCrmDb()
+    .update(organizations)
+    .set({
+      ...(input.name !== undefined ? { name: input.name } : {}),
+      ...(input.website !== undefined ? { website: input.website } : {}),
+      ...(input.industry !== undefined ? { industry: input.industry } : {}),
+      ...(input.notes !== undefined ? { notes: input.notes } : {}),
+    })
+    .where(tenantRow(organizations, scoped, id))
+    .returning();
+  return row ?? null;
 }
 
 export async function deleteOrganization(
   tenantId: string,
   id: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Organization | null> {
   const scoped = requireTenantId(tenantId);
-  const index = repo.organizations.findIndex(
-    (row) => row.tenantId === scoped && row.id === id,
-  );
-  if (index === -1) {
-    return null;
-  }
-  const [removed] = repo.organizations.splice(index, 1);
-  for (const contact of repo.contacts) {
-    if (contact.tenantId === scoped && contact.organizationId === id) {
-      contact.organizationId = null;
+  if (repo) {
+    const index = repo.organizations.findIndex(
+      (row) => row.tenantId === scoped && row.id === id,
+    );
+    if (index === -1) {
+      return null;
     }
-  }
-  for (const deal of repo.deals) {
-    if (deal.tenantId === scoped && deal.organizationId === id) {
-      deal.organizationId = null;
+    const [removed] = repo.organizations.splice(index, 1);
+    for (const contact of repo.contacts) {
+      if (contact.tenantId === scoped && contact.organizationId === id) {
+        contact.organizationId = null;
+      }
     }
+    for (const deal of repo.deals) {
+      if (deal.tenantId === scoped && deal.organizationId === id) {
+        deal.organizationId = null;
+      }
+    }
+    return clone(removed);
   }
-  return clone(removed);
+  const [removed] = await requireCrmDb()
+    .delete(organizations)
+    .where(tenantRow(organizations, scoped, id))
+    .returning();
+  return removed ?? null;
 }
 
 export async function listContacts(
   tenantId: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Contact[]> {
   const scoped = requireTenantId(tenantId);
-  return repo.contacts.filter((row) => row.tenantId === scoped).map(clone);
+  if (repo) {
+    return repo.contacts.filter((row) => row.tenantId === scoped).map(clone);
+  }
+  return requireCrmDb()
+    .select()
+    .from(contacts)
+    .where(eq(contacts.tenantId, scoped));
 }
 
 export async function getContact(
   tenantId: string,
   id: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Contact | null> {
   const scoped = requireTenantId(tenantId);
-  const row = findScoped(repo.contacts, scoped, id);
-  return row ? clone(row) : null;
+  if (repo) {
+    const row = findScoped(repo.contacts, scoped, id);
+    return row ? clone(row) : null;
+  }
+  const [row] = await requireCrmDb()
+    .select()
+    .from(contacts)
+    .where(tenantRow(contacts, scoped, id))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function createContact(
   tenantId: string,
   input: CreateContactInput,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Contact> {
   const scoped = requireTenantId(tenantId);
   const row: Contact = {
@@ -211,80 +285,122 @@ export async function createContact(
     status: input.status,
     createdAt: now(),
   };
-  repo.contacts.push(row);
-  return clone(row);
+  if (repo) {
+    repo.contacts.push(row);
+    return clone(row);
+  }
+  const [inserted] = await requireCrmDb()
+    .insert(contacts)
+    .values(row)
+    .returning();
+  return inserted;
 }
 
 export async function updateContact(
   tenantId: string,
   id: string,
   input: UpdateContactInput,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Contact | null> {
   const scoped = requireTenantId(tenantId);
-  const row = findScoped(repo.contacts, scoped, id);
-  if (!row) {
-    return null;
+  if (repo) {
+    const row = findScoped(repo.contacts, scoped, id);
+    if (!row) {
+      return null;
+    }
+    if (input.name !== undefined) row.name = input.name;
+    if (input.email !== undefined) row.email = input.email;
+    if (input.phone !== undefined) row.phone = input.phone;
+    if (input.jobTitle !== undefined) row.jobTitle = input.jobTitle;
+    if (input.organizationId !== undefined) {
+      row.organizationId = input.organizationId;
+    }
+    if (input.status !== undefined) row.status = input.status;
+    return clone(row);
   }
-  if (input.name !== undefined) row.name = input.name;
-  if (input.email !== undefined) row.email = input.email;
-  if (input.phone !== undefined) row.phone = input.phone;
-  if (input.jobTitle !== undefined) row.jobTitle = input.jobTitle;
-  if (input.organizationId !== undefined) {
-    row.organizationId = input.organizationId;
-  }
-  if (input.status !== undefined) row.status = input.status;
-  return clone(row);
+  const [row] = await requireCrmDb()
+    .update(contacts)
+    .set({
+      ...(input.name !== undefined ? { name: input.name } : {}),
+      ...(input.email !== undefined ? { email: input.email } : {}),
+      ...(input.phone !== undefined ? { phone: input.phone } : {}),
+      ...(input.jobTitle !== undefined ? { jobTitle: input.jobTitle } : {}),
+      ...(input.organizationId !== undefined
+        ? { organizationId: input.organizationId }
+        : {}),
+      ...(input.status !== undefined ? { status: input.status } : {}),
+    })
+    .where(tenantRow(contacts, scoped, id))
+    .returning();
+  return row ?? null;
 }
 
 export async function deleteContact(
   tenantId: string,
   id: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Contact | null> {
   const scoped = requireTenantId(tenantId);
-  const index = repo.contacts.findIndex(
-    (row) => row.tenantId === scoped && row.id === id,
-  );
-  if (index === -1) {
-    return null;
-  }
-  const [removed] = repo.contacts.splice(index, 1);
-  for (const deal of repo.deals) {
-    if (deal.tenantId === scoped && deal.contactId === id) {
-      deal.contactId = null;
+  if (repo) {
+    const index = repo.contacts.findIndex(
+      (row) => row.tenantId === scoped && row.id === id,
+    );
+    if (index === -1) {
+      return null;
     }
-  }
-  for (const activity of repo.activities) {
-    if (activity.tenantId === scoped && activity.contactId === id) {
-      activity.contactId = null;
+    const [removed] = repo.contacts.splice(index, 1);
+    for (const deal of repo.deals) {
+      if (deal.tenantId === scoped && deal.contactId === id) {
+        deal.contactId = null;
+      }
     }
+    for (const activity of repo.activities) {
+      if (activity.tenantId === scoped && activity.contactId === id) {
+        activity.contactId = null;
+      }
+    }
+    return clone(removed);
   }
-  return clone(removed);
+  const [removed] = await requireCrmDb()
+    .delete(contacts)
+    .where(tenantRow(contacts, scoped, id))
+    .returning();
+  return removed ?? null;
 }
 
 export async function listDeals(
   tenantId: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Deal[]> {
   const scoped = requireTenantId(tenantId);
-  return repo.deals.filter((row) => row.tenantId === scoped).map(clone);
+  if (repo) {
+    return repo.deals.filter((row) => row.tenantId === scoped).map(clone);
+  }
+  return requireCrmDb().select().from(deals).where(eq(deals.tenantId, scoped));
 }
 
 export async function getDeal(
   tenantId: string,
   id: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Deal | null> {
   const scoped = requireTenantId(tenantId);
-  const row = findScoped(repo.deals, scoped, id);
-  return row ? clone(row) : null;
+  if (repo) {
+    const row = findScoped(repo.deals, scoped, id);
+    return row ? clone(row) : null;
+  }
+  const [row] = await requireCrmDb()
+    .select()
+    .from(deals)
+    .where(tenantRow(deals, scoped, id))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function createDeal(
   tenantId: string,
   input: CreateDealInput,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Deal> {
   const scoped = requireTenantId(tenantId);
   const row: Deal = {
@@ -300,77 +416,125 @@ export async function createDeal(
     boardOrder: input.boardOrder,
     createdAt: now(),
   };
-  repo.deals.push(row);
-  return clone(row);
+  if (repo) {
+    repo.deals.push(row);
+    return clone(row);
+  }
+  const [inserted] = await requireCrmDb().insert(deals).values(row).returning();
+  return inserted;
 }
 
 export async function updateDeal(
   tenantId: string,
   id: string,
   input: UpdateDealInput,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Deal | null> {
   const scoped = requireTenantId(tenantId);
-  const row = findScoped(repo.deals, scoped, id);
-  if (!row) {
-    return null;
+  if (repo) {
+    const row = findScoped(repo.deals, scoped, id);
+    if (!row) {
+      return null;
+    }
+    if (input.name !== undefined) row.name = input.name;
+    if (input.organizationId !== undefined) {
+      row.organizationId = input.organizationId;
+    }
+    if (input.contactId !== undefined) row.contactId = input.contactId;
+    if (input.stage !== undefined) row.stage = input.stage;
+    if (input.value !== undefined) row.value = input.value;
+    if (input.probability !== undefined) row.probability = input.probability;
+    if (input.closeDate !== undefined) row.closeDate = input.closeDate;
+    if (input.boardOrder !== undefined) row.boardOrder = input.boardOrder;
+    return clone(row);
   }
-  if (input.name !== undefined) row.name = input.name;
-  if (input.organizationId !== undefined) {
-    row.organizationId = input.organizationId;
-  }
-  if (input.contactId !== undefined) row.contactId = input.contactId;
-  if (input.stage !== undefined) row.stage = input.stage;
-  if (input.value !== undefined) row.value = input.value;
-  if (input.probability !== undefined) row.probability = input.probability;
-  if (input.closeDate !== undefined) row.closeDate = input.closeDate;
-  if (input.boardOrder !== undefined) row.boardOrder = input.boardOrder;
-  return clone(row);
+  const [row] = await requireCrmDb()
+    .update(deals)
+    .set({
+      ...(input.name !== undefined ? { name: input.name } : {}),
+      ...(input.organizationId !== undefined
+        ? { organizationId: input.organizationId }
+        : {}),
+      ...(input.contactId !== undefined ? { contactId: input.contactId } : {}),
+      ...(input.stage !== undefined ? { stage: input.stage } : {}),
+      ...(input.value !== undefined ? { value: input.value } : {}),
+      ...(input.probability !== undefined
+        ? { probability: input.probability }
+        : {}),
+      ...(input.closeDate !== undefined ? { closeDate: input.closeDate } : {}),
+      ...(input.boardOrder !== undefined
+        ? { boardOrder: input.boardOrder }
+        : {}),
+    })
+    .where(tenantRow(deals, scoped, id))
+    .returning();
+  return row ?? null;
 }
 
 export async function deleteDeal(
   tenantId: string,
   id: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Deal | null> {
   const scoped = requireTenantId(tenantId);
-  const index = repo.deals.findIndex(
-    (row) => row.tenantId === scoped && row.id === id,
-  );
-  if (index === -1) {
-    return null;
-  }
-  const [removed] = repo.deals.splice(index, 1);
-  for (const activity of repo.activities) {
-    if (activity.tenantId === scoped && activity.dealId === id) {
-      activity.dealId = null;
+  if (repo) {
+    const index = repo.deals.findIndex(
+      (row) => row.tenantId === scoped && row.id === id,
+    );
+    if (index === -1) {
+      return null;
     }
+    const [removed] = repo.deals.splice(index, 1);
+    for (const activity of repo.activities) {
+      if (activity.tenantId === scoped && activity.dealId === id) {
+        activity.dealId = null;
+      }
+    }
+    return clone(removed);
   }
-  return clone(removed);
+  const [removed] = await requireCrmDb()
+    .delete(deals)
+    .where(tenantRow(deals, scoped, id))
+    .returning();
+  return removed ?? null;
 }
 
 export async function listActivities(
   tenantId: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Activity[]> {
   const scoped = requireTenantId(tenantId);
-  return repo.activities.filter((row) => row.tenantId === scoped).map(clone);
+  if (repo) {
+    return repo.activities.filter((row) => row.tenantId === scoped).map(clone);
+  }
+  return requireCrmDb()
+    .select()
+    .from(activities)
+    .where(eq(activities.tenantId, scoped));
 }
 
 export async function getActivity(
   tenantId: string,
   id: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Activity | null> {
   const scoped = requireTenantId(tenantId);
-  const row = findScoped(repo.activities, scoped, id);
-  return row ? clone(row) : null;
+  if (repo) {
+    const row = findScoped(repo.activities, scoped, id);
+    return row ? clone(row) : null;
+  }
+  const [row] = await requireCrmDb()
+    .select()
+    .from(activities)
+    .where(tenantRow(activities, scoped, id))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function createActivity(
   tenantId: string,
   input: CreateActivityInput,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Activity> {
   const scoped = requireTenantId(tenantId);
   const row: Activity = {
@@ -385,43 +549,77 @@ export async function createActivity(
     done: input.done,
     createdAt: now(),
   };
-  repo.activities.push(row);
-  return clone(row);
+  if (repo) {
+    repo.activities.push(row);
+    return clone(row);
+  }
+  const [inserted] = await requireCrmDb()
+    .insert(activities)
+    .values(row)
+    .returning();
+  return inserted;
 }
 
 export async function updateActivity(
   tenantId: string,
   id: string,
   input: UpdateActivityInput,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Activity | null> {
   const scoped = requireTenantId(tenantId);
-  const row = findScoped(repo.activities, scoped, id);
-  if (!row) {
-    return null;
+  if (repo) {
+    const row = findScoped(repo.activities, scoped, id);
+    if (!row) {
+      return null;
+    }
+    if (input.type !== undefined) row.type = input.type;
+    if (input.contactId !== undefined) row.contactId = input.contactId;
+    if (input.dealId !== undefined) row.dealId = input.dealId;
+    if (input.description !== undefined) row.description = input.description;
+    if (input.occurredAt !== undefined) row.occurredAt = input.occurredAt;
+    if (input.dueDate !== undefined) row.dueDate = input.dueDate;
+    if (input.done !== undefined) row.done = input.done;
+    return clone(row);
   }
-  if (input.type !== undefined) row.type = input.type;
-  if (input.contactId !== undefined) row.contactId = input.contactId;
-  if (input.dealId !== undefined) row.dealId = input.dealId;
-  if (input.description !== undefined) row.description = input.description;
-  if (input.occurredAt !== undefined) row.occurredAt = input.occurredAt;
-  if (input.dueDate !== undefined) row.dueDate = input.dueDate;
-  if (input.done !== undefined) row.done = input.done;
-  return clone(row);
+  const [row] = await requireCrmDb()
+    .update(activities)
+    .set({
+      ...(input.type !== undefined ? { type: input.type } : {}),
+      ...(input.contactId !== undefined ? { contactId: input.contactId } : {}),
+      ...(input.dealId !== undefined ? { dealId: input.dealId } : {}),
+      ...(input.description !== undefined
+        ? { description: input.description }
+        : {}),
+      ...(input.occurredAt !== undefined
+        ? { occurredAt: input.occurredAt }
+        : {}),
+      ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
+      ...(input.done !== undefined ? { done: input.done } : {}),
+    })
+    .where(tenantRow(activities, scoped, id))
+    .returning();
+  return row ?? null;
 }
 
 export async function deleteActivity(
   tenantId: string,
   id: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<Activity | null> {
   const scoped = requireTenantId(tenantId);
-  const index = repo.activities.findIndex(
-    (row) => row.tenantId === scoped && row.id === id,
-  );
-  if (index === -1) {
-    return null;
+  if (repo) {
+    const index = repo.activities.findIndex(
+      (row) => row.tenantId === scoped && row.id === id,
+    );
+    if (index === -1) {
+      return null;
+    }
+    const [removed] = repo.activities.splice(index, 1);
+    return clone(removed);
   }
-  const [removed] = repo.activities.splice(index, 1);
-  return clone(removed);
+  const [removed] = await requireCrmDb()
+    .delete(activities)
+    .where(tenantRow(activities, scoped, id))
+    .returning();
+  return removed ?? null;
 }

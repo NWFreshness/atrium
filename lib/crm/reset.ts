@@ -31,9 +31,6 @@ export async function resetCrm(
   repo?: CrmRepository,
 ): Promise<void> {
   const store = isCrmRepository(tx) ? tx : repo;
-  if (!store) {
-    return;
-  }
 
   for (const row of await listActivities(tenantId, store)) {
     await deleteActivity(tenantId, row.id, store);

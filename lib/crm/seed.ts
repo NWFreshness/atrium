@@ -9,7 +9,7 @@ import {
 
 export async function seedCrm(
   tenantId: string,
-  repo: CrmRepository,
+  repo?: CrmRepository,
 ): Promise<void> {
   const northwind = await createOrganization(
     tenantId,

@@ -73,6 +73,22 @@ describe("resetCrm", () => {
     const ownerOrgs = await listOrganizations(ownerTenant, repo);
     expect(ownerOrgs.map((org) => org.name)).toEqual(["Owner Co"]);
   });
+
+  it("throws when no memory repo and no DATABASE_URL", async () => {
+    const previous = process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL;
+    try {
+      await expect(resetCrm(undefined, demoTenant)).rejects.toThrow(
+        "CRM store required",
+      );
+    } finally {
+      if (previous === undefined) {
+        delete process.env.DATABASE_URL;
+      } else {
+        process.env.DATABASE_URL = previous;
+      }
+    }
+  });
 });
 
 describe("registerCrmDemoResetter", () => {
