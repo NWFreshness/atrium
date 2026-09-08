@@ -2,6 +2,7 @@
 
 import { requireTenant, type GetSession } from "../tenancy";
 import { DEAL_STAGES, type DealStage } from "./constants";
+import { moveDeal } from "./move-deal";
 import {
   createDeal,
   deleteDeal,
@@ -128,6 +129,20 @@ export async function deleteDealForSession(
   return deleteDeal(tenantId, id, repo);
 }
 
+export async function moveDealForSession(
+  getSession: GetSession,
+  id: string,
+  stage: DealStage,
+  index?: number,
+  repo?: CrmRepository,
+): Promise<Deal | null> {
+  const { tenantId } = await requireTenant(getSession);
+  if (!isDealStage(stage)) {
+    return null;
+  }
+  return moveDeal(tenantId, id, stage, index, repo);
+}
+
 export async function listDealsAction(opts?: ListDealsOpts): Promise<Deal[]> {
   const { auth } = await import("@/auth");
   return listDealsForSession(auth, opts ?? {});
@@ -156,4 +171,13 @@ export async function updateDealAction(
 export async function deleteDealAction(id: string): Promise<Deal | null> {
   const { auth } = await import("@/auth");
   return deleteDealForSession(auth, id);
+}
+
+export async function moveDealAction(
+  id: string,
+  stage: DealStage,
+  index?: number,
+): Promise<Deal | null> {
+  const { auth } = await import("@/auth");
+  return moveDealForSession(auth, id, stage, index);
 }

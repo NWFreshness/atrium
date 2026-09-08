@@ -4,6 +4,7 @@ import {
   deleteDealForSession,
   getDealForSession,
   listDealsForSession,
+  moveDealForSession,
   updateDealForSession,
 } from "./deal-actions";
 import {
@@ -286,5 +287,45 @@ describe("deal session actions", () => {
         memory,
       ),
     ).rejects.toThrow("Unauthenticated");
+  });
+
+  it("moves a deal using the session tenantId", async () => {
+    const memory = repo();
+    const created = await createDealForSession(
+      getSessionA,
+      { name: "Widget", stage: "New", value: 1000, probability: 10 },
+      memory,
+    );
+
+    const moved = await moveDealForSession(
+      getSessionA,
+      created!.id,
+      "Won",
+      0,
+      memory,
+    );
+    expect(moved?.tenantId).toBe(tenantA);
+    expect(moved?.stage).toBe("Won");
+    expect(moved?.probability).toBe(100);
+  });
+
+  it("returns null when moving a missing or other-tenant deal", async () => {
+    const memory = repo();
+    const other = await createDeal(
+      tenantB,
+      { name: "Beta deal", stage: "New", value: 9000 },
+      memory,
+    );
+
+    expect(
+      await moveDealForSession(getSessionA, other.id, "Won", 0, memory),
+    ).toBeNull();
+    expect(
+      await moveDealForSession(getSessionA, "missing", "Won", 0, memory),
+    ).toBeNull();
+    expect(await getDeal(tenantB, other.id, memory)).toMatchObject({
+      name: "Beta deal",
+      stage: "New",
+    });
   });
 });
