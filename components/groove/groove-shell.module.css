@@ -509,3 +509,200 @@
 .groove-vel-bar-playing {
   background: #ecad0a;
 }
+
+/* ---- transport row (4.4) ---- */
+
+.groove-transport-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #161a20;
+  border: 1px solid #2a2f37;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+[data-theme="light"] .groove-transport-row {
+  background: #ffffff;
+  border-color: #d2d4d6;
+}
+
+.groove-brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.groove-brand-model {
+  font-weight: 500;
+  color: #b6bcc4;
+}
+
+.groove-play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.9rem;
+  background: #1f2a36;
+  color: #ecad0a;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  font: inherit;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+}
+
+.groove-play-btn-active {
+  background: #b85b3e;
+  color: #fff;
+  border-color: #ecad0a;
+}
+
+.groove-play-glyph {
+  font-size: 0.8rem;
+}
+
+.groove-tempo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #0d0f12;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+}
+
+[data-theme="light"] .groove-tempo {
+  background: #f3f3f0;
+  border-color: #d2d4d6;
+}
+
+.groove-tempo-step {
+  width: 1.4rem;
+  height: 1.4rem;
+  background: #1f2a36;
+  color: inherit;
+  border: 1px solid #2a2f37;
+  border-radius: 3px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.groove-tempo-read {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  min-width: 3.5rem;
+  justify-content: center;
+  cursor: ns-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.groove-tempo-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.groove-tempo-unit {
+  font-size: 0.7rem;
+  color: #b6bcc4;
+  letter-spacing: 0.16em;
+}
+
+.groove-swing-bank {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #0d0f12;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+}
+
+[data-theme="light"] .groove-swing-bank {
+  background: #f3f3f0;
+  border-color: #d2d4d6;
+}
+
+.groove-master-leds {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.groove-master-leds-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  color: #b6bcc4;
+}
+
+.groove-patch-bank {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.groove-patch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.55rem;
+  background: #1f2a36;
+  color: inherit;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  font: inherit;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-align: left;
+}
+
+.groove-patch-btn-active {
+  border-color: #ecad0a;
+  color: #ecad0a;
+}
+
+.groove-patch-slot {
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.groove-patch-text {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.groove-patch-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.groove-patch-sub {
+  font-size: 0.6rem;
+  color: #b6bcc4;
+}
+
+.groove-revert-btn {
+  padding: 0.3rem 0.6rem;
+  background: #1f2a36;
+  color: inherit;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  font: inherit;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+}
+
+.groove-revert-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}

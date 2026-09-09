@@ -40,12 +40,15 @@ describe("groove-shell", () => {
     expect(tsx).not.toMatch(/className="groove-/);
   });
 
-  it("does not duplicate product nav", () => {
+  it("does not duplicate product nav links", () => {
     const tsx = readFileSync(
       resolve(process.cwd(), "components/groove/groove-shell.tsx"),
       "utf8",
     );
-    expect(tsx).not.toMatch(/Home|CRM|Space|Rolodex/);
+    // The transport's Space key for play/stop is allowed; everything else
+    // must stay clear of Home/CRM/Space/Rolodex so we don't re-add Atrium nav.
+    const stripped = tsx.replace(/"Space"/g, "");
+    expect(stripped).not.toMatch(/Home|CRM|Space|Rolodex/);
   });
 });
 
