@@ -14,8 +14,16 @@
   font-size: 0.875rem;
 }
 
-.space-sidebar-title {
+.space-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   margin: 0 0 0.65rem;
+}
+
+.space-sidebar-title {
+  margin: 0;
   padding: 0 0.4rem;
   font-size: 0.7rem;
   font-weight: 600;

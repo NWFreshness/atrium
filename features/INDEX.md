@@ -53,7 +53,7 @@ Jobs-to-be-done from Bench `docs/space/`. Tenant-scoped. Demo seed. Not pixel-id
 | 2.4 | [Block editor](./phase-2-space/2.4-block-editor.md)                        | completed   | 2.3        |
 | 2.5 | [Databases and table view](./phase-2-space/2.5-databases-table.md)         | completed   | 2.3, 2.4   |
 | 2.6 | [Board, list, filters, sorts](./phase-2-space/2.6-views-board-list.md) | completed | 2.5 |
-| 2.7 | [Quick-find search](./phase-2-space/2.7-search.md)                         | pending     | 2.5        |
+| 2.7 | [Quick-find search](./phase-2-space/2.7-search.md) | completed | 2.5 |
 | 2.8 | [Playwright smoke](./phase-2-space/2.8-playwright-smoke.md)                | pending     | 2.6, 2.7   |
 
 Long pole: 2.1 → 2.2 → 2.3 → 2.4 → 2.5 → 2.6 → 2.8. 2.7 can start after 2.5 (same database page as 2.6 — do not parallel).

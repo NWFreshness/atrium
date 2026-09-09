@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [2.7 Quick-find search](features/phase-2-space/2.7-search.md)
+Next up: [2.8 Playwright smoke](features/phase-2-space/2.8-playwright-smoke.md)
 
 ---
 
@@ -95,3 +95,7 @@ Database pages in the sidebar; TanStack table with in-place editors for seven pr
 ### 2.6 Board, list, filters, and sorts (completed)
 
 Table/board/list switcher. Filters and sort persist per view. Board drag (dnd-kit) updates the grouping select. List shows title + a property. Controller: npm test 246 passed. Spec PASS, quality APPROVED.
+
+### 2.7 Quick-find search (completed)
+
+Sidebar Search + ⌘/Ctrl+K. Title search across pages, databases, and rows. Session tenant only. Controller: npm test 254 passed. Spec PASS, quality APPROVED.
