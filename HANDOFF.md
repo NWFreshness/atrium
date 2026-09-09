@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 2 Space is complete.** Do not invent Rolodex/Groove specs. Do not push to `main`. Wait for the user.
+**Stop. Next work is feature 3.1.** Do not run 3.2 in parallel with 3.1. Do not invent Groove specs. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
@@ -31,13 +31,14 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | 2.5 Databases and table view | completed (PR #22) |
 | 2.6 Board, list, filters, sorts | completed (PR #23) |
 | 2.7 Quick-find search | completed (PR #24) |
-| 2.8 Playwright smoke | completed |
+| 2.8 Playwright smoke | completed (PR #25) |
+| **3.1 Schema, seed, resetter** | **next** |
 
-Phase 1 CRM and Phase 2 Space are complete. Rolodex / Groove specs are not. Do not invent them.
+Phase 1 CRM and Phase 2 Space are complete. Phase 3 Rolodex specs 3.1–3.10 are written. Groove specs are not. Do not invent them.
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
-Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved). If a spec and the design disagree, update the design first.
+Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved). Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. If a spec and the design disagree, update the design first.
 
 ## Read order
 
@@ -46,7 +47,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Wait for the user. Phase 2 is done. Do not invent Rolodex/Groove specs.
+6. `features/phase-3-rolodex/3.1-schema-seed-resetter.md` — implement that spec, nothing else
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -72,7 +73,7 @@ Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/be
 
 ## Stack locks
 
-Next.js App Router, Neon Postgres, Drizzle, Auth.js Credentials + JWT. No Express, no SQLite, no Tailwind, no TanStack until a CRM/Space table spec. Session `user` has `id`, `email`, `tenantId`, `role`. Never take `tenantId` from the client.
+Next.js App Router, Neon Postgres, Drizzle, Auth.js Credentials + JWT. No Express, no SQLite, no Tailwind, no TanStack until a CRM/Space/Rolodex table spec. Session `user` has `id`, `email`, `tenantId`, `role`. Never take `tenantId` from the client.
 
 Next 16 warns that `middleware.ts` is deprecated in favor of `proxy`. Leave middleware unless a feature spec says to rename it.
 
@@ -86,4 +87,4 @@ npm test
 npm run build
 ```
 
-Wait for the user. Do not invent Rolodex/Groove specs.
+Then implement 3.1 from its spec.

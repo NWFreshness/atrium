@@ -2,7 +2,9 @@
 
 **None in progress.**
 
-Phase 2 Space is complete. Do not start Rolodex / Groove specs unless the user asks.
+Next up: [3.1 Rolodex schema, seed, resetter](features/phase-3-rolodex/3.1-schema-seed-resetter.md)
+
+Do not implement 3.2 in parallel with 3.1. Do not invent Groove specs.
 
 ---
 
@@ -103,3 +105,7 @@ Sidebar Search + ⌘/Ctrl+K. Title search across pages, databases, and rows. Ses
 ### 2.8 Playwright smoke (completed)
 
 `e2e/space.spec.ts`: unauth `/space` → login; demo Home/Projects/Travel; New database Table; create/rename page persists; owner does not see demo titles. Controller: npm test 254, Playwright 14 passed. Spec PASS, quality APPROVED.
+
+### Phase 3 Rolodex specs (written, not implemented)
+
+Ten feature specs in `features/phase-3-rolodex/` (3.1–3.10): schema/seed/resetter, shell, people, import, circles, log/timeline, dates/calendar, gifts/connections, Today, Playwright smoke. Design: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Initials only (no photo column). Next implementable unit is 3.1.
