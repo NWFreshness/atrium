@@ -2,7 +2,9 @@
 
 **None in progress.**
 
-Phase 3 Rolodex is complete. Do not invent Groove specs.
+Next up: [4.1 Groove domain](features/phase-4-groove/4.1-domain.md)
+
+Do not implement 4.1 until this specs PR has landed.
 
 ---
 
@@ -147,3 +149,7 @@ Person page gifts (idea/given/received); outstanding ideas surface when a date i
 ### 3.10 Playwright smoke (completed)
 
 Unauthenticated `/rolodex` → login. Demo walks Today + five subnav sections and seed names; create person persists. Owner does not see demo seed names. Controller: npm test 344 passed; `npx playwright test` 18 passed. Spec PASS.
+
+### Phase 4 Groove specs (written, not implemented)
+
+Eight feature specs in `features/phase-4-groove/` (4.1–4.8): domain, shell, sequencer controls, transport/patches, audio engine, master, live wiring, Playwright smoke. Design: `docs/superpowers/specs/2026-09-09-groove-design.md`. No database. Next implementable unit is 4.1.

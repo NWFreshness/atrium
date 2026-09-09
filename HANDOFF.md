@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 3 Rolodex is complete.** Do not invent Groove specs. Do not push to `main`.
+**Stop. Next work is feature 4.1** after this specs PR lands. Do not implement Groove until then. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
@@ -42,12 +42,13 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | **3.8 Gifts and connections** | **completed** |
 | **3.9 Today dashboard** | **completed** |
 | **3.10 Playwright smoke** | **completed** |
+| **4.1 Domain** | **next (after specs PR)** |
 
-Phase 1 CRM and Phase 2 Space are complete. Phase 3 Rolodex specs 3.1–3.10 are written. Groove specs are not. Do not invent them.
+Phase 1–3 are complete. Phase 4 Groove specs 4.1–4.8 are written. No Groove tables. Web Audio only.
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
-Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved). Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. If a spec and the design disagree, update the design first.
+Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved). Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. If a spec and the design disagree, update the design first.
 
 ## Read order
 
@@ -56,7 +57,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Wait for the user before Groove. Do not invent Groove specs.
+6. `features/phase-4-groove/4.1-domain.md` — implement that spec, nothing else
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -96,4 +97,4 @@ npm test
 npm run build
 ```
 
-Then wait for the user. Do not invent Groove specs.
+Then implement 4.1 from its spec.

@@ -6,7 +6,9 @@ All SQL goes through Drizzle in `lib/db`.
 
 Do not query the database without `tenantId` from the session. Never take tenant id from the request body or query string.
 
-Keep CSS scoped per app. Shared nav classes use the `atrium-nav-` prefix and do not rely on app theme variables.
+Keep CSS scoped per app. Shared nav classes use the `atrium-nav-` prefix and do not rely on app theme variables. App prefixes: `crm-`, `space-`, `rolodex-`, `groove-`.
+
+Groove never hits the database. Do not add Groove tables or a Groove demo resetter. Web Audio only; import the engine from client components only.
 
 Write tests first (TDD). Implement one feature at a time.
 
