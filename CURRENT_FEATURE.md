@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [3.2 Rolodex shell and subnav](features/phase-3-rolodex/3.2-rolodex-shell.md)
+Next up: [3.3 People table and person page](features/phase-3-rolodex/3.3-people.md)
 
-Do not implement 3.3 in parallel with 3.2. Do not invent Groove specs.
+Do not implement 3.4 in parallel with 3.3. Do not invent Groove specs.
 
 ---
 
@@ -113,3 +113,7 @@ Ten feature specs in `features/phase-3-rolodex/` (3.1–3.10): schema/seed/reset
 ### 3.1 Rolodex schema, seed, resetter (completed)
 
 Drizzle tables people/interactions/importantDates/facts/news/reminders/gifts/connections with tenantId, UUID ids, cascade FKs. Query helpers require tenantId (memory + Drizzle). Cadence and annual-date helpers match Bench. Demo seed ≥30 people across every circle; owner empty. Reset demo registers Rolodex wipe+reseed. Migration `drizzle/0003_dapper_shinobi_shaw.sql`. `/rolodex` still Coming soon. Controller: npm test 294 passed, npm run build exit 0. Spec PASS.
+
+### 3.2 Rolodex shell and subnav (completed)
+
+Five-section Rolodex subnav (Today, People, Circles, Calendar, Timeline) under `app/(authenticated)/rolodex/`. Today is `/rolodex`. Current section amber + glyphs. Rolodex CSS is `rolodex-` prefixed and imported only from Rolodex files. Atrium nav still wraps. Controller: npm test 299 passed, build lists the five Rolodex routes. Spec PASS.

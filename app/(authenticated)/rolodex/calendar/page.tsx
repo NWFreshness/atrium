@@ -1,9 +1,9 @@
 import styles from "@/components/rolodex/rolodex-subnav.module.css";
 
-export default function RolodexPage() {
+export default function RolodexCalendarPage() {
   return (
     <main className={styles["rolodex-page"]}>
-      <h1>Today</h1>
+      <h1>Calendar</h1>
     </main>
   );
 }
