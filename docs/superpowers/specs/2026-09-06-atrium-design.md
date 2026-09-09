@@ -173,6 +173,8 @@ Feature specs: `features/phase-3-rolodex/` (3.1–3.10). Design: `docs/superpowe
 
 Four synths, one transport, master DJ filter, Web Audio only. No DB. Behind login.
 
+Feature specs: `features/phase-4-groove/` (4.1–4.8). Design: `docs/superpowers/specs/2026-09-09-groove-design.md`. Board: `features/INDEX.md`.
+
 ---
 
 ## Testing and quality
@@ -247,4 +249,4 @@ Do not add TanStack packages until the feature that uses them.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-Progress: `features/INDEX.md`. Phase 0–2 complete. Phase 3 Rolodex specs 3.1–3.10 exist. Next implementable unit is 3.1. Do not invent Groove specs.
+Progress: `features/INDEX.md`. Phase 0–3 complete. Phase 4 Groove specs 4.1–4.8 exist. Next implementable unit is 4.1.

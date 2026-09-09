@@ -4,15 +4,16 @@ Board for phases and features. Status here is the source of truth for what is do
 Cold start: [HANDOFF.md](../HANDOFF.md)
 Design: [docs/superpowers/specs/2026-09-06-atrium-design.md](../docs/superpowers/specs/2026-09-06-atrium-design.md)
 Rolodex: [docs/superpowers/specs/2026-09-09-rolodex-design.md](../docs/superpowers/specs/2026-09-09-rolodex-design.md)
+Groove: [docs/superpowers/specs/2026-09-09-groove-design.md](../docs/superpowers/specs/2026-09-09-groove-design.md)
 In progress: [CURRENT_FEATURE.md](../CURRENT_FEATURE.md)
 
 Only one feature `in_progress`. Later phases get specs when that phase starts.
 
 ## Build order
 
-Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10.
+Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8.
 3.4 / 3.6 / 3.7 start after 3.3 (same person page — do not parallel). 3.8 after 3.7.
-Phase 3 is sequential. Do not run two Rolodex features in parallel. Do not invent Groove specs.
+Phase 3 is sequential. Phase 4 is sequential. Do not run two Groove features in parallel.
 
 ### Phase 0 — Atrium platform
 
@@ -80,4 +81,17 @@ Long pole: 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10. 3.4, 3.6, 3.7 can start
 
 ### Phase 4 — Groove
 
-Specs not written yet.
+Jobs-to-be-done from Bench `docs/groove/`. Web Audio only. No database, no seed, no tenant rows. Still behind login. Design: [2026-09-09-groove-design.md](../docs/superpowers/specs/2026-09-09-groove-design.md).
+
+| ID  | Feature                                                              | Status  | Depends on |
+| --- | -------------------------------------------------------------------- | ------- | ---------- |
+| 4.1 | [Domain: types, music, filter, params, patches](./phase-4-groove/4.1-domain.md) | pending | 0.4        |
+| 4.2 | [Shell and hardware layout](./phase-4-groove/4.2-shell.md)           | pending | 4.1        |
+| 4.3 | [Knobs, faders, sequencer grids](./phase-4-groove/4.3-sequencer-controls.md) | pending | 4.1, 4.2   |
+| 4.4 | [Transport, patches, mute, keyboard](./phase-4-groove/4.4-transport-patches.md) | pending | 4.3        |
+| 4.5 | [Audio engine](./phase-4-groove/4.5-audio-engine.md)                 | pending | 4.1, 4.4   |
+| 4.6 | [Master filter, sweep, pump, FX, scope](./phase-4-groove/4.6-master.md) | pending | 4.5        |
+| 4.7 | [Live wiring](./phase-4-groove/4.7-live-wiring.md)                   | pending | 4.5, 4.6   |
+| 4.8 | [Playwright smoke](./phase-4-groove/4.8-playwright-smoke.md)         | pending | 4.7        |
+
+Long pole: 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6 → 4.7 → 4.8. Do not parallel any two Groove features. Do not add Groove tables.
