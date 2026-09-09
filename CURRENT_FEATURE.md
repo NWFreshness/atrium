@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [3.3 People table and person page](features/phase-3-rolodex/3.3-people.md)
+Next up: [3.4 CSV and vCard import](features/phase-3-rolodex/3.4-import.md)
 
-Do not implement 3.4 in parallel with 3.3. Do not invent Groove specs.
+Do not implement 3.5 in parallel with 3.4. Do not invent Groove specs.
 
 ---
 
@@ -117,3 +117,7 @@ Drizzle tables people/interactions/importantDates/facts/news/reminders/gifts/con
 ### 3.2 Rolodex shell and subnav (completed)
 
 Five-section Rolodex subnav (Today, People, Circles, Calendar, Timeline) under `app/(authenticated)/rolodex/`. Today is `/rolodex`. Current section amber + glyphs. Rolodex CSS is `rolodex-` prefixed and imported only from Rolodex files. Atrium nav still wraps. Controller: npm test 299 passed, build lists the five Rolodex routes. Spec PASS.
+
+### 3.3 People table and person page (completed)
+
+TanStack people table with initials, search (name/company/email), circle and tag filters, add/edit dialog, confirm delete. Session tenant only. Detail `/rolodex/people/[id]` 404s for missing/other-tenant. Controller: npm test 307 passed, build includes `/rolodex/people/[id]`. Spec PASS.
