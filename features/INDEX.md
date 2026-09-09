@@ -86,7 +86,7 @@ Jobs-to-be-done from Bench `docs/groove/`. Web Audio only. No database, no seed,
 | ID  | Feature                                                              | Status  | Depends on |
 | --- | -------------------------------------------------------------------- | ------- | ---------- |
 | 4.1 | [Domain: types, music, filter, params, patches](./phase-4-groove/4.1-domain.md) | completed   | 0.4        |
-| 4.2 | [Shell and hardware layout](./phase-4-groove/4.2-shell.md)           | pending | 4.1        |
+| 4.2 | [Shell and hardware layout](./phase-4-groove/4.2-shell.md)           | completed   | 4.1        |
 | 4.3 | [Knobs, faders, sequencer grids](./phase-4-groove/4.3-sequencer-controls.md) | pending | 4.1, 4.2   |
 | 4.4 | [Transport, patches, mute, keyboard](./phase-4-groove/4.4-transport-patches.md) | pending | 4.3        |
 | 4.5 | [Audio engine](./phase-4-groove/4.5-audio-engine.md)                 | pending | 4.1, 4.4   |

@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [4.2 Groove shell](features/phase-4-groove/4.2-shell.md)
+Next up: [4.3 Groove sequencer controls](features/phase-4-groove/4.3-sequencer-controls.md)
 
 ---
 
@@ -155,3 +155,7 @@ Eight feature specs in `features/phase-4-groove/` (4.1–4.8): domain, shell, se
 ### 4.1 Groove domain (completed)
 
 Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, four Bench factory patches + `clonePatch`. No AudioContext, no Drizzle, `/groove` still Coming soon. Controller: npm test 380 passed, npm run build exit 0. Spec PASS.
+
+### 4.2 Groove shell (completed)
+
+`/groove` renders the desk: transport row (PLAY, active patch, BPM), four named unit regions from `UNIT_META` (RHYTHM DR-16, BASS MB-1, PADS PX-4, LEAD LX-2), master strip placeholder. CSS `groove-` prefix with `[data-theme="light"]` overrides. Atrium nav still wraps; auth redirect still works. Controller: npm test 383 passed, npm run build exit 0. Spec PASS.

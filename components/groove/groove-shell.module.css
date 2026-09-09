@@ -1,0 +1,136 @@
+.groove-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 1rem;
+  background: #0d0f12;
+  color: #e9eef2;
+  min-height: 0;
+}
+
+[data-theme="light"] .groove-shell {
+  background: #f3f3f0;
+  color: #14171c;
+}
+
+.groove-transport {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #161a20;
+  border: 1px solid #2a2f37;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+[data-theme="light"] .groove-transport {
+  background: #ffffff;
+  border-color: #d2d4d6;
+}
+
+.groove-brand {
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.groove-play {
+  padding: 0.35rem 0.9rem;
+  background: #1f2a36;
+  color: #ecad0a;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  font: inherit;
+  letter-spacing: 0.18em;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.groove-patch {
+  color: #209dd7;
+}
+
+.groove-meta {
+  margin-left: auto;
+  color: #b6bcc4;
+}
+
+.groove-deck {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.groove-unit {
+  display: flex;
+  flex-direction: column;
+  background: #161a20;
+  border: 1px solid #2a2f37;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+[data-theme="light"] .groove-unit {
+  background: #ffffff;
+  border-color: #d2d4d6;
+}
+
+.groove-unit-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  background: #1d222a;
+  border-bottom: 1px solid #2a2f37;
+  letter-spacing: 0.16em;
+}
+
+[data-theme="light"] .groove-unit-header {
+  background: #e8e9eb;
+  border-bottom-color: #d2d4d6;
+}
+
+.groove-unit-name {
+  font-weight: 700;
+}
+
+.groove-unit-model {
+  color: #b6bcc4;
+  font-size: 0.75rem;
+}
+
+.groove-unit-body {
+  padding: 0.75rem;
+}
+
+.groove-unit-copy {
+  margin: 0;
+  color: #8a9099;
+  font-size: 0.8rem;
+}
+
+.groove-master {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #161a20;
+  border: 1px solid #2a2f37;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+[data-theme="light"] .groove-master {
+  background: #ffffff;
+  border-color: #d2d4d6;
+}
+
+.groove-master-title {
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.groove-master-copy {
+  color: #8a9099;
+}
