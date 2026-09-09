@@ -1,9 +1,14 @@
-import styles from "@/components/rolodex/rolodex-subnav.module.css";
+import { CirclesBoard } from "@/components/rolodex/circles-board";
+import pageStyles from "@/components/rolodex/rolodex-subnav.module.css";
+import { listPeopleAction } from "@/lib/rolodex/person-actions";
 
-export default function RolodexCirclesPage() {
+export default async function RolodexCirclesPage() {
+  const people = await listPeopleAction();
+
   return (
-    <main className={styles["rolodex-page"]}>
+    <main className={pageStyles["rolodex-page"]}>
       <h1>Circles</h1>
+      <CirclesBoard people={people} />
     </main>
   );
 }

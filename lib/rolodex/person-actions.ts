@@ -1,6 +1,8 @@
 "use server";
 
 import { requireTenant, type GetSession } from "../tenancy";
+import { CIRCLES, type Circle } from "./constants";
+import { movePersonCircle } from "./move-person";
 import {
   createPerson,
   deletePerson,
@@ -91,4 +93,22 @@ export async function updatePersonAction(id: string, input: UpdatePersonInput) {
 export async function deletePersonAction(id: string): Promise<boolean> {
   const { auth } = await import("@/auth");
   return deletePersonForSession(auth, id);
+}
+
+export async function movePersonCircleForSession(
+  getSession: GetSession,
+  id: string,
+  circle: Circle,
+  repo?: RolodexRepository,
+) {
+  const { tenantId } = await requireTenant(getSession);
+  if (!(CIRCLES as readonly string[]).includes(circle)) {
+    return null;
+  }
+  return movePersonCircle(tenantId, id, circle, repo);
+}
+
+export async function movePersonCircleAction(id: string, circle: Circle) {
+  const { auth } = await import("@/auth");
+  return movePersonCircleForSession(auth, id, circle);
 }

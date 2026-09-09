@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Initials } from "@/components/rolodex/initials";
+import { EditPersonButton } from "@/components/rolodex/person-form";
 import styles from "@/components/rolodex/people.module.css";
 import pageStyles from "@/components/rolodex/rolodex-subnav.module.css";
 import { CIRCLE_META } from "@/lib/rolodex/constants";
@@ -29,6 +30,7 @@ export default async function PersonDetailPage({
       <div className={styles["rolodex-person-head"]}>
         <Initials name={person.name} large />
         <h1>{person.name}</h1>
+        <EditPersonButton person={person} />
       </div>
       <dl className={styles["rolodex-detail"]}>
         <dt>Email</dt>
