@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [3.5 Circles board, cadence, snooze](features/phase-3-rolodex/3.5-circles.md)
+Next up: [3.6 Log, facts, news, reminders, Timeline](features/phase-3-rolodex/3.6-log-timeline.md)
 
-Do not implement 3.6 in parallel with 3.5. Do not invent Groove specs.
+Do not implement 3.7 in parallel with 3.6. Do not invent Groove specs.
 
 ---
 
@@ -125,3 +125,7 @@ TanStack people table with initials, search (name/company/email), circle and tag
 ### 3.4 CSV and vCard import (completed)
 
 Papa Parse + vcf. Column mapping, preview, duplicates flagged by email then name and untickable. Apply is all-or-nothing on the memory repo; neon-http is sequential writes. Birthday mapping creates an important date. Controller: npm test 316 passed. Spec PASS.
+
+### 3.5 Circles board, cadence, snooze (completed)
+
+Four-column `@hello-pangea/dnd` board. Drag changes circle via `movePersonCircle`. Header counts people and overdue. Cadence off/snooze covered in unit tests; person page Edit exposes those fields. Controller: npm test 322 passed. Spec PASS.

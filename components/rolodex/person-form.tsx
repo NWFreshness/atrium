@@ -327,3 +327,18 @@ export function AddPersonButton() {
     </>
   );
 }
+
+export function EditPersonButton({ person }: { person: Person }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Edit
+      </button>
+      {open ? (
+        <PersonForm person={person} onClose={() => setOpen(false)} />
+      ) : null}
+    </>
+  );
+}
