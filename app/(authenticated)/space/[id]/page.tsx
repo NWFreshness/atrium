@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
-import {
-  DatabaseTable,
-  RowProperties,
-} from "@/components/space/database-table";
+import { DatabaseViews } from "@/components/space/database-views";
+import { RowProperties } from "@/components/space/database-table";
 import { BlockEditor } from "@/components/space/editor";
 import styles from "@/components/space/space-shell.module.css";
 import { createBlockAction, listBlocksAction } from "@/lib/space/block-actions";
@@ -11,10 +9,14 @@ import { getPageAction } from "@/lib/space/page-actions";
 
 export default async function SpacePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ view?: string | string[] }>;
 }) {
   const { id } = await params;
+  const { view: rawView } = await searchParams;
+  const viewParam = Array.isArray(rawView) ? rawView[0] : rawView;
   const page = await getPageAction(id);
   if (!page) {
     notFound();
@@ -34,7 +36,7 @@ export default async function SpacePage({
     return (
       <main>
         {header}
-        <DatabaseTable snapshot={snapshot} />
+        <DatabaseViews snapshot={snapshot} viewParam={viewParam} />
       </main>
     );
   }

@@ -1,0 +1,77 @@
+.space-board {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(158px, 1fr);
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  align-items: start;
+  overflow-x: auto;
+}
+
+.space-board-column {
+  min-width: 158px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #1a1a1a;
+}
+
+.space-board-column-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid #333;
+}
+
+.space-board-column-header h2 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.space-board-count {
+  color: #a3a3a3;
+  font-size: 0.75rem;
+}
+
+.space-board-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 8rem;
+  padding: 0.5rem;
+}
+
+.space-board-card,
+.space-board-overlay {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 0.5rem 0.55rem;
+  border: 1px solid #525252;
+  border-radius: 4px;
+  background: #111;
+}
+
+.space-board-grip {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #a3a3a3;
+  cursor: grab;
+  font: inherit;
+  line-height: 1;
+}
+
+.space-board-card-title {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.space-board-empty {
+  margin-top: 0.75rem;
+  color: #a3a3a3;
+}
