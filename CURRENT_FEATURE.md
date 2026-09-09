@@ -2,9 +2,7 @@
 
 **None in progress.**
 
-Next up: [3.10 Playwright smoke](features/phase-3-rolodex/3.10-playwright-smoke.md)
-
-Do not invent Groove specs.
+Phase 3 Rolodex is complete. Do not invent Groove specs.
 
 ---
 
@@ -145,3 +143,7 @@ Person page gifts (idea/given/received); outstanding ideas surface when a date i
 ### 3.9 Today dashboard (completed)
 
 `/rolodex` is Today: who-to-contact (most overdue first, one-click log), dates in 30 days, due reminders, recent activity, two recharts series from lib aggregations. Empty panels keep copy. Controller: npm test 344 passed. Spec PASS.
+
+### 3.10 Playwright smoke (completed)
+
+Unauthenticated `/rolodex` → login. Demo walks Today + five subnav sections and seed names; create person persists. Owner does not see demo seed names. Controller: npm test 344 passed; `npx playwright test` 18 passed. Spec PASS.

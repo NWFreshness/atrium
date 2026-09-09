@@ -74,7 +74,7 @@ Jobs-to-be-done from Bench `docs/rolodex/`. Tenant-scoped. Demo seed. Not pixel-
 | 3.7  | [Important dates and calendar](./phase-3-rolodex/3.7-dates-calendar.md)        | completed   | 3.3           |
 | 3.8  | [Gifts and connections](./phase-3-rolodex/3.8-gifts-connections.md)            | completed   | 3.3, 3.7      |
 | 3.9  | [Today dashboard](./phase-3-rolodex/3.9-today.md)                              | completed   | 3.5, 3.6, 3.7 |
-| 3.10 | [Playwright smoke](./phase-3-rolodex/3.10-playwright-smoke.md)                 | pending     | 3.9           |
+| 3.10 | [Playwright smoke](./phase-3-rolodex/3.10-playwright-smoke.md)                 | completed   | 3.9           |
 
 Long pole: 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10. 3.4, 3.6, 3.7 can start after 3.3 (same person page — do not parallel).
 
