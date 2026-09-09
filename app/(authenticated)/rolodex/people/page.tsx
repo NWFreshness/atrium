@@ -1,3 +1,4 @@
+import { ImportPeopleButton } from "@/components/rolodex/import-dialog";
 import { AddPersonButton } from "@/components/rolodex/person-form";
 import { PeopleTable } from "@/components/rolodex/people-table";
 import styles from "@/components/rolodex/people.module.css";
@@ -71,6 +72,7 @@ export default async function RolodexPeoplePage({
           <button type="submit">Search</button>
         </form>
         <AddPersonButton />
+        <ImportPeopleButton />
       </div>
       <PeopleTable people={people} />
     </main>
