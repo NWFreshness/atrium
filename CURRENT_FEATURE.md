@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [4.7 Groove live wiring](features/phase-4-groove/4.7-live-wiring.md)
+Next up: [4.8 Groove Playwright smoke](features/phase-4-groove/4.8-playwright-smoke.md)
 
 ---
 
@@ -175,3 +175,7 @@ Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, 
 ### 4.6 Groove master (completed)
 
 `components/groove/master.tsx`: hero FILTER knob + sweep meter, the four `MASTER_GROUPS` (FILTER, SWEEP, SIDECHAIN, SEND FX) each rendering its Knobs, OUT volume Fader. `components/groove/scope.tsx`: canvas that draws the analyser spectrum and overlays `filterGainAt(macro, reso, freq)` so the readout matches the audio graph. Shell passes `engine.analyser` and `engine.filterMacro`/`sweepPhase` while playing; when stopped, the readout uses `patch.master.filter`. The 4.5 audio graph already had DJ filter + pump + delay + reverb + analyser; this PR adds the panel that drives it. Controller: npm test 444 passed, npm run build exit 0. Manual Chromium walk as demo: master strip visible, scope canvas mounted, four groups, LATE ORBIT renders an 8-segment sweep meter, zero console errors. Spec PASS.
+
+### 4.7 Groove live wiring (completed)
+
+Instrument edits land in the audio graph while the clock runs. The 4.5 engine already created `EngineState { patch, mutes, volume }` in a ref, called `applyParams` every tick, and exposed `auditionDrum`/`auditionNote`; 4.7 wires drum-step clicks to `auditionDrum(lane, value === 2)` when the new value is on. Patch switch mid-play needs no stop: `tick` reads the latest `stateRef` each step so BPM/filter/sends re-resolve. Engine is constructed only in the browser. Controller: npm test 446 passed, npm run build exit 0. Manual Chromium walk as demo: PLAY, switch to BASALT keeps transport in STOP (still playing) and changes BPM 112→130, drum click toggles+aouditions, STOP returns to PLAY. Spec PASS.

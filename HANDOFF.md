@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Next work is feature 4.7.** Do not implement 4.8 while 4.7 is open. Do not push to `main`.
+**Stop. Next work is feature 4.8.** Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-06)
 
@@ -48,6 +48,7 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | **4.4 Transport and patches** | **completed** |
 | **4.5 Audio engine** | **completed** |
 | **4.6 Master** | **completed** |
+| **4.7 Live wiring** | **completed** |
 
 Phase 1–3 are complete. Phase 4 Groove specs 4.1–4.8 are written. No Groove tables. Web Audio only.
 
@@ -62,7 +63,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-4-groove/4.7-live-wiring.md` — implement that spec, nothing else
+6. `features/phase-4-groove/4.8-playwright-smoke.md` — implement that spec, nothing else
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -102,4 +103,4 @@ npm test
 npm run build
 ```
 
-Then implement 4.7 from its spec.
+Then implement 4.8 from its spec.
