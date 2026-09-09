@@ -706,3 +706,170 @@
   opacity: 0.55;
   cursor: default;
 }
+
+/* ---- master strip (4.6) ---- */
+
+.groove-master-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #161a20;
+  border: 1px solid #2a2f37;
+  border-radius: 6px;
+  font-size: 0.78rem;
+}
+
+[data-theme="light"] .groove-master-strip {
+  background: #ffffff;
+  border-color: #d2d4d6;
+}
+
+.groove-master-hero {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-right: 0.5rem;
+  border-right: 1px solid #2a2f37;
+}
+
+[data-theme="light"] .groove-master-hero {
+  border-right-color: #d2d4d6;
+}
+
+.groove-hero-knob {
+  padding: 0 0.4rem;
+}
+
+.groove-hero-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 9rem;
+}
+
+.groove-bank-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  color: #b6bcc4;
+}
+
+.groove-hero-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  background: #0d0f12;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  min-width: 8rem;
+}
+
+[data-theme="light"] .groove-hero-display {
+  background: #f3f3f0;
+  border-color: #d2d4d6;
+}
+
+.groove-sweep-meter {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.groove-sweep-meter-off {
+  display: inline-flex;
+}
+
+.groove-sweep-off {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  color: #b6bcc4;
+}
+
+.groove-sweep-seg {
+  position: relative;
+  width: 0.55rem;
+  height: 0.4rem;
+  background: #2a2f37;
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.groove-sweep-seg-on {
+  background: #2b4a3a;
+}
+
+.groove-sweep-fill {
+  position: absolute;
+  inset: 0;
+  background: #ecad0a;
+}
+
+.groove-master-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  background: #0d0f12;
+}
+
+[data-theme="light"] .groove-master-group {
+  background: #f3f3f0;
+  border-color: #d2d4d6;
+}
+
+.groove-master-knobs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.5rem;
+}
+
+.groove-scope {
+  position: relative;
+  flex: 1 1 16rem;
+  min-height: 4rem;
+  background: #0d0f12;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+[data-theme="light"] .groove-scope {
+  background: #f3f3f0;
+  border-color: #d2d4d6;
+}
+
+.groove-scope-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.groove-scope-tag {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.5rem;
+  font-size: 0.55rem;
+  letter-spacing: 0.18em;
+  color: #b6bcc4;
+  pointer-events: none;
+}
+
+.groove-master-out {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: center;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  background: #0d0f12;
+}
+
+[data-theme="light"] .groove-master-out {
+  background: #f3f3f0;
+  border-color: #d2d4d6;
+}

@@ -7,18 +7,15 @@ import { UNIT_IDS } from "@/lib/groove/types";
 describe("groove audio modules", () => {
   const audioFiles = ["engine.ts", "drums.ts", "synths.ts", "master.ts"];
 
-  it.each(audioFiles)(
-    '%s is the engine side of a client boundary',
-    (file) => {
-      const path = resolve(process.cwd(), "lib/groove/audio", file);
-      const source = readFileSync(path, "utf8");
-      // Plain TS — the "use client" boundary sits at the shell that imports
-      // it. Refusing "use server"/"use client" here is what keeps these
-      // modules safe to bundle from anywhere.
-      expect(source).not.toMatch(/^\s*"use server"/);
-      expect(source).not.toMatch(/^\s*"use client"/);
-    },
-  );
+  it.each(audioFiles)("%s is the engine side of a client boundary", (file) => {
+    const path = resolve(process.cwd(), "lib/groove/audio", file);
+    const source = readFileSync(path, "utf8");
+    // Plain TS — the "use client" boundary sits at the shell that imports
+    // it. Refusing "use server"/"use client" here is what keeps these
+    // modules safe to bundle from anywhere.
+    expect(source).not.toMatch(/^\s*"use server"/);
+    expect(source).not.toMatch(/^\s*"use client"/);
+  });
 
   it("no audio library added to package.json", () => {
     const pkg = JSON.parse(
