@@ -1,0 +1,149 @@
+.rolodex-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin: 1rem 0;
+}
+
+.rolodex-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.rolodex-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rolodex-field input,
+.rolodex-field textarea,
+.rolodex-field select {
+  font: inherit;
+  padding: 0.4rem 0.5rem;
+}
+
+.rolodex-table-wrap {
+  overflow-x: auto;
+}
+
+.rolodex-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rolodex-table th,
+.rolodex-table td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid currentColor;
+  vertical-align: middle;
+}
+
+.rolodex-table-link {
+  color: inherit;
+}
+
+.rolodex-row-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rolodex-empty {
+  margin: 1rem 0;
+}
+
+.rolodex-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 20;
+}
+
+.rolodex-dialog {
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid currentColor;
+  padding: 1.25rem;
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+}
+
+.rolodex-dialog h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+}
+
+.rolodex-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.rolodex-detail {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  gap: 0.5rem 1rem;
+  margin: 1rem 0 0;
+}
+
+.rolodex-detail dt {
+  font-weight: 600;
+}
+
+.rolodex-detail dd {
+  margin: 0;
+}
+
+.rolodex-initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  color: #f8f8f8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.rolodex-initials-lg {
+  width: 3rem;
+  height: 3rem;
+  font-size: 1rem;
+}
+
+.rolodex-person-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rolodex-status {
+  display: inline-block;
+  font-size: 0.8rem;
+}
+
+.rolodex-status-overdue {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.rolodex-status-due_soon {
+  color: #854d0e;
+}
+
+.rolodex-status-in_touch,
+.rolodex-status-snoozed,
+.rolodex-status-off {
+  color: inherit;
+}

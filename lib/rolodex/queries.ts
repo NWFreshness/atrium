@@ -218,14 +218,39 @@ function enrichPerson(row: Person, repo: RolodexRepository): PersonComputed {
   };
 }
 
+export type ListPeopleOpts = {
+  q?: string;
+  circle?: Circle;
+  tag?: string;
+};
+
+function personMatchesSearch(row: Person, opts?: ListPeopleOpts): boolean {
+  if (opts?.circle && row.circle !== opts.circle) {
+    return false;
+  }
+  if (opts?.tag && !row.tags.includes(opts.tag)) {
+    return false;
+  }
+  const term = opts?.q?.trim().toLowerCase();
+  if (!term) {
+    return true;
+  }
+  return [row.name, row.company, row.email].some((value) =>
+    value?.toLowerCase().includes(term),
+  );
+}
+
 export async function listPeople(
   tenantId: string,
   repo?: RolodexRepository,
+  opts?: ListPeopleOpts,
 ): Promise<PersonComputed[]> {
   const scoped = requireTenantId(tenantId);
   if (repo) {
     return repo.people
-      .filter((row) => row.tenantId === scoped)
+      .filter(
+        (row) => row.tenantId === scoped && personMatchesSearch(row, opts),
+      )
       .map((row) => enrichPerson(row, repo));
   }
   const db = requireRolodexDb();
@@ -235,6 +260,9 @@ export async function listPeople(
     .where(eq(people.tenantId, scoped));
   const result: PersonComputed[] = [];
   for (const row of rows) {
+    if (!personMatchesSearch(row, opts)) {
+      continue;
+    }
     const person = await getPerson(scoped, row.id);
     if (person) {
       result.push(person);

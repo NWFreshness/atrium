@@ -193,6 +193,61 @@ describe("people CRUD", () => {
     expect(updated?.tags).toEqual(["family"]);
   });
 
+  it("searches by name, company, and email and filters circle and tag", async () => {
+    const memory = repo();
+    await createPerson(
+      tenantA,
+      {
+        name: "Maya Chen",
+        company: "Figma",
+        email: "maya@example.com",
+        circle: "inner",
+        tags: ["family"],
+      },
+      memory,
+    );
+    await createPerson(
+      tenantA,
+      {
+        name: "Sam Okoye",
+        company: "Northwind",
+        email: "sam@example.com",
+        circle: "close",
+        tags: ["work"],
+      },
+      memory,
+    );
+    await createPerson(
+      tenantB,
+      { name: "Maya Other", company: "Figma", email: "maya@other.test" },
+      memory,
+    );
+
+    expect(
+      (await listPeople(tenantA, memory, { q: "maya" })).map((row) => row.name),
+    ).toEqual(["Maya Chen"]);
+    expect(
+      (await listPeople(tenantA, memory, { q: "northwind" })).map(
+        (row) => row.name,
+      ),
+    ).toEqual(["Sam Okoye"]);
+    expect(
+      (await listPeople(tenantA, memory, { q: "sam@example" })).map(
+        (row) => row.name,
+      ),
+    ).toEqual(["Sam Okoye"]);
+    expect(
+      (await listPeople(tenantA, memory, { circle: "inner" })).map(
+        (row) => row.name,
+      ),
+    ).toEqual(["Maya Chen"]);
+    expect(
+      (await listPeople(tenantA, memory, { tag: "work" })).map(
+        (row) => row.name,
+      ),
+    ).toEqual(["Sam Okoye"]);
+  });
+
   it("cascades children and both-sided connections on delete", async () => {
     const memory = repo();
     const sam = await createPerson(tenantA, { name: "Sam Okoye" }, memory);
