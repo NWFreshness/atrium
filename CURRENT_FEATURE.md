@@ -2,9 +2,7 @@
 
 **None in progress.**
 
-Next up: [4.1 Groove domain](features/phase-4-groove/4.1-domain.md)
-
-Do not implement 4.1 until this specs PR has landed.
+Next up: [4.2 Groove shell](features/phase-4-groove/4.2-shell.md)
 
 ---
 
@@ -152,4 +150,8 @@ Unauthenticated `/rolodex` → login. Demo walks Today + five subnav sections an
 
 ### Phase 4 Groove specs (written, not implemented)
 
-Eight feature specs in `features/phase-4-groove/` (4.1–4.8): domain, shell, sequencer controls, transport/patches, audio engine, master, live wiring, Playwright smoke. Design: `docs/superpowers/specs/2026-09-09-groove-design.md`. No database. Next implementable unit is 4.1.
+Eight feature specs in `features/phase-4-groove/` (4.1–4.8): domain, shell, sequencer controls, transport/patches, audio engine, master, live wiring, Playwright smoke. Design: `docs/superpowers/specs/2026-09-09-groove-design.md`. No database.
+
+### 4.1 Groove domain (completed)
+
+Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, four Bench factory patches + `clonePatch`. No AudioContext, no Drizzle, `/groove` still Coming soon. Controller: npm test 380 passed, npm run build exit 0. Spec PASS.
