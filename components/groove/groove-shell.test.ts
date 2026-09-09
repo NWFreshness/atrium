@@ -15,10 +15,10 @@ describe("groove-shell", () => {
       expect(meta.name).not.toBe("");
       expect(meta.model).not.toBe("");
     }
-    expect(source).toContain("aria-label={unit.name}");
-    // Four regions in the deck — one .map over UNITS:
     expect(source.match(/UNITS\.map/g)).toHaveLength(1);
     expect(ids).toHaveLength(4);
+    // Shell mounts Unit; the region label is set by Unit on its section.
+    expect(source).toContain("<Unit");
   });
 
   it("uses groove-prefixed CSS classes only", () => {
@@ -46,5 +46,52 @@ describe("groove-shell", () => {
       "utf8",
     );
     expect(tsx).not.toMatch(/Home|CRM|Space|Rolodex/);
+  });
+});
+
+describe("groove UI sources", () => {
+  const files = [
+    "groove-shell.tsx",
+    "knob.tsx",
+    "fader.tsx",
+    "drum-grid.tsx",
+    "note-grid.tsx",
+    "velocity-lane.tsx",
+    "led-strip.tsx",
+    "unit.tsx",
+    "use-readout.ts",
+  ];
+
+  it.each(files)("%s does not import the audio engine", (file) => {
+    const source = readFileSync(
+      resolve(process.cwd(), "components/groove", file),
+      "utf8",
+    );
+    expect(source).not.toMatch(/AudioContext/);
+    expect(source).not.toMatch(/lib\/groove\/audio/);
+  });
+
+  it("drum and note grids give each step a unique aria-label", () => {
+    const drum = readFileSync(
+      resolve(process.cwd(), "components/groove/drum-grid.tsx"),
+      "utf8",
+    );
+    const note = readFileSync(
+      resolve(process.cwd(), "components/groove/note-grid.tsx"),
+      "utf8",
+    );
+    expect(drum).toContain("`${LANE_LABEL[lane]} step ${i + 1}`");
+    expect(drum).toContain("aria-pressed={v > 0}");
+    expect(note).toContain("`${unit} step ${i + 1}`");
+    expect(note).toContain("aria-pressed={step.on}");
+  });
+
+  it("mounts four regions", () => {
+    const unit = readFileSync(
+      resolve(process.cwd(), "components/groove/unit.tsx"),
+      "utf8",
+    );
+    expect(unit).toContain('role="region"');
+    expect(unit).toContain("aria-label={meta.name}");
   });
 });

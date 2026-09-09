@@ -134,3 +134,378 @@
 .groove-master-copy {
   color: #8a9099;
 }
+
+/* ---- unit panels ---- */
+
+.groove-unit {
+  gap: 0.5rem;
+  padding: 0;
+}
+
+.groove-unit-head {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  background: #1d222a;
+  border-bottom: 1px solid #2a2f37;
+  letter-spacing: 0.14em;
+}
+
+[data-theme="light"] .groove-unit-head {
+  background: #e8e9eb;
+  border-bottom-color: #d2d4d6;
+}
+
+.groove-unit-muted {
+  opacity: 0.55;
+}
+
+.groove-sig-led {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #2a2f37;
+}
+
+.groove-sig-led-on {
+  background: #ecad0a;
+  box-shadow: 0 0 6px rgba(236, 173, 10, 0.6);
+}
+
+.groove-unit-name {
+  font-weight: 700;
+}
+
+.groove-unit-model {
+  color: #b6bcc4;
+  font-size: 0.75rem;
+}
+
+.groove-unit-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  background: #0d0f12;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  min-width: 6rem;
+}
+
+[data-theme="light"] .groove-unit-display {
+  background: #f3f3f0;
+  border-color: #d2d4d6;
+}
+
+.groove-disp-label {
+  font-size: 0.7rem;
+  color: #b6bcc4;
+  letter-spacing: 0.16em;
+}
+
+.groove-disp-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+}
+
+.groove-mute-btn {
+  padding: 0.25rem 0.6rem;
+  background: #1f2a36;
+  color: #e9eef2;
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  font: inherit;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+}
+
+.groove-mute-btn-active {
+  background: #b85b3e;
+  color: #fff;
+  border-color: #ecad0a;
+}
+
+.groove-unit-controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.groove-knob-bank,
+.groove-fader-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
+}
+
+.groove-fader-bank {
+  flex-direction: column;
+}
+
+.groove-unit-seq {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+
+/* ---- knob ---- */
+
+.groove-knob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 3.2rem;
+  cursor: ns-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.groove-knob-svg {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.groove-knob-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: #b6bcc4;
+  text-align: center;
+  margin-top: 0.1rem;
+}
+
+/* ---- fader ---- */
+
+.groove-fader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 6rem;
+  cursor: ns-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.groove-fader-slot {
+  position: relative;
+  width: 0.5rem;
+  height: 2.5rem;
+  background: #1d222a;
+  border: 1px solid #2a2f37;
+  border-radius: 2px;
+}
+
+[data-theme="light"] .groove-fader-slot {
+  background: #f3f3f0;
+  border-color: #d2d4d6;
+}
+
+.groove-fader-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #209dd7;
+  opacity: 0.7;
+}
+
+.groove-fader-cap {
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  height: 8px;
+  background: #e9eef2;
+  border-radius: 2px;
+}
+
+[data-theme="light"] .groove-fader-cap {
+  background: #14171c;
+}
+
+.groove-fader-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  color: #b6bcc4;
+}
+
+/* ---- LEDs ---- */
+
+.groove-leds {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 2px;
+  height: 0.55rem;
+}
+
+.groove-led {
+  background: #2a2f37;
+  border-radius: 1px;
+}
+
+[data-theme="light"] .groove-led {
+  background: #d2d4d6;
+}
+
+.groove-led-on {
+  background: #ecad0a;
+  box-shadow: 0 0 4px rgba(236, 173, 10, 0.6);
+}
+
+.groove-led-beat {
+  outline: 1px solid rgba(236, 173, 10, 0.3);
+}
+
+/* ---- drum grid ---- */
+
+.groove-drum-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.groove-drum-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.groove-lane-name {
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  color: #b6bcc4;
+}
+
+.groove-lane-steps {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 3px;
+}
+
+/* ---- note grid ---- */
+
+.groove-note-grid {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 3px;
+}
+
+/* ---- shared pad ---- */
+
+.groove-pad {
+  position: relative;
+  height: 1.5rem;
+  border: 1px solid #2a2f37;
+  border-radius: 3px;
+  background: #1d222a;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  color: inherit;
+  user-select: none;
+  touch-action: none;
+}
+
+[data-theme="light"] .groove-pad {
+  background: #f3f3f0;
+  border-color: #d2d4d6;
+}
+
+.groove-pad-v0 {
+  background: #1d222a;
+}
+
+.groove-pad-v1 {
+  background: #2b4a3a;
+  border-color: #209dd7;
+}
+
+.groove-pad-v2 {
+  background: #754b1a;
+  border-color: #ecad0a;
+}
+
+.groove-pad-on {
+  background: #2b4a3a;
+  border-color: #209dd7;
+}
+
+.groove-pad-beat {
+  outline: 1px solid rgba(236, 173, 10, 0.35);
+}
+
+.groove-pad-playing {
+  box-shadow: inset 0 0 0 2px #ecad0a;
+}
+
+.groove-note-name {
+  font-size: 0.55rem;
+  font-variant-numeric: tabular-nums;
+  color: #e9eef2;
+}
+
+.groove-note-chord {
+  font-size: 0.5rem;
+  color: #b6bcc4;
+  margin-left: 2px;
+}
+
+/* ---- velocity ---- */
+
+.groove-vel-lane {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.groove-vel-caption {
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  color: #b6bcc4;
+}
+
+.groove-vel-track {
+  position: relative;
+  height: 1.2rem;
+  background: #1d222a;
+  border: 1px solid #2a2f37;
+  border-radius: 2px;
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 2px;
+  touch-action: none;
+}
+
+[data-theme="light"] .groove-vel-track {
+  background: #f3f3f0;
+  border-color: #d2d4d6;
+}
+
+.groove-vel-slot {
+  position: relative;
+  background: transparent;
+}
+
+.groove-vel-slot-beat {
+  border-left: 1px solid rgba(236, 173, 10, 0.25);
+}
+
+.groove-vel-bar {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  background: #209dd7;
+  opacity: 0.7;
+}
+
+.groove-vel-bar-playing {
+  background: #ecad0a;
+}

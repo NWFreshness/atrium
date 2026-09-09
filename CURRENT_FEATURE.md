@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [4.3 Groove sequencer controls](features/phase-4-groove/4.3-sequencer-controls.md)
+Next up: [4.4 Groove transport and patches](features/phase-4-groove/4.4-transport-patches.md)
 
 ---
 
@@ -159,3 +159,7 @@ Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, 
 ### 4.2 Groove shell (completed)
 
 `/groove` renders the desk: transport row (PLAY, active patch, BPM), four named unit regions from `UNIT_META` (RHYTHM DR-16, BASS MB-1, PADS PX-4, LEAD LX-2), master strip placeholder. CSS `groove-` prefix with `[data-theme="light"]` overrides. Atrium nav still wraps; auth redirect still works. Controller: npm test 383 passed, npm run build exit 0. Spec PASS.
+
+### 4.3 Groove sequencer controls (completed)
+
+`components/groove/`: `knob`, `fader`, `drum-grid`, `note-grid`, `velocity-lane`, `led-strip`, `unit`, `use-readout` ported from Bench. Each unit is `role="region"` named RHYTHM / BASS / PADS / LEAD; pads render `DrumGrid`, the others render `NoteGrid` + `VelocityLane`. Unique aria-labels (`KICK step 3`, `BASS step 1`, etc.) proven by both unit tests and a manual Chromium walk. Shell mounts four Units on a read-only `clonePatch(PATCHES[0])`. MUTE toggles a muted class. No AudioContext anywhere. Controller: npm test 421 passed, npm run build exit 0. Spec PASS.
