@@ -16,6 +16,7 @@ import {
   listProperties,
   listPropertyOptions,
   listRowValues,
+  listViews,
   updatePage,
   updateProperty,
   updateRowValue,
@@ -24,6 +25,7 @@ import {
   type PropertyOption,
   type RowValue,
   type SpaceRepository,
+  type View,
 } from "./queries";
 
 type ClientTenantInput = {
@@ -36,6 +38,7 @@ export type DatabaseSnapshot = {
   options: PropertyOption[];
   rows: Page[];
   values: RowValue[];
+  views: View[];
 };
 
 async function requireDatabase(
@@ -86,11 +89,12 @@ export async function getDatabaseSnapshotForSession(
 ): Promise<DatabaseSnapshot> {
   const { tenantId } = await requireTenant(getSession, input);
   const database = await requireDatabase(tenantId, databaseId, repo);
-  const [properties, rows, values, options] = await Promise.all([
+  const [properties, rows, values, options, views] = await Promise.all([
     listProperties(tenantId, repo, { databaseId }),
     listPages(tenantId, repo, { parentId: databaseId }),
     listRowValues(tenantId, repo),
     listPropertyOptions(tenantId, repo),
+    listViews(tenantId, repo, { databaseId }),
   ]);
   const rowPages = rows.filter((page) => page.type === "row");
   const rowIds = new Set(rowPages.map((page) => page.id));
@@ -103,6 +107,7 @@ export async function getDatabaseSnapshotForSession(
     values: values.filter(
       (value) => rowIds.has(value.rowId) && propertyIds.has(value.propertyId),
     ),
+    views,
   };
 }
 

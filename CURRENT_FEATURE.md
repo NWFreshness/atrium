@@ -2,9 +2,7 @@
 
 **None in progress.**
 
-Next up: [2.6 Board, list, filters, sorts](features/phase-2-space/2.6-views-board-list.md)
-
-Do not implement 2.7 in parallel with 2.6. Do not invent Rolodex/Groove specs.
+Next up: [2.7 Quick-find search](features/phase-2-space/2.7-search.md)
 
 ---
 
@@ -93,3 +91,7 @@ Vanilla per-block editor (textarea, no extra editor library). Slash menu (`/`) f
 ### 2.5 Databases and table view (completed)
 
 Database pages in the sidebar; TanStack table with in-place editors for seven property types; rows open as properties + block editor. Demo seed: Trip Planner (5 rows) and Reading List. Controller: npm test 219 passed, npm run build exit 0. Spec PASS.
+
+### 2.6 Board, list, filters, and sorts (completed)
+
+Table/board/list switcher. Filters and sort persist per view. Board drag (dnd-kit) updates the grouping select. List shows title + a property. Controller: npm test 246 passed. Spec PASS, quality APPROVED.

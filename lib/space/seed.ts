@@ -5,6 +5,7 @@ import {
   createProperty,
   createPropertyOption,
   createRowValue,
+  createView,
   listPages,
   type SpaceRepository,
 } from "./queries";
@@ -357,6 +358,38 @@ async function seedDemoDatabases(
     [depart.id]: "2026-04-18",
     [flights.id]: true,
   });
+
+  await createView(
+    tenantId,
+    {
+      databaseId: trip.id,
+      kind: "board",
+      config: { groupPropertyId: status.id },
+    },
+    repo,
+  );
+  await createView(
+    tenantId,
+    {
+      databaseId: trip.id,
+      kind: "table",
+      config: { sort: { propertyId: budget.id, direction: "desc" } },
+    },
+    repo,
+  );
+  await createView(
+    tenantId,
+    {
+      databaseId: trip.id,
+      kind: "list",
+      config: {
+        filters: [
+          { propertyId: status.id, operator: "is", value: planning.id },
+        ],
+      },
+    },
+    repo,
+  );
 
   const reading = await createPage(
     tenantId,
