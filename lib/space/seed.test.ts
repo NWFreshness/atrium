@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { BLOCK_TYPES } from "./constants";
-import { createMemorySpaceRepository, listBlocks, listPages } from "./queries";
+import {
+  createMemorySpaceRepository,
+  listBlocks,
+  listPages,
+  listProperties,
+  listPropertyOptions,
+  listViews,
+} from "./queries";
 import { seedSpace } from "./seed";
+import { parseViewConfig } from "./view-logic";
 
 const demoTenant = "tenant-demo";
 const ownerTenant = "tenant-owner";
@@ -73,6 +81,28 @@ describe("seedSpace", () => {
     expect(tripRows.map((row) => row.title)).toEqual(
       expect.arrayContaining(["Japan, ten days", "Scottish Highlands"]),
     );
+
+    const properties = await listProperties(demoTenant, repo, {
+      databaseId: trip!.id,
+    });
+    const status = properties.find((property) => property.name === "Status");
+    const budget = properties.find((property) => property.name === "Budget");
+    const planning = (await listPropertyOptions(demoTenant, repo)).find(
+      (option) =>
+        option.propertyId === status?.id && option.name === "Planning",
+    );
+    const views = await listViews(demoTenant, repo, { databaseId: trip!.id });
+    const byKind = Object.fromEntries(
+      views.map((view) => [view.kind, parseViewConfig(view.config)]),
+    );
+    expect(byKind.board?.groupPropertyId).toBe(status?.id);
+    expect(byKind.table?.sort).toEqual({
+      propertyId: budget?.id,
+      direction: "desc",
+    });
+    expect(byKind.list?.filters).toEqual([
+      { propertyId: status?.id, operator: "is", value: planning?.id },
+    ]);
   });
 
   it("is a no-op when the tenant already has Space pages", async () => {
