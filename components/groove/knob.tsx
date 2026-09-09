@@ -98,7 +98,7 @@ export function Knob({ spec, value, onChange, onTouch, testId }: KnobProps) {
 
 function polar(r: number, deg: number): [number, number] {
   const a = ((deg - 90) * Math.PI) / 180;
-  return [24 + r * Math.cos(a), 24 + r * Math.sin(a)];
+  return [round(24 + r * Math.cos(a)), round(24 + r * Math.sin(a))];
 }
 
 function arcPath(r: number, from: number, to: number): string {
@@ -106,4 +106,9 @@ function arcPath(r: number, from: number, to: number): string {
   const [x2, y2] = polar(r, to);
   const large = Math.abs(to - from) > 180 ? 1 : 0;
   return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
+}
+
+function round(v: number): number {
+  // Stable enough to match SSR; 4 dp is finer than the 0.5px stroke.
+  return Math.round(v * 10000) / 10000;
 }

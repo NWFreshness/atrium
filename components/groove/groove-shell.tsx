@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LedStrip } from "@/components/groove/led-strip";
 import { Transport } from "@/components/groove/transport";
 import { Unit } from "@/components/groove/unit";
+import { Engine, type EngineState } from "@/lib/groove/audio/engine";
 import {
   patchIsDirty,
   setBpm,
@@ -26,15 +27,47 @@ const NO_MUTES: Record<UnitId, boolean> = {
 };
 
 const FACTORY = PATCHES.map(clonePatch);
+const VOLUME = 0.8;
 
 export function GrooveShell() {
   const [patches, setPatches] = useState<Patch[]>(() => FACTORY);
   const [index, setIndex] = useState(0);
   const [mutes, setMutes] = useState(NO_MUTES);
   const [playing, setPlaying] = useState(false);
-  const [current] = useState(-1);
+  const [current, setCurrent] = useState(-1);
+
+  const stateRef = useRef<EngineState>({
+    patch: patches[0],
+    mutes: NO_MUTES,
+    volume: VOLUME,
+  });
+
+  const engineRef = useRef<Engine | null>(null);
 
   const patch = patches[index];
+
+  // Write the latest state into the ref *after* render. The engine reads
+  // this every audio tick, so live edits land in the graph on the next step.
+  useEffect(() => {
+    stateRef.current = { patch, mutes, volume: VOLUME };
+  }, [patch, mutes]);
+
+  // Construct the engine once on the client. No-op on the server.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const engine = new Engine(() => stateRef.current);
+    engine.onStep = setCurrent;
+    engineRef.current = engine;
+    return () => {
+      engine.stop();
+      engineRef.current = null;
+    };
+  }, []);
+
+  // Push live control changes into the audio graph.
+  useEffect(() => {
+    if (!playing) engineRef.current?.applyParams(stateRef.current);
+  }, [patch, mutes, playing]);
 
   const toggleMute = (id: UnitId) => {
     setMutes((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -49,8 +82,24 @@ export function GrooveShell() {
 
   const onSelect = (i: number) => setIndex(i);
 
-  const togglePlay = () => {
-    setPlaying((prev) => !prev);
+  const togglePlay = async () => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    if (engine.ctx.state !== "running") {
+      try {
+        await engine.resume();
+      } catch {
+        // Browser autoplay policies can reject until a gesture — ignore here
+        // because the click itself qualifies as a gesture.
+      }
+    }
+    if (playing) {
+      engine.stop();
+      setPlaying(false);
+    } else {
+      engine.start();
+      setPlaying(true);
+    }
   };
 
   const onBpm = (v: number) => edit((p) => setBpm(p, v));
@@ -68,8 +117,11 @@ export function GrooveShell() {
     edit((p) => setNoteStep(p, unit, idx, step));
   };
 
-  const onAudition = (_step: MelodicStep) => {
-    // Audition lands in 4.5.
+  const onAudition = (step: MelodicStep) => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    void engine.resume();
+    engine.auditionNote("bass", step);
   };
 
   const onParam = (unit: UnitId, key: string, value: number) => {
@@ -83,14 +135,14 @@ export function GrooveShell() {
       if (target && target instanceof HTMLTextAreaElement) return;
       if (e.code === "Space") {
         e.preventDefault();
-        setPlaying((prev) => !prev);
+        void togglePlay();
       } else if (e.key >= "1" && e.key <= "4") {
         setIndex(Number(e.key) - 1);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [togglePlay]);
 
   const edited = useMemo(
     () => patchIsDirty(patch, FACTORY[index]),
