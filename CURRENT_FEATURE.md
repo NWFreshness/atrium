@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [3.9 Today dashboard](features/phase-3-rolodex/3.9-today.md)
+Next up: [3.10 Playwright smoke](features/phase-3-rolodex/3.10-playwright-smoke.md)
 
-Do not implement 3.10 in parallel with 3.9. Do not invent Groove specs.
+Do not invent Groove specs.
 
 ---
 
@@ -141,3 +141,7 @@ Person page add/edit/delete dates with age and milestone. Month grid with prev/n
 ### 3.8 Gifts and connections (completed)
 
 Person page gifts (idea/given/received); outstanding ideas surface when a date is within 30 days. Two-sided connections with inverse parent/child labels; picker is tenant-scoped. Delete person cascades connections. Controller: npm test 335 passed. Spec PASS.
+
+### 3.9 Today dashboard (completed)
+
+`/rolodex` is Today: who-to-contact (most overdue first, one-click log), dates in 30 days, due reminders, recent activity, two recharts series from lib aggregations. Empty panels keep copy. Controller: npm test 344 passed. Spec PASS.
