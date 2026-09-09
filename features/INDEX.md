@@ -71,7 +71,7 @@ Jobs-to-be-done from Bench `docs/rolodex/`. Tenant-scoped. Demo seed. Not pixel-
 | 3.4  | [CSV and vCard import](./phase-3-rolodex/3.4-import.md)                        | completed   | 3.3           |
 | 3.5  | [Circles board, cadence, snooze](./phase-3-rolodex/3.5-circles.md)             | completed   | 3.3           |
 | 3.6  | [Log, facts, news, reminders, Timeline](./phase-3-rolodex/3.6-log-timeline.md) | completed   | 3.3           |
-| 3.7  | [Important dates and calendar](./phase-3-rolodex/3.7-dates-calendar.md)        | pending     | 3.3           |
+| 3.7  | [Important dates and calendar](./phase-3-rolodex/3.7-dates-calendar.md)        | completed   | 3.3           |
 | 3.8  | [Gifts and connections](./phase-3-rolodex/3.8-gifts-connections.md)            | pending     | 3.3, 3.7      |
 | 3.9  | [Today dashboard](./phase-3-rolodex/3.9-today.md)                              | pending     | 3.5, 3.6, 3.7 |
 | 3.10 | [Playwright smoke](./phase-3-rolodex/3.10-playwright-smoke.md)                 | pending     | 3.9           |

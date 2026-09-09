@@ -599,6 +599,80 @@ export async function createImportantDate(
   return inserted;
 }
 
+export async function getImportantDate(
+  tenantId: string,
+  id: string,
+  repo?: RolodexRepository,
+): Promise<ImportantDate | null> {
+  const scoped = requireTenantId(tenantId);
+  if (repo) {
+    const row = findScoped(repo.importantDates, scoped, id);
+    return row ? clone(row) : null;
+  }
+  const [row] = await requireRolodexDb()
+    .select()
+    .from(importantDates)
+    .where(tenantRow(importantDates, scoped, id))
+    .limit(1);
+  return row ?? null;
+}
+
+export async function updateImportantDate(
+  tenantId: string,
+  id: string,
+  input: Partial<CreateImportantDateInput>,
+  repo?: RolodexRepository,
+): Promise<ImportantDate | null> {
+  const scoped = requireTenantId(tenantId);
+  if (repo) {
+    const row = findScoped(repo.importantDates, scoped, id);
+    if (!row) {
+      return null;
+    }
+    if (input.type !== undefined) row.type = input.type;
+    if (input.label !== undefined) row.label = input.label;
+    if (input.month !== undefined) row.month = input.month;
+    if (input.day !== undefined) row.day = input.day;
+    if (input.year !== undefined) row.year = input.year;
+    return clone(row);
+  }
+  const [row] = await requireRolodexDb()
+    .update(importantDates)
+    .set({
+      ...(input.type !== undefined ? { type: input.type } : {}),
+      ...(input.label !== undefined ? { label: input.label } : {}),
+      ...(input.month !== undefined ? { month: input.month } : {}),
+      ...(input.day !== undefined ? { day: input.day } : {}),
+      ...(input.year !== undefined ? { year: input.year } : {}),
+    })
+    .where(tenantRow(importantDates, scoped, id))
+    .returning();
+  return row ?? null;
+}
+
+export async function deleteImportantDate(
+  tenantId: string,
+  id: string,
+  repo?: RolodexRepository,
+): Promise<boolean> {
+  const scoped = requireTenantId(tenantId);
+  if (repo) {
+    const index = repo.importantDates.findIndex(
+      (row) => row.tenantId === scoped && row.id === id,
+    );
+    if (index === -1) {
+      return false;
+    }
+    repo.importantDates.splice(index, 1);
+    return true;
+  }
+  const deleted = await requireRolodexDb()
+    .delete(importantDates)
+    .where(tenantRow(importantDates, scoped, id))
+    .returning({ id: importantDates.id });
+  return deleted.length > 0;
+}
+
 export async function listFacts(
   tenantId: string,
   repo?: RolodexRepository,

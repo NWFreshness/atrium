@@ -91,3 +91,65 @@ export function currentAge(
   const lastOccurrenceYear = thisYear <= t ? year : year - 1;
   return lastOccurrenceYear - date.year;
 }
+
+export function shiftMonth(
+  year: number,
+  month: number,
+  delta: number,
+): { year: number; month: number } {
+  const date = new Date(Date.UTC(year, month - 1 + delta, 1));
+  return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 };
+}
+
+export function daysInMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+export type MonthDate = {
+  id: string;
+  personId: string;
+  personName: string;
+  type: string;
+  label: string | null;
+  day: number;
+  date: string;
+  ageTurning: number | null;
+  milestone: boolean;
+};
+
+export function datesInMonth(
+  dates: {
+    id: string;
+    personId: string;
+    personName: string;
+    type: string;
+    label: string | null;
+    month: number;
+    day: number;
+    year: number | null;
+  }[],
+  year: number,
+  month: number,
+): MonthDate[] {
+  const result: MonthDate[] = [];
+  for (const row of dates) {
+    if (row.month !== month) {
+      continue;
+    }
+    const day = effectiveDay(row.month, row.day, year);
+    const date = toISO(new Date(Date.UTC(year, month - 1, day)));
+    const ageTurning = row.year != null ? year - row.year : null;
+    result.push({
+      id: row.id,
+      personId: row.personId,
+      personName: row.personName,
+      type: row.type,
+      label: row.label,
+      day,
+      date,
+      ageTurning,
+      milestone: ageTurning != null && ageTurning > 0 && ageTurning % 10 === 0,
+    });
+  }
+  return result.sort((left, right) => left.day - right.day);
+}
