@@ -4,6 +4,9 @@ import { EditPersonButton } from "@/components/rolodex/person-form";
 import styles from "@/components/rolodex/people.module.css";
 import pageStyles from "@/components/rolodex/rolodex-subnav.module.css";
 import { CIRCLE_META } from "@/lib/rolodex/constants";
+import { PersonLog } from "@/components/rolodex/person-log";
+import { todayISO } from "@/lib/rolodex/dates";
+import { listPersonLogAction } from "@/lib/rolodex/log-actions";
 import { getPersonAction } from "@/lib/rolodex/person-actions";
 
 const STATUS_LABEL = {
@@ -24,6 +27,7 @@ export default async function PersonDetailPage({
   if (!person) {
     notFound();
   }
+  const log = await listPersonLogAction(id);
 
   return (
     <main className={pageStyles["rolodex-page"]}>
@@ -74,10 +78,13 @@ export default async function PersonDetailPage({
         <dt>Latest news</dt>
         <dd>{person.latestNews?.text ?? ""}</dd>
       </dl>
-      <h2>Timeline</h2>
-      <p className={styles["rolodex-empty"]}>Coming in a later feature</p>
-      <h2>Facts</h2>
-      <p className={styles["rolodex-empty"]}>Coming in a later feature</p>
+      <PersonLog
+        personId={person.id}
+        facts={log.facts}
+        reminders={log.reminders}
+        timeline={log.timeline}
+        today={todayISO()}
+      />
     </main>
   );
 }
