@@ -3,15 +3,16 @@
 Board for phases and features. Status here is the source of truth for what is done.
 Cold start: [HANDOFF.md](../HANDOFF.md)
 Design: [docs/superpowers/specs/2026-09-06-atrium-design.md](../docs/superpowers/specs/2026-09-06-atrium-design.md)
+Rolodex: [docs/superpowers/specs/2026-09-09-rolodex-design.md](../docs/superpowers/specs/2026-09-09-rolodex-design.md)
 In progress: [CURRENT_FEATURE.md](../CURRENT_FEATURE.md)
 
 Only one feature `in_progress`. Later phases get specs when that phase starts.
 
 ## Build order
 
-Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → 2.2 → 2.3 → 2.4 → 2.5 → 2.6 → 2.8.
-2.7 (search) starts after 2.5 and must not run in parallel with 2.6 if they share the database page.
-Phase 2 is sequential. Do not run two Space features in parallel.
+Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10.
+3.4 / 3.6 / 3.7 start after 3.3 (same person page — do not parallel). 3.8 after 3.7.
+Phase 3 is sequential. Do not run two Rolodex features in parallel. Do not invent Groove specs.
 
 ### Phase 0 — Atrium platform
 
@@ -60,7 +61,22 @@ Long pole: 2.1 → 2.2 → 2.3 → 2.4 → 2.5 → 2.6 → 2.8. 2.7 can start af
 
 ### Phase 3 — Rolodex
 
-Specs not written yet.
+Jobs-to-be-done from Bench `docs/rolodex/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite. Initials only (no photo column). Design: [2026-09-09-rolodex-design.md](../docs/superpowers/specs/2026-09-09-rolodex-design.md).
+
+| ID   | Feature                                                                      | Status  | Depends on |
+| ---- | ---------------------------------------------------------------------------- | ------- | ---------- |
+| 3.1  | [Schema, seed, demo resetter](./phase-3-rolodex/3.1-schema-seed-resetter.md) | pending | 0.5        |
+| 3.2  | [Rolodex shell and subnav](./phase-3-rolodex/3.2-rolodex-shell.md)           | pending | 3.1        |
+| 3.3  | [People table and person page](./phase-3-rolodex/3.3-people.md)              | pending | 3.1, 3.2   |
+| 3.4  | [CSV and vCard import](./phase-3-rolodex/3.4-import.md)                      | pending | 3.3        |
+| 3.5  | [Circles board, cadence, snooze](./phase-3-rolodex/3.5-circles.md)           | pending | 3.3        |
+| 3.6  | [Log, facts, news, reminders, Timeline](./phase-3-rolodex/3.6-log-timeline.md) | pending | 3.3     |
+| 3.7  | [Important dates and calendar](./phase-3-rolodex/3.7-dates-calendar.md)      | pending | 3.3        |
+| 3.8  | [Gifts and connections](./phase-3-rolodex/3.8-gifts-connections.md)          | pending | 3.3, 3.7   |
+| 3.9  | [Today dashboard](./phase-3-rolodex/3.9-today.md)                            | pending | 3.5, 3.6, 3.7 |
+| 3.10 | [Playwright smoke](./phase-3-rolodex/3.10-playwright-smoke.md)               | pending | 3.9        |
+
+Long pole: 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10. 3.4, 3.6, 3.7 can start after 3.3 (same person page — do not parallel).
 
 ### Phase 4 — Groove
 

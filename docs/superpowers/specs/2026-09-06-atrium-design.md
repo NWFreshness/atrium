@@ -165,7 +165,9 @@ Feature specs: `features/phase-2-space/` (2.1–2.8). Board: `features/INDEX.md`
 
 ### Phase 3 — Rolodex
 
-People, circles, cadences, birthdays, conversation timeline, CSV and vCard import. Tenant-scoped.
+People, circles, cadences, birthdays, conversation timeline, CSV and vCard import. Tenant-scoped. Initials only in v1 (no photo column). Last contacted and check-in status are derived, never stored.
+
+Feature specs: `features/phase-3-rolodex/` (3.1–3.10). Design: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Board: `features/INDEX.md`.
 
 ### Phase 4 — Groove
 
@@ -223,7 +225,7 @@ Feature granularity: independently shippable, hours to a couple of days, numbere
 
 Bench used `@tanstack/react-table` for CRM/Space grids. Atrium does the same, and only that:
 
-- **Table:** yes, when CRM (phase 1) and Space table views (phase 2) ship. Not in phase 0.
+- **Table:** yes, when CRM (phase 1), Space table views (phase 2), and Rolodex People (phase 3) ship. Not in phase 0.
 - **Router:** no. Next.js App Router.
 - **Query:** no in v1. Server Components and server actions load and mutate data. Revisit if a screen needs rich client cache.
 
@@ -245,4 +247,4 @@ Do not add TanStack packages until the feature that uses them.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-Progress: `features/INDEX.md`. Phase 0 is complete (0.1–0.5). Phase 1 CRM specs 1.1–1.9 exist. Next implementable unit is 1.1. Do not invent Space/Rolodex/Groove specs.
+Progress: `features/INDEX.md`. Phase 0–2 complete. Phase 3 Rolodex specs 3.1–3.10 exist. Next implementable unit is 3.1. Do not invent Groove specs.
