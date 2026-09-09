@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [2.8 Playwright smoke](features/phase-2-space/2.8-playwright-smoke.md)
+Phase 2 Space is complete. Do not start Rolodex / Groove specs unless the user asks.
 
 ---
 
@@ -99,3 +99,7 @@ Table/board/list switcher. Filters and sort persist per view. Board drag (dnd-ki
 ### 2.7 Quick-find search (completed)
 
 Sidebar Search + ⌘/Ctrl+K. Title search across pages, databases, and rows. Session tenant only. Controller: npm test 254 passed. Spec PASS, quality APPROVED.
+
+### 2.8 Playwright smoke (completed)
+
+`e2e/space.spec.ts`: unauth `/space` → login; demo Home/Projects/Travel; New database Table; create/rename page persists; owner does not see demo titles. Controller: npm test 254, Playwright 14 passed. Spec PASS, quality APPROVED.
