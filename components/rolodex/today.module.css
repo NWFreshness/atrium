@@ -1,0 +1,157 @@
+.rolodex-today-lede {
+  margin: 0 0 0.75rem;
+  color: var(--foreground);
+}
+
+.rolodex-today-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.rolodex-today-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+}
+
+.rolodex-today-stats strong {
+  font-size: 1.5rem;
+}
+
+.rolodex-today-hero {
+  background: #161616;
+  color: #f4efe4;
+  padding: 1.35rem 1.5rem 1.2rem;
+  border-radius: 10px;
+  margin: 0 0 1.25rem;
+}
+
+.rolodex-today-hero-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.rolodex-today-hero-head h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.rolodex-today-hero-head p {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.rolodex-today-hero-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.rolodex-today-hero-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.rolodex-today-hero-row a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.rolodex-today-hero-row a span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rolodex-today-hero-row a span span {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.rolodex-today-hero-row button {
+  background: #ecad0a;
+  color: #161616;
+  border: 0;
+  border-radius: 4px;
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.rolodex-today-overdue {
+  color: #f87171;
+}
+
+.rolodex-today-due {
+  color: #fbbf24;
+}
+
+.rolodex-today-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.rolodex-today-panel {
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  min-height: 8rem;
+}
+
+.rolodex-today-panel h2,
+.rolodex-today-chart h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+}
+
+.rolodex-today-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.rolodex-today-empty {
+  margin: 0;
+}
+
+.rolodex-today-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.rolodex-today-chart {
+  min-width: 0;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+}
+
+.rolodex-today-chart-body {
+  width: 100%;
+  height: 210px;
+}
