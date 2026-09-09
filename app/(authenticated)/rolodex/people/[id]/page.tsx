@@ -6,6 +6,8 @@ import pageStyles from "@/components/rolodex/rolodex-subnav.module.css";
 import { CIRCLE_META } from "@/lib/rolodex/constants";
 import { PersonLog } from "@/components/rolodex/person-log";
 import { todayISO } from "@/lib/rolodex/dates";
+import { PersonDates } from "@/components/rolodex/person-dates";
+import { listImportantDatesAction } from "@/lib/rolodex/date-actions";
 import { listPersonLogAction } from "@/lib/rolodex/log-actions";
 import { getPersonAction } from "@/lib/rolodex/person-actions";
 
@@ -28,6 +30,7 @@ export default async function PersonDetailPage({
     notFound();
   }
   const log = await listPersonLogAction(id);
+  const dates = await listImportantDatesAction(id);
 
   return (
     <main className={pageStyles["rolodex-page"]}>
@@ -78,6 +81,7 @@ export default async function PersonDetailPage({
         <dt>Latest news</dt>
         <dd>{person.latestNews?.text ?? ""}</dd>
       </dl>
+      <PersonDates personId={person.id} dates={dates} today={todayISO()} />
       <PersonLog
         personId={person.id}
         facts={log.facts}

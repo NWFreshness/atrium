@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [3.7 Important dates and calendar](features/phase-3-rolodex/3.7-dates-calendar.md)
+Next up: [3.8 Gifts and connections](features/phase-3-rolodex/3.8-gifts-connections.md)
 
-Do not implement 3.8 in parallel with 3.7. Do not invent Groove specs.
+Do not implement 3.9 in parallel with 3.8. Do not invent Groove specs.
 
 ---
 
@@ -133,3 +133,7 @@ Four-column `@hello-pangea/dnd` board. Drag changes circle via `movePersonCircle
 ### 3.6 Interactions, facts, news, reminders, and Timeline (completed)
 
 Person page logs interactions/facts/news/reminders. Last contacted and latest news stay derived. Global `/rolodex/timeline` filters by person and type. Reminder done uses `doneAt`. Controller: npm test 327 passed. Spec PASS.
+
+### 3.7 Important dates and calendar (completed)
+
+Person page add/edit/delete dates with age and milestone. Month grid with prev/next across years; 29 Feb → 28 in common years; click opens the person. Controller: npm test 329 passed. Spec PASS.
