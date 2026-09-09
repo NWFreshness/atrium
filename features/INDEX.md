@@ -66,7 +66,7 @@ Jobs-to-be-done from Bench `docs/rolodex/`. Tenant-scoped. Demo seed. Not pixel-
 | ID   | Feature                                                                        | Status      | Depends on    |
 | ---- | ------------------------------------------------------------------------------ | ----------- | ------------- |
 | 3.1  | [Schema, seed, demo resetter](./phase-3-rolodex/3.1-schema-seed-resetter.md)   | completed   | 0.5           |
-| 3.2  | [Rolodex shell and subnav](./phase-3-rolodex/3.2-rolodex-shell.md)             | pending     | 3.1           |
+| 3.2  | [Rolodex shell and subnav](./phase-3-rolodex/3.2-rolodex-shell.md)             | completed   | 3.1           |
 | 3.3  | [People table and person page](./phase-3-rolodex/3.3-people.md)                | pending     | 3.1, 3.2      |
 | 3.4  | [CSV and vCard import](./phase-3-rolodex/3.4-import.md)                        | pending     | 3.3           |
 | 3.5  | [Circles board, cadence, snooze](./phase-3-rolodex/3.5-circles.md)             | pending     | 3.3           |

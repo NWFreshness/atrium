@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Next work is feature 3.2.** Do not run 3.3 in parallel with 3.2. Do not invent Groove specs. Do not push to `main`.
+**Stop. Next work is feature 3.3.** Do not run 3.4 in parallel with 3.3. Do not invent Groove specs. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
@@ -33,7 +33,8 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | 2.7 Quick-find search | completed (PR #24) |
 | 2.8 Playwright smoke | completed (PR #25) |
 | **3.1 Schema, seed, resetter** | **completed** |
-| **3.2 Shell and subnav** | **next** |
+| **3.2 Shell and subnav** | **completed** |
+| **3.3 People table and person page** | **next** |
 
 Phase 1 CRM and Phase 2 Space are complete. Phase 3 Rolodex specs 3.1–3.10 are written. Groove specs are not. Do not invent them.
 
@@ -48,7 +49,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-3-rolodex/3.2-rolodex-shell.md` — implement that spec, nothing else
+6. `features/phase-3-rolodex/3.3-people.md` — implement that spec, nothing else
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -88,4 +89,4 @@ npm test
 npm run build
 ```
 
-Then implement 3.2 from its spec.
+Then implement 3.3 from its spec.
