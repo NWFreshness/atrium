@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [4.4 Groove transport and patches](features/phase-4-groove/4.4-transport-patches.md)
+Next up: [4.5 Groove audio engine](features/phase-4-groove/4.5-audio-engine.md)
 
 ---
 
@@ -163,3 +163,7 @@ Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, 
 ### 4.3 Groove sequencer controls (completed)
 
 `components/groove/`: `knob`, `fader`, `drum-grid`, `note-grid`, `velocity-lane`, `led-strip`, `unit`, `use-readout` ported from Bench. Each unit is `role="region"` named RHYTHM / BASS / PADS / LEAD; pads render `DrumGrid`, the others render `NoteGrid` + `VelocityLane`. Unique aria-labels (`KICK step 3`, `BASS step 1`, etc.) proven by both unit tests and a manual Chromium walk. Shell mounts four Units on a read-only `clonePatch(PATCHES[0])`. MUTE toggles a muted class. No AudioContext anywhere. Controller: npm test 421 passed, npm run build exit 0. Spec PASS.
+
+### 4.4 Groove transport and patches (completed)
+
+`components/groove/transport.tsx`: PLAY/STOP button, tempo dial with shift-fine, SWING knob, master LED strip, four patch buttons (A · NEON RIVIERA, B · BASALT, C · SUNROOM, D · LATE ORBIT), REVERT/SAVED toggle. `lib/groove/patch-edit.ts`: `setUnitParam`, `setNoteStep`, `setDrumStep`, `setBpm`, `setSwing`, `patchIsDirty`. Shell holds patches/index/mutes/playing state, edits via the helpers, listens for Space and 1–4 keys (ignored when typing into inputs). No AudioContext. Controller: npm test 430 passed, npm run build exit 0. Manual Chromium walk confirms all seven acceptance behaviours. Spec PASS.
