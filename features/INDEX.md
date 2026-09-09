@@ -46,16 +46,16 @@ Long pole: 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 → 1.8 → 1.9. 1.7 can 
 
 Jobs-to-be-done from Bench `docs/space/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite.
 
-| ID  | Feature                                                                    | Status      | Depends on |
-| --- | -------------------------------------------------------------------------- | ----------- | ---------- |
-| 2.1 | [Schema, seed, demo resetter](./phase-2-space/2.1-schema-seed-resetter.md) | completed   | 0.5        |
-| 2.2 | [Space shell](./phase-2-space/2.2-space-shell.md)                          | completed   | 2.1        |
-| 2.3 | [Pages tree in the sidebar](./phase-2-space/2.3-pages-sidebar.md)          | completed   | 2.1, 2.2   |
-| 2.4 | [Block editor](./phase-2-space/2.4-block-editor.md)                        | completed   | 2.3        |
-| 2.5 | [Databases and table view](./phase-2-space/2.5-databases-table.md)         | completed   | 2.3, 2.4   |
-| 2.6 | [Board, list, filters, sorts](./phase-2-space/2.6-views-board-list.md) | completed | 2.5 |
-| 2.7 | [Quick-find search](./phase-2-space/2.7-search.md) | completed | 2.5 |
-| 2.8 | [Playwright smoke](./phase-2-space/2.8-playwright-smoke.md) | completed | 2.6, 2.7 |
+| ID  | Feature                                                                    | Status    | Depends on |
+| --- | -------------------------------------------------------------------------- | --------- | ---------- |
+| 2.1 | [Schema, seed, demo resetter](./phase-2-space/2.1-schema-seed-resetter.md) | completed | 0.5        |
+| 2.2 | [Space shell](./phase-2-space/2.2-space-shell.md)                          | completed | 2.1        |
+| 2.3 | [Pages tree in the sidebar](./phase-2-space/2.3-pages-sidebar.md)          | completed | 2.1, 2.2   |
+| 2.4 | [Block editor](./phase-2-space/2.4-block-editor.md)                        | completed | 2.3        |
+| 2.5 | [Databases and table view](./phase-2-space/2.5-databases-table.md)         | completed | 2.3, 2.4   |
+| 2.6 | [Board, list, filters, sorts](./phase-2-space/2.6-views-board-list.md)     | completed | 2.5        |
+| 2.7 | [Quick-find search](./phase-2-space/2.7-search.md)                         | completed | 2.5        |
+| 2.8 | [Playwright smoke](./phase-2-space/2.8-playwright-smoke.md)                | completed | 2.6, 2.7   |
 
 Long pole: 2.1 → 2.2 → 2.3 → 2.4 → 2.5 → 2.6 → 2.8. 2.7 can start after 2.5 (same database page as 2.6 — do not parallel).
 
@@ -63,18 +63,18 @@ Long pole: 2.1 → 2.2 → 2.3 → 2.4 → 2.5 → 2.6 → 2.8. 2.7 can start af
 
 Jobs-to-be-done from Bench `docs/rolodex/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite. Initials only (no photo column). Design: [2026-09-09-rolodex-design.md](../docs/superpowers/specs/2026-09-09-rolodex-design.md).
 
-| ID   | Feature                                                                      | Status  | Depends on |
-| ---- | ---------------------------------------------------------------------------- | ------- | ---------- |
-| 3.1  | [Schema, seed, demo resetter](./phase-3-rolodex/3.1-schema-seed-resetter.md) | pending | 0.5        |
-| 3.2  | [Rolodex shell and subnav](./phase-3-rolodex/3.2-rolodex-shell.md)           | pending | 3.1        |
-| 3.3  | [People table and person page](./phase-3-rolodex/3.3-people.md)              | pending | 3.1, 3.2   |
-| 3.4  | [CSV and vCard import](./phase-3-rolodex/3.4-import.md)                      | pending | 3.3        |
-| 3.5  | [Circles board, cadence, snooze](./phase-3-rolodex/3.5-circles.md)           | pending | 3.3        |
-| 3.6  | [Log, facts, news, reminders, Timeline](./phase-3-rolodex/3.6-log-timeline.md) | pending | 3.3     |
-| 3.7  | [Important dates and calendar](./phase-3-rolodex/3.7-dates-calendar.md)      | pending | 3.3        |
-| 3.8  | [Gifts and connections](./phase-3-rolodex/3.8-gifts-connections.md)          | pending | 3.3, 3.7   |
-| 3.9  | [Today dashboard](./phase-3-rolodex/3.9-today.md)                            | pending | 3.5, 3.6, 3.7 |
-| 3.10 | [Playwright smoke](./phase-3-rolodex/3.10-playwright-smoke.md)               | pending | 3.9        |
+| ID   | Feature                                                                        | Status      | Depends on    |
+| ---- | ------------------------------------------------------------------------------ | ----------- | ------------- |
+| 3.1  | [Schema, seed, demo resetter](./phase-3-rolodex/3.1-schema-seed-resetter.md)   | completed   | 0.5           |
+| 3.2  | [Rolodex shell and subnav](./phase-3-rolodex/3.2-rolodex-shell.md)             | pending     | 3.1           |
+| 3.3  | [People table and person page](./phase-3-rolodex/3.3-people.md)                | pending     | 3.1, 3.2      |
+| 3.4  | [CSV and vCard import](./phase-3-rolodex/3.4-import.md)                        | pending     | 3.3           |
+| 3.5  | [Circles board, cadence, snooze](./phase-3-rolodex/3.5-circles.md)             | pending     | 3.3           |
+| 3.6  | [Log, facts, news, reminders, Timeline](./phase-3-rolodex/3.6-log-timeline.md) | pending     | 3.3           |
+| 3.7  | [Important dates and calendar](./phase-3-rolodex/3.7-dates-calendar.md)        | pending     | 3.3           |
+| 3.8  | [Gifts and connections](./phase-3-rolodex/3.8-gifts-connections.md)            | pending     | 3.3, 3.7      |
+| 3.9  | [Today dashboard](./phase-3-rolodex/3.9-today.md)                              | pending     | 3.5, 3.6, 3.7 |
+| 3.10 | [Playwright smoke](./phase-3-rolodex/3.10-playwright-smoke.md)                 | pending     | 3.9           |
 
 Long pole: 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10. 3.4, 3.6, 3.7 can start after 3.3 (same person page — do not parallel).
 
