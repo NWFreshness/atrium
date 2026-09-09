@@ -90,7 +90,7 @@ Jobs-to-be-done from Bench `docs/groove/`. Web Audio only. No database, no seed,
 | 4.3 | [Knobs, faders, sequencer grids](./phase-4-groove/4.3-sequencer-controls.md) | completed   | 4.1, 4.2   |
 | 4.4 | [Transport, patches, mute, keyboard](./phase-4-groove/4.4-transport-patches.md) | completed   | 4.3        |
 | 4.5 | [Audio engine](./phase-4-groove/4.5-audio-engine.md)                 | completed   | 4.1, 4.4   |
-| 4.6 | [Master filter, sweep, pump, FX, scope](./phase-4-groove/4.6-master.md) | pending | 4.5        |
+| 4.6 | [Master filter, sweep, pump, FX, scope](./phase-4-groove/4.6-master.md) | completed   | 4.5        |
 | 4.7 | [Live wiring](./phase-4-groove/4.7-live-wiring.md)                   | pending | 4.5, 4.6   |
 | 4.8 | [Playwright smoke](./phase-4-groove/4.8-playwright-smoke.md)         | pending | 4.7        |
 

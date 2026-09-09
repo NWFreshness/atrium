@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LedStrip } from "@/components/groove/led-strip";
+import { Master } from "@/components/groove/master";
 import { Transport } from "@/components/groove/transport";
 import { Unit } from "@/components/groove/unit";
 import { Engine, type EngineState } from "@/lib/groove/audio/engine";
@@ -184,11 +185,33 @@ export function GrooveShell() {
       </main>
 
       <div className={styles["groove-master"]} aria-label="Groove master strip">
-        <span className={styles["groove-master-title"]}>MASTER · FILTER</span>
+        <Master
+          params={patch.master}
+          onParam={(key, value) =>
+            edit((p) => ({ ...p, master: { ...p.master, [key]: value } }))
+          }
+          volume={VOLUME}
+          onVolume={() => {
+            // Volume lands in 4.7 (live wiring).
+          }}
+          analyser={engineRef.current?.analyser ?? null}
+          getFilter={() => {
+            const engine = engineRef.current;
+            if (playing && engine) {
+              return {
+                macro: engine.filterMacro,
+                reso: patch.master.filterReso,
+              };
+            }
+            return {
+              macro: patch.master.filter,
+              reso: patch.master.filterReso,
+            };
+          }}
+          liveFilter={engineRef.current?.filterMacro ?? patch.master.filter}
+          sweepPhase={engineRef.current?.sweepPhase ?? 0}
+        />
         <LedStrip current={current} />
-        <span className={styles["groove-master-copy"]}>
-          Master panel lands in 4.6.
-        </span>
       </div>
     </div>
   );

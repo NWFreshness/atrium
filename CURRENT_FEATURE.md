@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [4.6 Groove master](features/phase-4-groove/4.6-master.md)
+Next up: [4.7 Groove live wiring](features/phase-4-groove/4.7-live-wiring.md)
 
 ---
 
@@ -171,3 +171,7 @@ Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, 
 ### 4.5 Groove audio engine (completed)
 
 `lib/groove/audio/`: `engine.ts` lookahead clock + scheduling, `drums.ts` six synthesised voices, `synths.ts` `MonoSynth` (bass/lead) + polyphonic `PadSynth`, `master.ts` bus with DJ filter, ping-pong delay, convolution reverb, sidechain duck, drum crush/drive; `schedule.ts` pure `gapToNext`/`sweepValue`. Shell constructs `Engine` on mount (browser only), writes live state into a ref every render, calls `resume()`+`start()` on PLAY and `stop()` on STOP. `onStep` drives the master LED strip. Knob SVG arcs rounded to 4dp so SSR and CSR match — no hydration warning. No AudioContext anywhere in tests, no npm audio library added. Controller: npm test 434 passed, npm run build exit 0. Headless Chromium walk: PLAY lights the playhead, 16 distinct steps accumulate over 2.5s, STOP returns playhead to -1, zero console errors. Spec PASS.
+
+### 4.6 Groove master (completed)
+
+`components/groove/master.tsx`: hero FILTER knob + sweep meter, the four `MASTER_GROUPS` (FILTER, SWEEP, SIDECHAIN, SEND FX) each rendering its Knobs, OUT volume Fader. `components/groove/scope.tsx`: canvas that draws the analyser spectrum and overlays `filterGainAt(macro, reso, freq)` so the readout matches the audio graph. Shell passes `engine.analyser` and `engine.filterMacro`/`sweepPhase` while playing; when stopped, the readout uses `patch.master.filter`. The 4.5 audio graph already had DJ filter + pump + delay + reverb + analyser; this PR adds the panel that drives it. Controller: npm test 444 passed, npm run build exit 0. Manual Chromium walk as demo: master strip visible, scope canvas mounted, four groups, LATE ORBIT renders an 8-segment sweep meter, zero console errors. Spec PASS.
