@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Next work is feature 3.10.** Do not invent Groove specs. Do not push to `main`.
+**Stop. Phase 3 Rolodex is complete.** Do not invent Groove specs. Do not push to `main`.
 
 ## Where we are (2026-09-06)
 
@@ -41,7 +41,7 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | **3.7 Important dates and calendar** | **completed** |
 | **3.8 Gifts and connections** | **completed** |
 | **3.9 Today dashboard** | **completed** |
-| **3.10 Playwright smoke** | **next** |
+| **3.10 Playwright smoke** | **completed** |
 
 Phase 1 CRM and Phase 2 Space are complete. Phase 3 Rolodex specs 3.1–3.10 are written. Groove specs are not. Do not invent them.
 
@@ -56,7 +56,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-3-rolodex/3.10-playwright-smoke.md` — implement that spec, nothing else
+6. Wait for the user before Groove. Do not invent Groove specs.
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -96,4 +96,4 @@ npm test
 npm run build
 ```
 
-Then implement 3.10 from its spec.
+Then wait for the user. Do not invent Groove specs.
