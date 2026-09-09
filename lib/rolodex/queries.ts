@@ -699,6 +699,53 @@ export async function createReminder(
   return inserted;
 }
 
+export async function getReminder(
+  tenantId: string,
+  id: string,
+  repo?: RolodexRepository,
+): Promise<Reminder | null> {
+  const scoped = requireTenantId(tenantId);
+  if (repo) {
+    const row = findScoped(repo.reminders, scoped, id);
+    return row ? clone(row) : null;
+  }
+  const [row] = await requireRolodexDb()
+    .select()
+    .from(reminders)
+    .where(tenantRow(reminders, scoped, id))
+    .limit(1);
+  return row ?? null;
+}
+
+export async function updateReminder(
+  tenantId: string,
+  id: string,
+  input: { done?: boolean; doneAt?: string | null; text?: string },
+  repo?: RolodexRepository,
+): Promise<Reminder | null> {
+  const scoped = requireTenantId(tenantId);
+  if (repo) {
+    const row = findScoped(repo.reminders, scoped, id);
+    if (!row) {
+      return null;
+    }
+    if (input.done !== undefined) row.done = input.done;
+    if (input.doneAt !== undefined) row.doneAt = input.doneAt;
+    if (input.text !== undefined) row.text = input.text;
+    return clone(row);
+  }
+  const [row] = await requireRolodexDb()
+    .update(reminders)
+    .set({
+      ...(input.done !== undefined ? { done: input.done } : {}),
+      ...(input.doneAt !== undefined ? { doneAt: input.doneAt } : {}),
+      ...(input.text !== undefined ? { text: input.text } : {}),
+    })
+    .where(tenantRow(reminders, scoped, id))
+    .returning();
+  return row ?? null;
+}
+
 export async function listGifts(
   tenantId: string,
   repo?: RolodexRepository,

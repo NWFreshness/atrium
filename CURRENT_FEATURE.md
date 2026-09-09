@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [3.6 Log, facts, news, reminders, Timeline](features/phase-3-rolodex/3.6-log-timeline.md)
+Next up: [3.7 Important dates and calendar](features/phase-3-rolodex/3.7-dates-calendar.md)
 
-Do not implement 3.7 in parallel with 3.6. Do not invent Groove specs.
+Do not implement 3.8 in parallel with 3.7. Do not invent Groove specs.
 
 ---
 
@@ -129,3 +129,7 @@ Papa Parse + vcf. Column mapping, preview, duplicates flagged by email then name
 ### 3.5 Circles board, cadence, snooze (completed)
 
 Four-column `@hello-pangea/dnd` board. Drag changes circle via `movePersonCircle`. Header counts people and overdue. Cadence off/snooze covered in unit tests; person page Edit exposes those fields. Controller: npm test 322 passed. Spec PASS.
+
+### 3.6 Interactions, facts, news, reminders, and Timeline (completed)
+
+Person page logs interactions/facts/news/reminders. Last contacted and latest news stay derived. Global `/rolodex/timeline` filters by person and type. Reminder done uses `doneAt`. Controller: npm test 327 passed. Spec PASS.
