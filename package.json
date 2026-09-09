@@ -25,14 +25,17 @@
     "drizzle-orm": "^0.44.7",
     "next": "16.3.4",
     "next-auth": "^5.0.0-beta.32",
+    "papaparse": "^5.7.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "recharts": "^3.10.1"
+    "recharts": "^3.10.1",
+    "vcf": "^2.1.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.10",

@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [3.4 CSV and vCard import](features/phase-3-rolodex/3.4-import.md)
+Next up: [3.5 Circles board, cadence, snooze](features/phase-3-rolodex/3.5-circles.md)
 
-Do not implement 3.5 in parallel with 3.4. Do not invent Groove specs.
+Do not implement 3.6 in parallel with 3.5. Do not invent Groove specs.
 
 ---
 
@@ -121,3 +121,7 @@ Five-section Rolodex subnav (Today, People, Circles, Calendar, Timeline) under `
 ### 3.3 People table and person page (completed)
 
 TanStack people table with initials, search (name/company/email), circle and tag filters, add/edit dialog, confirm delete. Session tenant only. Detail `/rolodex/people/[id]` 404s for missing/other-tenant. Controller: npm test 307 passed, build includes `/rolodex/people/[id]`. Spec PASS.
+
+### 3.4 CSV and vCard import (completed)
+
+Papa Parse + vcf. Column mapping, preview, duplicates flagged by email then name and untickable. Apply is all-or-nothing on the memory repo; neon-http is sequential writes. Birthday mapping creates an important date. Controller: npm test 316 passed. Spec PASS.

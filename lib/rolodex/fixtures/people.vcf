@@ -1,0 +1,15 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Ada Lovelace
+EMAIL:ada@example.com
+TITLE:Mathematician
+ORG:Analytical Engines
+ADR:;;Street;London;;;
+NOTE:Notes from a card
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Charles Babbage
+EMAIL:charles@example.com
+ORG:Difference Engine
+END:VCARD
