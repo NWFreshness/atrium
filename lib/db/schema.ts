@@ -7,6 +7,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import * as crm from "../crm/schema";
+import * as rolodex from "../rolodex/schema";
 import * as space from "../space/schema";
 
 export const userRoles = ["owner", "demo"] as const;
@@ -92,6 +93,20 @@ export const pageTypeEnum = space.pageTypeEnum;
 export const blockTypeEnum = space.blockTypeEnum;
 export const propertyTypeEnum = space.propertyTypeEnum;
 export const viewKindEnum = space.viewKindEnum;
+
+export const people = rolodex.people;
+export const interactions = rolodex.interactions;
+export const importantDates = rolodex.importantDates;
+export const facts = rolodex.facts;
+export const news = rolodex.news;
+export const reminders = rolodex.reminders;
+export const gifts = rolodex.gifts;
+export const connections = rolodex.connections;
+export const circleEnum = rolodex.circleEnum;
+export const interactionTypeEnum = rolodex.interactionTypeEnum;
+export const importantDateTypeEnum = rolodex.importantDateTypeEnum;
+export const giftKindEnum = rolodex.giftKindEnum;
+export const connectionKindEnum = rolodex.connectionKindEnum;
 
 export const verificationTokens = pgTable(
   "verificationTokens",

@@ -6,6 +6,7 @@ import {
   listDeals,
   listOrganizations,
 } from "../crm/queries";
+import { createMemoryRolodexRepository, listPeople } from "../rolodex/queries";
 import { createMemorySpaceRepository, listPages } from "../space/queries";
 import { hashPassword } from "./password";
 import {
@@ -14,6 +15,7 @@ import {
   isUserRole,
   parseSeedEnv,
   seedDemoCrm,
+  seedDemoRolodex,
   seedDemoSpace,
 } from "./seed";
 
@@ -174,6 +176,37 @@ describe("seedDemoSpace", () => {
   it("throws when Demo tenant is missing", async () => {
     const spaceRepo = createMemorySpaceRepository();
     await expect(seedDemoSpace(() => undefined, spaceRepo)).rejects.toThrow(
+      /Demo tenant/,
+    );
+  });
+});
+
+describe("seedDemoRolodex", () => {
+  it("seeds Rolodex people for Demo only and leaves Owner empty", async () => {
+    const seedRepo = createMemorySeedRepository();
+    const rolodexRepo = createMemoryRolodexRepository();
+    const plan = parseSeedEnv(seedEnv);
+
+    await applySeed(seedRepo, plan, hashPassword);
+    await seedDemoRolodex(
+      (name) => seedRepo.tenants.find((tenant) => tenant.name === name)?.id,
+      rolodexRepo,
+    );
+
+    const demoId = seedRepo.tenants.find(
+      (tenant) => tenant.name === "Demo",
+    )!.id;
+    const ownerId = seedRepo.tenants.find(
+      (tenant) => tenant.name === "Owner",
+    )!.id;
+
+    expect((await listPeople(demoId, rolodexRepo)).length).toBeGreaterThan(0);
+    expect(await listPeople(ownerId, rolodexRepo)).toEqual([]);
+  });
+
+  it("throws when Demo tenant is missing", async () => {
+    const rolodexRepo = createMemoryRolodexRepository();
+    await expect(seedDemoRolodex(() => undefined, rolodexRepo)).rejects.toThrow(
       /Demo tenant/,
     );
   });

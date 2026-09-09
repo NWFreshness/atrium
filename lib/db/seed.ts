@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import { eq } from "drizzle-orm";
 import type { CrmRepository } from "../crm/queries";
 import { seedCrm } from "../crm/seed";
+import type { RolodexRepository } from "../rolodex/queries";
+import { seedRolodex } from "../rolodex/seed";
 import type { SpaceRepository } from "../space/queries";
 import { seedSpace } from "../space/seed";
 import { getDb, type Database } from "./index";
@@ -246,6 +248,19 @@ export async function seedDemoSpace(
   await seedSpace(demoTenantId, spaceRepo);
 }
 
+export async function seedDemoRolodex(
+  getTenantId: (
+    name: string,
+  ) => string | undefined | Promise<string | undefined>,
+  rolodexRepo?: RolodexRepository,
+): Promise<void> {
+  const demoTenantId = await getTenantId("Demo");
+  if (!demoTenantId) {
+    throw new Error("Demo tenant not found");
+  }
+  await seedRolodex(demoTenantId, rolodexRepo);
+}
+
 export async function runSeed(
   env: Record<string, string | undefined> = process.env,
 ): Promise<void> {
@@ -258,6 +273,7 @@ export async function runSeed(
     seededTenants.find((tenant) => tenant.name === name)?.id;
   await seedDemoCrm(demoTenantId);
   await seedDemoSpace(demoTenantId);
+  await seedDemoRolodex(demoTenantId);
 }
 
 function isDirectRun(): boolean {
