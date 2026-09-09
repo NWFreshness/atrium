@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [4.5 Groove audio engine](features/phase-4-groove/4.5-audio-engine.md)
+Next up: [4.6 Groove master](features/phase-4-groove/4.6-master.md)
 
 ---
 
@@ -167,3 +167,7 @@ Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, 
 ### 4.4 Groove transport and patches (completed)
 
 `components/groove/transport.tsx`: PLAY/STOP button, tempo dial with shift-fine, SWING knob, master LED strip, four patch buttons (A · NEON RIVIERA, B · BASALT, C · SUNROOM, D · LATE ORBIT), REVERT/SAVED toggle. `lib/groove/patch-edit.ts`: `setUnitParam`, `setNoteStep`, `setDrumStep`, `setBpm`, `setSwing`, `patchIsDirty`. Shell holds patches/index/mutes/playing state, edits via the helpers, listens for Space and 1–4 keys (ignored when typing into inputs). No AudioContext. Controller: npm test 430 passed, npm run build exit 0. Manual Chromium walk confirms all seven acceptance behaviours. Spec PASS.
+
+### 4.5 Groove audio engine (completed)
+
+`lib/groove/audio/`: `engine.ts` lookahead clock + scheduling, `drums.ts` six synthesised voices, `synths.ts` `MonoSynth` (bass/lead) + polyphonic `PadSynth`, `master.ts` bus with DJ filter, ping-pong delay, convolution reverb, sidechain duck, drum crush/drive; `schedule.ts` pure `gapToNext`/`sweepValue`. Shell constructs `Engine` on mount (browser only), writes live state into a ref every render, calls `resume()`+`start()` on PLAY and `stop()` on STOP. `onStep` drives the master LED strip. Knob SVG arcs rounded to 4dp so SSR and CSR match — no hydration warning. No AudioContext anywhere in tests, no npm audio library added. Controller: npm test 434 passed, npm run build exit 0. Headless Chromium walk: PLAY lights the playhead, 16 distinct steps accumulate over 2.5s, STOP returns playhead to -1, zero console errors. Spec PASS.
