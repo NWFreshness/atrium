@@ -855,6 +855,29 @@ export async function createGift(
   return inserted;
 }
 
+export async function deleteGift(
+  tenantId: string,
+  id: string,
+  repo?: RolodexRepository,
+): Promise<boolean> {
+  const scoped = requireTenantId(tenantId);
+  if (repo) {
+    const index = repo.gifts.findIndex(
+      (row) => row.tenantId === scoped && row.id === id,
+    );
+    if (index === -1) {
+      return false;
+    }
+    repo.gifts.splice(index, 1);
+    return true;
+  }
+  const deleted = await requireRolodexDb()
+    .delete(gifts)
+    .where(tenantRow(gifts, scoped, id))
+    .returning({ id: gifts.id });
+  return deleted.length > 0;
+}
+
 export async function listConnections(
   tenantId: string,
   repo?: RolodexRepository,
@@ -917,4 +940,27 @@ export async function createConnection(
     .values(row)
     .returning();
   return inserted;
+}
+
+export async function deleteConnection(
+  tenantId: string,
+  id: string,
+  repo?: RolodexRepository,
+): Promise<boolean> {
+  const scoped = requireTenantId(tenantId);
+  if (repo) {
+    const index = repo.connections.findIndex(
+      (row) => row.tenantId === scoped && row.id === id,
+    );
+    if (index === -1) {
+      return false;
+    }
+    repo.connections.splice(index, 1);
+    return true;
+  }
+  const deleted = await requireRolodexDb()
+    .delete(connections)
+    .where(tenantRow(connections, scoped, id))
+    .returning({ id: connections.id });
+  return deleted.length > 0;
 }

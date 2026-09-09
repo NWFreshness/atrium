@@ -86,3 +86,5 @@ export const CIRCLE_META: Record<Circle, CircleMeta> = {
 };
 
 export const DUE_SOON_WINDOW_DAYS = 7;
+
+export const GIFT_IDEA_WINDOW_DAYS = 30;

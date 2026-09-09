@@ -2,9 +2,9 @@
 
 **None in progress.**
 
-Next up: [3.8 Gifts and connections](features/phase-3-rolodex/3.8-gifts-connections.md)
+Next up: [3.9 Today dashboard](features/phase-3-rolodex/3.9-today.md)
 
-Do not implement 3.9 in parallel with 3.8. Do not invent Groove specs.
+Do not implement 3.10 in parallel with 3.9. Do not invent Groove specs.
 
 ---
 
@@ -137,3 +137,7 @@ Person page logs interactions/facts/news/reminders. Last contacted and latest ne
 ### 3.7 Important dates and calendar (completed)
 
 Person page add/edit/delete dates with age and milestone. Month grid with prev/next across years; 29 Feb → 28 in common years; click opens the person. Controller: npm test 329 passed. Spec PASS.
+
+### 3.8 Gifts and connections (completed)
+
+Person page gifts (idea/given/received); outstanding ideas surface when a date is within 30 days. Two-sided connections with inverse parent/child labels; picker is tenant-scoped. Delete person cascades connections. Controller: npm test 335 passed. Spec PASS.

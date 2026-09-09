@@ -4,12 +4,19 @@ import { EditPersonButton } from "@/components/rolodex/person-form";
 import styles from "@/components/rolodex/people.module.css";
 import pageStyles from "@/components/rolodex/rolodex-subnav.module.css";
 import { CIRCLE_META } from "@/lib/rolodex/constants";
-import { PersonLog } from "@/components/rolodex/person-log";
-import { todayISO } from "@/lib/rolodex/dates";
+import { PersonConnections } from "@/components/rolodex/person-connections";
 import { PersonDates } from "@/components/rolodex/person-dates";
+import { PersonGifts } from "@/components/rolodex/person-gifts";
+import { PersonLog } from "@/components/rolodex/person-log";
+import { listConnectionViewsAction } from "@/lib/rolodex/connection-actions";
 import { listImportantDatesAction } from "@/lib/rolodex/date-actions";
+import { todayISO } from "@/lib/rolodex/dates";
+import { listGiftsAction } from "@/lib/rolodex/gift-actions";
 import { listPersonLogAction } from "@/lib/rolodex/log-actions";
-import { getPersonAction } from "@/lib/rolodex/person-actions";
+import {
+  getPersonAction,
+  listPeopleAction,
+} from "@/lib/rolodex/person-actions";
 
 const STATUS_LABEL = {
   in_touch: "In touch",
@@ -31,6 +38,9 @@ export default async function PersonDetailPage({
   }
   const log = await listPersonLogAction(id);
   const dates = await listImportantDatesAction(id);
+  const gifts = await listGiftsAction(id);
+  const connections = await listConnectionViewsAction(id);
+  const people = await listPeopleAction();
 
   return (
     <main className={pageStyles["rolodex-page"]}>
@@ -82,6 +92,17 @@ export default async function PersonDetailPage({
         <dd>{person.latestNews?.text ?? ""}</dd>
       </dl>
       <PersonDates personId={person.id} dates={dates} today={todayISO()} />
+      <PersonGifts
+        personId={person.id}
+        gifts={gifts}
+        dates={dates}
+        today={todayISO()}
+      />
+      <PersonConnections
+        personId={person.id}
+        connections={connections}
+        people={people.map((row) => ({ id: row.id, name: row.name }))}
+      />
       <PersonLog
         personId={person.id}
         facts={log.facts}
