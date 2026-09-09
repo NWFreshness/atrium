@@ -73,6 +73,8 @@ describe("groove UI sources", () => {
       "unit.tsx",
       "use-readout.ts",
       "transport.tsx",
+      "master.tsx",
+      "scope.tsx",
     ];
     for (const file of files) {
       const source = readFileSync(
@@ -92,5 +94,31 @@ describe("groove UI sources", () => {
     for (const id of UNIT_IDS) {
       expect(PATCHES[0][id].params.level).toBeDefined();
     }
+  });
+
+  it("drum-step clicks audition when the new value is on (4.7)", () => {
+    const shell = readFileSync(
+      resolve(process.cwd(), "components/groove/groove-shell.tsx"),
+      "utf8",
+    );
+    expect(shell).toMatch(
+      /value > 0[\s\S]{0,120}auditionDrum\(lane, value === 2\)/,
+    );
+  });
+
+  it("stateRef is written after every render so the engine reads fresh state", () => {
+    const shell = readFileSync(
+      resolve(process.cwd(), "components/groove/groove-shell.tsx"),
+      "utf8",
+    );
+    expect(shell).toContain(
+      "stateRef.current = { patch, mutes, volume: VOLUME }",
+    );
+    expect(shell).toContain("new Engine(() => stateRef.current)");
+    // applyParams is called by the engine's tick every scheduled step, and
+    // by the shell when stopped. Both read the same stateRef.
+    expect(
+      shell.match(/engineRef\.current\?\.applyParams\(stateRef\.current\)/),
+    ).toBeTruthy();
   });
 });

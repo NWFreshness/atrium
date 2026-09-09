@@ -109,6 +109,8 @@ export function GrooveShell() {
 
   const onDrumStep = (lane: DrumLane, index: number, value: number) => {
     edit((p) => setDrumStep(p, lane, index, value));
+    // Audition the voice when the new value is on. Rest (0) stays silent.
+    if (value > 0) engineRef.current?.auditionDrum(lane, value === 2);
   };
 
   const onNoteStep = (idx: number, step: MelodicStep) => {
