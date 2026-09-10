@@ -63,8 +63,7 @@ test("demo walks Rolodex Today, subnav, and seed people", async ({ page }) => {
     );
     await expect(
       page.getByRole("heading", { name: section.label, level: 1 }),
-      { timeout: 15000 },
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15000 });
   }
 
   await rolodexNav(page)
@@ -72,8 +71,7 @@ test("demo walks Rolodex Today, subnav, and seed people", async ({ page }) => {
     .click();
   await expect(
     page.getByRole("heading", { name: "People", level: 1 }),
-    { timeout: 15000 },
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15000 });
   for (const name of DEMO_SEED_PEOPLE) {
     await expect(page.getByRole("link", { name })).toBeVisible();
   }

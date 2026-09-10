@@ -26,6 +26,11 @@ describe("Rolodex subnav", () => {
       expect(subnav).not.toContain(char);
     }
   });
+
+  it("keeps the rolodex- prefix and defers the active underline to the shared layer", () => {
+    expect(subnavCss).toContain(".rolodex-subnav");
+    expect(subnavCss).not.toContain(".atrium-subtab");
+  });
 });
 
 describe("Today dashboard", () => {
@@ -47,7 +52,13 @@ describe("Today dashboard", () => {
 
 describe("People / circles / calendar", () => {
   it("keeps the rolodex-status-* classes the screens interpolate", () => {
-    for (const status of ["overdue", "due_soon", "in_touch", "snoozed", "off"]) {
+    for (const status of [
+      "overdue",
+      "due_soon",
+      "in_touch",
+      "snoozed",
+      "off",
+    ]) {
       expect(peopleCss).toContain(`rolodex-status-${status}`);
     }
   });

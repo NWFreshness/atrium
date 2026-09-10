@@ -65,18 +65,18 @@ Long pole: 2.1 → 2.2 → 2.3 → 2.4 → 2.5 → 2.6 → 2.8. 2.7 can start af
 
 Jobs-to-be-done from Bench `docs/rolodex/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite. Initials only (no photo column). Design: [2026-09-09-rolodex-design.md](../docs/superpowers/specs/2026-09-09-rolodex-design.md).
 
-| ID   | Feature                                                                        | Status      | Depends on    |
-| ---- | ------------------------------------------------------------------------------ | ----------- | ------------- |
-| 3.1  | [Schema, seed, demo resetter](./phase-3-rolodex/3.1-schema-seed-resetter.md)   | completed   | 0.5           |
-| 3.2  | [Rolodex shell and subnav](./phase-3-rolodex/3.2-rolodex-shell.md)             | completed   | 3.1           |
-| 3.3  | [People table and person page](./phase-3-rolodex/3.3-people.md)                | completed   | 3.1, 3.2      |
-| 3.4  | [CSV and vCard import](./phase-3-rolodex/3.4-import.md)                        | completed   | 3.3           |
-| 3.5  | [Circles board, cadence, snooze](./phase-3-rolodex/3.5-circles.md)             | completed   | 3.3           |
-| 3.6  | [Log, facts, news, reminders, Timeline](./phase-3-rolodex/3.6-log-timeline.md) | completed   | 3.3           |
-| 3.7  | [Important dates and calendar](./phase-3-rolodex/3.7-dates-calendar.md)        | completed   | 3.3           |
-| 3.8  | [Gifts and connections](./phase-3-rolodex/3.8-gifts-connections.md)            | completed   | 3.3, 3.7      |
-| 3.9  | [Today dashboard](./phase-3-rolodex/3.9-today.md)                              | completed   | 3.5, 3.6, 3.7 |
-| 3.10 | [Playwright smoke](./phase-3-rolodex/3.10-playwright-smoke.md)                 | completed   | 3.9           |
+| ID   | Feature                                                                        | Status    | Depends on    |
+| ---- | ------------------------------------------------------------------------------ | --------- | ------------- |
+| 3.1  | [Schema, seed, demo resetter](./phase-3-rolodex/3.1-schema-seed-resetter.md)   | completed | 0.5           |
+| 3.2  | [Rolodex shell and subnav](./phase-3-rolodex/3.2-rolodex-shell.md)             | completed | 3.1           |
+| 3.3  | [People table and person page](./phase-3-rolodex/3.3-people.md)                | completed | 3.1, 3.2      |
+| 3.4  | [CSV and vCard import](./phase-3-rolodex/3.4-import.md)                        | completed | 3.3           |
+| 3.5  | [Circles board, cadence, snooze](./phase-3-rolodex/3.5-circles.md)             | completed | 3.3           |
+| 3.6  | [Log, facts, news, reminders, Timeline](./phase-3-rolodex/3.6-log-timeline.md) | completed | 3.3           |
+| 3.7  | [Important dates and calendar](./phase-3-rolodex/3.7-dates-calendar.md)        | completed | 3.3           |
+| 3.8  | [Gifts and connections](./phase-3-rolodex/3.8-gifts-connections.md)            | completed | 3.3, 3.7      |
+| 3.9  | [Today dashboard](./phase-3-rolodex/3.9-today.md)                              | completed | 3.5, 3.6, 3.7 |
+| 3.10 | [Playwright smoke](./phase-3-rolodex/3.10-playwright-smoke.md)                 | completed | 3.9           |
 
 Long pole: 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10. 3.4, 3.6, 3.7 can start after 3.3 (same person page — do not parallel).
 
@@ -84,16 +84,16 @@ Long pole: 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10. 3.4, 3.6, 3.7 can start
 
 Jobs-to-be-done from Bench `docs/groove/`. Web Audio only. No database, no seed, no tenant rows. Still behind login. Design: [2026-09-09-groove-design.md](../docs/superpowers/specs/2026-09-09-groove-design.md).
 
-| ID  | Feature                                                              | Status  | Depends on |
-| --- | -------------------------------------------------------------------- | ------- | ---------- |
-| 4.1 | [Domain: types, music, filter, params, patches](./phase-4-groove/4.1-domain.md) | completed   | 0.4        |
-| 4.2 | [Shell and hardware layout](./phase-4-groove/4.2-shell.md)           | completed   | 4.1        |
-| 4.3 | [Knobs, faders, sequencer grids](./phase-4-groove/4.3-sequencer-controls.md) | completed   | 4.1, 4.2   |
-| 4.4 | [Transport, patches, mute, keyboard](./phase-4-groove/4.4-transport-patches.md) | completed   | 4.3        |
-| 4.5 | [Audio engine](./phase-4-groove/4.5-audio-engine.md)                 | completed   | 4.1, 4.4   |
-| 4.6 | [Master filter, sweep, pump, FX, scope](./phase-4-groove/4.6-master.md) | completed   | 4.5        |
-| 4.7 | [Live wiring](./phase-4-groove/4.7-live-wiring.md)                   | completed   | 4.5, 4.6   |
-| 4.8 | [Playwright smoke](./phase-4-groove/4.8-playwright-smoke.md)         | completed   | 4.7        |
+| ID  | Feature                                                                         | Status    | Depends on |
+| --- | ------------------------------------------------------------------------------- | --------- | ---------- |
+| 4.1 | [Domain: types, music, filter, params, patches](./phase-4-groove/4.1-domain.md) | completed | 0.4        |
+| 4.2 | [Shell and hardware layout](./phase-4-groove/4.2-shell.md)                      | completed | 4.1        |
+| 4.3 | [Knobs, faders, sequencer grids](./phase-4-groove/4.3-sequencer-controls.md)    | completed | 4.1, 4.2   |
+| 4.4 | [Transport, patches, mute, keyboard](./phase-4-groove/4.4-transport-patches.md) | completed | 4.3        |
+| 4.5 | [Audio engine](./phase-4-groove/4.5-audio-engine.md)                            | completed | 4.1, 4.4   |
+| 4.6 | [Master filter, sweep, pump, FX, scope](./phase-4-groove/4.6-master.md)         | completed | 4.5        |
+| 4.7 | [Live wiring](./phase-4-groove/4.7-live-wiring.md)                              | completed | 4.5, 4.6   |
+| 4.8 | [Playwright smoke](./phase-4-groove/4.8-playwright-smoke.md)                    | completed | 4.7        |
 
 Long pole: 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6 → 4.7 → 4.8. Do not parallel any two Groove features. Do not add Groove tables.
 
@@ -101,14 +101,14 @@ Long pole: 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6 → 4.7 → 4.8. Do not p
 
 Visual redesign of the whole product. Warm editorial ("The Workroom"): espresso surfaces, brass accent, Fraunces display + Geist Mono data, light = paper. No new domains or databases; re-theme only. Details: [design amend](../docs/superpowers/specs/2026-09-06-atrium-design.md) + prototype [docs/prototypes/2026-09-10-workroom/](../docs/prototypes/2026-09-10-workroom/README.md). Next implementable unit: 5.1.
 
-| ID  | Feature                                                            | Status  | Depends on |
-| --- | ------------------------------------------------------------------ | ------- | ---------- |
+| ID  | Feature                                                                                  | Status    | Depends on |
+| --- | ---------------------------------------------------------------------------------------- | --------- | ---------- |
 | 5.1 | [Design system + theme scaffold](./phase-5-workroom/5.1-design-system-theme-scaffold.md) | completed | nothing    |
 | 5.2 | [Shared chrome, launcher, login](./phase-5-workroom/5.2-shared-chrome-launcher-login.md) | completed | 5.1        |
-| 5.3 | [CRM pass](./phase-5-workroom/5.3-crm-pass.md)                     | completed | 5.2        |
-| 5.4 | [Space pass](./phase-5-workroom/5.4-space-pass.md)                 | completed | 5.2        |
-| 5.5 | [Rolodex pass](./phase-5-workroom/5.5-rolodex-pass.md)             | completed | 5.2        |
-| 5.6 | [Groove pass](./phase-5-workroom/5.6-groove-pass.md)               | pending | 5.2        |
-| 5.7 | [Theming QA + smoke](./phase-5-workroom/5.7-theming-qa-smoke.md)   | pending | 5.3–5.6    |
+| 5.3 | [CRM pass](./phase-5-workroom/5.3-crm-pass.md)                                           | completed | 5.2        |
+| 5.4 | [Space pass](./phase-5-workroom/5.4-space-pass.md)                                       | completed | 5.2        |
+| 5.5 | [Rolodex pass](./phase-5-workroom/5.5-rolodex-pass.md)                                   | completed | 5.2        |
+| 5.6 | [Groove pass](./phase-5-workroom/5.6-groove-pass.md)                                     | pending   | 5.2        |
+| 5.7 | [Theming QA + smoke](./phase-5-workroom/5.7-theming-qa-smoke.md)                         | pending   | 5.3–5.6    |
 
 Long pole: 5.1 → 5.2 → 5.7. 5.3–5.6 may run in any order after 5.2 (disjoint CSS module sets) but all must land before 5.7. Do not parallel two features that touch the same files. Preserve `crm-`/`space-`/`rolodex-`/`groove-`/`atrium-nav-` namespaces.
