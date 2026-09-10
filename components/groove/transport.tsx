@@ -108,8 +108,20 @@ export function Transport(p: TransportProps) {
         title="Spacebar"
         onClick={p.onPlay}
       >
+        <span
+          className={`groove-play-led${p.playing ? " groove-play-led-on" : ""}`}
+          aria-hidden="true"
+        />
         <span className="groove-play-glyph" aria-hidden="true">
-          {p.playing ? "■" : "▶"}
+          {p.playing ? (
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+              <rect x="1.5" y="1.5" width="9" height="9" rx="1" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+              <path d="M2.5 1.5 10 6l-7.5 4.5z" />
+            </svg>
+          )}
         </span>
         {p.playing ? "STOP" : "PLAY"}
       </button>

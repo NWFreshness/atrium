@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Phase 5 Workroom 5.1–5.5 are complete. Next implementable unit: 5.6.
+Phase 5 Workroom 5.1–5.6 are complete. Next implementable unit: 5.7 (theming QA + smoke).
 
 ---
 
