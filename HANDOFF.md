@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Next work is feature 4.8.** Do not push to `main`. Do not merge unless asked.
+**Stop. Phase 4 Groove is complete.** All four apps are built. Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-06)
 
@@ -49,8 +49,9 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | **4.5 Audio engine** | **completed** |
 | **4.6 Master** | **completed** |
 | **4.7 Live wiring** | **completed** |
+| **4.8 Playwright smoke** | **completed** |
 
-Phase 1–3 are complete. Phase 4 Groove specs 4.1–4.8 are written. No Groove tables. Web Audio only.
+Phase 1–3 are complete. Phase 4 Groove is complete. No Groove tables. Web Audio only. All four apps are built.
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
@@ -63,7 +64,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-4-groove/4.8-playwright-smoke.md` — implement that spec, nothing else
+6. Wait for the user. All four apps are built. Do not invent new work.
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -103,4 +104,4 @@ npm test
 npm run build
 ```
 
-Then implement 4.8 from its spec.
+Then wait for the user. All four apps are built.

@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Next up: [4.8 Groove Playwright smoke](features/phase-4-groove/4.8-playwright-smoke.md)
+Phase 4 Groove is complete. All four apps are built. Wait for the user.
 
 ---
 
@@ -179,3 +179,7 @@ Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, 
 ### 4.7 Groove live wiring (completed)
 
 Instrument edits land in the audio graph while the clock runs. The 4.5 engine already created `EngineState { patch, mutes, volume }` in a ref, called `applyParams` every tick, and exposed `auditionDrum`/`auditionNote`; 4.7 wires drum-step clicks to `auditionDrum(lane, value === 2)` when the new value is on. Patch switch mid-play needs no stop: `tick` reads the latest `stateRef` each step so BPM/filter/sends re-resolve. Engine is constructed only in the browser. Controller: npm test 446 passed, npm run build exit 0. Manual Chromium walk as demo: PLAY, switch to BASALT keeps transport in STOP (still playing) and changes BPM 112→130, drum click toggles+aouditions, STOP returns to PLAY. Spec PASS.
+
+### 4.8 Playwright smoke (completed)
+
+`e2e/groove.spec.ts`, ported from Bench `e2e/groove/instrument.spec.ts` with Atrium login (demo pair, owner fallback; skip if missing) and `groove-led`/`groove-master-leds` selectors — no component changes needed. Unauth `/groove` → login; four unit regions; transport start/stop with playhead −1 → lit → back; KICK step 3 aria-pressed toggle; BASS/PADS/LEAD step 1 each count 1; BASALT changes the BPM copy; RHYTHM MUTE toggles the muted class; MutationObserver-accumulated LED steps (≥12 of 16 in 10 s) prove the clock runs while the console stays error-free; transport stopped in afterEach. Controller: `npx playwright test e2e/groove.spec.ts` 8 passed, stable across repeated runs; `env -u DATABASE_URL npm test` 446 passed; `npm run build` exit 0; full suite 26 passed (two Rolodex subnav tests flaked once under full-suite load, both green on re-run — pre-existing, unrelated to Groove). Spec PASS.
