@@ -118,3 +118,70 @@ describe("seedSpace", () => {
     expect(afterSecond).toBe(afterFirst);
   });
 });
+
+/**
+ * A demo workspace whose pages are all blank reads as a broken app, not an empty
+ * one: the page route self-creates a single empty paragraph for any page with no
+ * blocks, so a visitor sees the same blank editor everywhere. These pin the
+ * content depth the seed is expected to ship.
+ */
+describe("seedSpace content depth", () => {
+  async function seededPages() {
+    const repo = createMemorySpaceRepository();
+    await seedSpace(demoTenant, repo);
+    return { repo, pages: await listPages(demoTenant, repo) };
+  }
+
+  it("gives every seeded page real content, so no page opens blank", async () => {
+    const { repo, pages } = await seededPages();
+    const contentPages = pages.filter((page) => page.type === "page");
+    expect(contentPages.length).toBeGreaterThanOrEqual(30);
+
+    const blank: string[] = [];
+    for (const page of contentPages) {
+      const blocks = await listBlocks(demoTenant, repo, { pageId: page.id });
+      if (blocks.filter((block) => block.type !== "divider").length === 0) {
+        blank.push(page.title);
+      }
+    }
+    expect(blank).toEqual([]);
+  });
+
+  it("writes text into every seeded block (dividers carry none by design)", async () => {
+    const { repo, pages } = await seededPages();
+    const offenders: string[] = [];
+
+    for (const page of pages.filter((page) => page.type === "page")) {
+      const blocks = await listBlocks(demoTenant, repo, { pageId: page.id });
+      for (const block of blocks) {
+        if (block.type === "divider") continue;
+        const { text } = block.content as { text?: unknown };
+        if (typeof text !== "string" || text.trim() === "") {
+          offenders.push(`${page.title}:${block.type}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("seeds a Reading List worth opening, with ratings and progress", async () => {
+    const { repo, pages } = await seededPages();
+    const reading = pages.find((page) => page.title === "Reading List");
+    expect(reading).toBeDefined();
+
+    const rows = pages.filter(
+      (page) => page.parentId === reading!.id && page.type === "row",
+    );
+    expect(rows.length).toBeGreaterThanOrEqual(6);
+    expect(rows.map((row) => row.title)).toEqual(
+      expect.arrayContaining(["Dune"]),
+    );
+
+    const properties = await listProperties(demoTenant, repo, {
+      databaseId: reading!.id,
+    });
+    expect(properties.map((property) => property.name)).toEqual(
+      expect.arrayContaining(["Author", "Status", "Rating"]),
+    );
+  });
+});
