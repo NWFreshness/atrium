@@ -43,7 +43,9 @@ test("demo walks Space seed pages including a database", async ({ page }) => {
   const nav = spaceNav(page);
   await expect(nav).toBeVisible();
   for (const title of DEMO_SEED_PAGES) {
-    await expect(nav.getByRole("link", { name: title, exact: true })).toBeVisible();
+    await expect(
+      nav.getByRole("link", { name: title, exact: true }),
+    ).toBeVisible();
   }
 
   await nav.getByRole("link", { name: "Home", exact: true }).click();
@@ -80,7 +82,9 @@ test("demo can create and rename a page and still see it after reload", async ({
   await expect(nav.getByRole("link", { name, exact: true })).toBeVisible();
 
   await page.reload();
-  await expect(spaceNav(page).getByRole("link", { name, exact: true })).toBeVisible();
+  await expect(
+    spaceNav(page).getByRole("link", { name, exact: true }),
+  ).toBeVisible();
   await expect(
     spaceNav(page).getByRole("link", { name: "Home", exact: true }),
   ).toBeVisible();
@@ -92,6 +96,66 @@ test("owner Space pages do not show demo seed titles", async ({ page }) => {
   const nav = spaceNav(page);
   await expect(nav).toBeVisible();
   for (const title of DEMO_SEED_PAGES) {
-    await expect(nav.getByRole("link", { name: title, exact: true })).toHaveCount(0);
+    await expect(
+      nav.getByRole("link", { name: title, exact: true }),
+    ).toHaveCount(0);
   }
+});
+
+test("the add-block picker creates the chosen block type, not just text", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+
+  await login(page, demoEmail!, demoPassword!);
+  await page.goto("/space");
+  const nav = spaceNav(page);
+  await expect(nav).toBeVisible();
+
+  // Work on a page of our own so the seeded demo content is left untouched.
+  await page.getByRole("button", { name: "New page" }).click();
+  await expect(page.getByRole("heading", { name: "Untitled" })).toBeVisible();
+
+  const untitled = nav.getByRole("link", { name: "Untitled", exact: true });
+  await expect(untitled.last()).toBeVisible();
+  const before = await untitled.count();
+  const meta = page.locator("[class*='space-editor-meta']");
+  await expect(meta).toContainText("1 block");
+
+  // The affordance offers every block type, not a single "text" action.
+  const addBlock = page.getByRole("button", { name: "Add a block" });
+  await expect(addBlock).toHaveAttribute("aria-haspopup", "listbox");
+  await addBlock.click();
+  const picker = page.getByRole("listbox", { name: "Block types" });
+  await expect(picker).toBeVisible();
+  await expect(picker.getByRole("option")).toHaveCount(11);
+
+  // ...and the choice actually lands as that block type.
+  await picker.getByRole("option", { name: "Divider" }).click();
+  await expect(picker).toBeHidden();
+  await expect(page.locator("hr[class*='space-block-rule']")).toHaveCount(1);
+  await expect(meta).toContainText("2 blocks");
+
+  await addBlock.click();
+  await page
+    .getByRole("listbox", { name: "Block types" })
+    .getByRole("option", { name: "Heading 2" })
+    .click();
+  await expect(page.getByRole("textbox", { name: "heading2" })).toHaveCount(1);
+  await expect(meta).toContainText("3 blocks");
+
+  // Escape closes the picker without adding anything.
+  await addBlock.click();
+  await expect(picker).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(picker).toBeHidden();
+  await expect(meta).toContainText("3 blocks");
+
+  // Leave the demo tree as we found it.
+  page.on("dialog", (dialog) => void dialog.accept());
+  await nav.getByRole("button", { name: "Delete Untitled" }).last().click();
+  await expect(untitled).toHaveCount(before - 1);
 });

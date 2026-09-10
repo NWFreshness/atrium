@@ -13,7 +13,11 @@ import {
   reorderBlocksAction,
   updateBlockAction,
 } from "@/lib/space/block-actions";
-import { filterBlockMenu, type BlockType } from "@/lib/space/constants";
+import {
+  BLOCK_MENU,
+  filterBlockMenu,
+  type BlockType,
+} from "@/lib/space/constants";
 import type { Block } from "@/lib/space/queries";
 import { SlashMenu } from "./slash-menu";
 import styles from "./editor.module.css";
@@ -96,9 +100,14 @@ export function BlockEditor({
   );
   const [focusId, setFocusId] = useState<string | null>(null);
   const [slashIndex, setSlashIndex] = useState(0);
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const [addMenuIndex, setAddMenuIndex] = useState(0);
   const pending = useRef(new Map<string, Record<string, unknown>>());
   const timers = useRef(new Map<string, number>());
   const textareas = useRef(new Map<string, HTMLTextAreaElement>());
+  const addWrap = useRef<HTMLDivElement | null>(null);
+  const addButton = useRef<HTMLButtonElement | null>(null);
+  const addOptions = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
     setBlocks(initialBlocks.map(toEditorBlock));
@@ -124,6 +133,25 @@ export function BlockEditor({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (addMenuOpen) {
+      addOptions.current[0]?.focus();
+    }
+  }, [addMenuOpen]);
+
+  useEffect(() => {
+    if (!addMenuOpen) {
+      return;
+    }
+    function onPointerDown(event: MouseEvent) {
+      if (!addWrap.current?.contains(event.target as Node)) {
+        setAddMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [addMenuOpen]);
 
   function scheduleSave(id: string, content: Record<string, unknown>) {
     pending.current.set(id, content);
@@ -155,11 +183,12 @@ export function BlockEditor({
     await updateBlockAction(id, { type, content });
   }
 
-  async function addBlockAfter(index: number) {
+  async function addBlockAfter(index: number, type: BlockType = "paragraph") {
+    const content = defaultContent(type);
     const created = await createBlockAction({
       pageId,
-      type: "paragraph",
-      content: { text: "" },
+      type,
+      content,
       index: index + 1,
     });
     const next = toEditorBlock(created);
@@ -168,7 +197,20 @@ export function BlockEditor({
       copy.splice(index + 1, 0, next);
       return copy.map((block, position) => ({ ...block, position }));
     });
-    setFocusId(created.id);
+    // A divider has no textarea to put the caret in.
+    setFocusId(type === "divider" ? null : created.id);
+  }
+
+  function moveAddFocus(delta: number) {
+    const next = (addMenuIndex + delta + BLOCK_MENU.length) % BLOCK_MENU.length;
+    setAddMenuIndex(next);
+    addOptions.current[next]?.focus();
+  }
+
+  async function chooseAddType(type: BlockType) {
+    setAddMenuOpen(false);
+    setAddMenuIndex(0);
+    await addBlockAfter(blocks.length - 1, type);
   }
 
   async function removeBlock(id: string, index: number) {
@@ -216,8 +258,8 @@ export function BlockEditor({
             {...provided.droppableProps}
           >
             <p className={styles["space-editor-meta"]}>
-              {blocks.length} block{blocks.length === 1 ? "" : "s"} · autosaves as
-              you type
+              {blocks.length} block{blocks.length === 1 ? "" : "s"} · autosaves
+              as you type
             </p>
             {blocks.map((block, index) => {
               const text = textOf(block.content);
@@ -237,7 +279,10 @@ export function BlockEditor({
                         aria-label="Drag to reorder"
                         {...drag.dragHandleProps}
                       >
-                        <span className={styles["space-dragdots"]} aria-hidden="true">
+                        <span
+                          className={styles["space-dragdots"]}
+                          aria-hidden="true"
+                        >
                           <i />
                           <i />
                           <i />
@@ -372,16 +417,91 @@ export function BlockEditor({
               );
             })}
             {provided.placeholder}
-            <button
-              type="button"
-              className={styles["space-add-block"]}
-              onClick={() => void addBlockAfter(blocks.length - 1)}
+            <div
+              className={styles["space-add-block-wrap"]}
+              ref={addWrap}
+              onKeyDown={(event) => {
+                if (event.key === "Escape" && addMenuOpen) {
+                  event.preventDefault();
+                  setAddMenuOpen(false);
+                  addButton.current?.focus();
+                }
+              }}
             >
-              <span className={styles["space-add-block-plus"]} aria-hidden="true">
-                +
-              </span>
-              Add a block — text, list, divider…
-            </button>
+              <button
+                type="button"
+                ref={addButton}
+                className={styles["space-add-block"]}
+                aria-haspopup="listbox"
+                aria-expanded={addMenuOpen}
+                aria-label="Add a block"
+                onClick={() => setAddMenuOpen((open) => !open)}
+                onKeyDown={(event) => {
+                  if (event.key !== "ArrowDown") {
+                    return;
+                  }
+                  event.preventDefault();
+                  if (addMenuOpen) {
+                    moveAddFocus(1);
+                    return;
+                  }
+                  setAddMenuOpen(true);
+                }}
+              >
+                <span
+                  className={styles["space-add-block-plus"]}
+                  aria-hidden="true"
+                >
+                  +
+                </span>
+                Add a block
+                <span
+                  className={styles["space-add-block-caret"]}
+                  aria-hidden="true"
+                >
+                  ▾
+                </span>
+              </button>
+              {addMenuOpen ? (
+                <ul
+                  className={styles["space-slash"]}
+                  role="listbox"
+                  aria-label="Block types"
+                >
+                  {BLOCK_MENU.map((item, index) => (
+                    <li key={item.type}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={index === addMenuIndex}
+                        ref={(node) => {
+                          addOptions.current[index] = node;
+                        }}
+                        className={
+                          index === addMenuIndex
+                            ? `${styles["space-slash-item"]} ${styles["space-slash-item-current"]}`
+                            : styles["space-slash-item"]
+                        }
+                        onMouseEnter={() => setAddMenuIndex(index)}
+                        onClick={() => void chooseAddType(item.type)}
+                        onKeyDown={(event) => {
+                          if (event.key === "ArrowDown") {
+                            event.preventDefault();
+                            moveAddFocus(1);
+                          }
+                          if (event.key === "ArrowUp") {
+                            event.preventDefault();
+                            moveAddFocus(-1);
+                          }
+                        }}
+                      >
+                        {item.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           </div>
         )}
       </Droppable>
