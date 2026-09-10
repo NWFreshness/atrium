@@ -18,7 +18,10 @@ export default async function DealsPage({
 
   return (
     <main>
-      <h1>Deals</h1>
+      <div className="atrium-pagetitle">
+        <h1>Deals</h1>
+        <p className="atrium-sub">Open deals by stage</p>
+      </div>
       <div className={styles["crm-toolbar"]}>
         <form
           className={styles["crm-search"]}

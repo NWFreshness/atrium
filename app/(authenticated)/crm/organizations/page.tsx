@@ -12,7 +12,10 @@ export default async function OrganizationsPage({
 
   return (
     <main>
-      <h1>Organizations</h1>
+      <div className="atrium-pagetitle">
+        <h1>Organizations</h1>
+        <p className="atrium-sub">Every org, tenant-scoped</p>
+      </div>
       <div className={styles["crm-toolbar"]}>
         <form
           className={styles["crm-search"]}
