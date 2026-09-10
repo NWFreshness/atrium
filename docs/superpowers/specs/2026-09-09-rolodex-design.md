@@ -4,7 +4,7 @@
 **Status:** approved
 **Product:** Atrium / Rolodex
 **Parent:** [2026-09-06-atrium-design.md](./2026-09-06-atrium-design.md)
-**Behavior source:** [ed-donner/bench](https://github.com/ed-donner/bench) `docs/rolodex/` and `server/src/rolodex/`
+**Behavior source:** the reference implementation's `docs/rolodex/` and `server/src/rolodex/`
 
 If this file and a later feature spec disagree, update this file first.
 
@@ -14,7 +14,7 @@ If this file and a later feature spec disagree, update this file first.
 
 Relationships fade by accident. Rolodex is the personal CRM in Atrium: who the people in your life are, when you last spoke, and when you are overdue a catch-up.
 
-Bench did this with Vite + Express + SQLite and no login. Atrium hosts the same jobs behind Auth.js, Neon Postgres, and `tenantId` from the session.
+The reference implementation did this with Vite + Express + SQLite and no login. Atrium hosts the same jobs behind Auth.js, Neon Postgres, and `tenantId` from the session.
 
 ## Users
 
@@ -24,7 +24,7 @@ Same as the parent design: owner (empty, never wiped) and demo (seeded, Reset de
 
 Five sections at `/rolodex`: Today, People, Circles, Calendar, Timeline.
 
-Clone Bench jobs-to-be-done, not pixel-identical CSS and not Express/SQLite/Vite.
+Clone the reference implementation's jobs-to-be-done, not pixel-identical CSS and not Express/SQLite/Vite.
 
 ## Decisions
 
@@ -32,8 +32,8 @@ Clone Bench jobs-to-be-done, not pixel-identical CSS and not Express/SQLite/Vite
 | --- | --- | --- |
 | Feature slice | 3.1–3.10 CRM-shaped | Same size as CRM/Space; import and Today are their own PRs |
 | Photos | Initials only in v1; no `photo` column | Vercel has no durable FS; no blob vendor in the locked stack |
-| Calendar dates | ISO `YYYY-MM-DD` text | Bench cadence math is timezone-stable on date strings |
-| Last contacted / status | Derived on read, never stored | Bench: logging an interaction is the only clock reset |
+| Calendar dates | ISO `YYYY-MM-DD` text | reference cadence math is timezone-stable on date strings |
+| Last contacted / status | Derived on read, never stored | Reference: logging an interaction is the only clock reset |
 | Circles | Fixed Inner/Close/Wider/Distant | 30 / 91 / 182 / 365 days |
 | People grid | TanStack Table (already in repo) | Same as CRM orgs/contacts |
 | Circles board | `@hello-pangea/dnd` (already in repo) | Same as CRM pipeline columns |
@@ -61,7 +61,7 @@ Eight tables, UUID text ids, `tenantId` → `tenants.id` restrict. Child rows ca
 //   label, inverseLabel, note, createdAt
 ```
 
-Enums (Bench):
+Enums (reference):
 
 - circle: `inner` | `close` | `wider` | `distant`
 - interaction type: `call` | `message` | `email` | `met` | `other`
@@ -77,7 +77,7 @@ Do not re-export names containing `rolodex` from `lib/db/schema.ts`. Re-export t
 - **Last contacted** = `MAX(interactions.date)` for that person. Never typed.
 - **Latest news** = newest news row by date.
 - **Cadence days** = override if set and > 0, else circle default; `null` if `checkinsOff`.
-- **Status** via `computeStatus` (port Bench `cadence.ts`):
+- **Status** via `computeStatus` (port the reference implementation's `cadence.ts`):
   - `off` if check-ins disabled
   - `snoozed` if `snoozedUntil` is today or later
   - else `nextDue` = last contacted + cadence days, or **today** if never contacted
@@ -90,7 +90,7 @@ Do not re-export names containing `rolodex` from `lib/db/schema.ts`. Re-export t
 
 Demo tenant only. Owner empty.
 
-At least 30 people, no circle empty, initials everywhere, at least one birthday in each of the next three months, interactions going back at least a year, at least one of every other entity type. Deterministic names (port Bench seed intent, not SQLite ids).
+At least 30 people, no circle empty, initials everywhere, at least one birthday in each of the next three months, interactions going back at least a year, at least one of every other entity type. Deterministic names (port the reference implementation's seed intent, not SQLite ids).
 
 Idempotent: skip insert when that tenant already has people. Reset still deletes then seeds.
 
@@ -132,7 +132,7 @@ Long pole: 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10. 3.4, 3.6, 3.7 can start
 
 ## Import (3.4)
 
-CSV (Papa Parse) or vCard (`vcf`). Map columns from header synonyms. Preview. Duplicates flagged by email first, then exact name; flagged rows cannot be ticked. Apply is all-or-nothing. Ragged CSV cells may be missing. vCard `propValue` must handle both library return shapes (Bench).
+CSV (Papa Parse) or vCard (`vcf`). Map columns from header synonyms. Preview. Duplicates flagged by email first, then exact name; flagged rows cannot be ticked. Apply is all-or-nothing. Ragged CSV cells may be missing. vCard `propValue` must handle both library return shapes (reference).
 
 Birthday on import creates an `importantDates` row when mapped.
 

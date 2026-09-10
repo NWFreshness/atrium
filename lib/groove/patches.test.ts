@@ -8,7 +8,7 @@ import { DRUM_LANES, STEPS, UNIT_IDS } from "./types";
 const MELODIC = ["bass", "pads", "lead"] as const;
 
 describe("the shipped patches", () => {
-  it("ships four named Bench factory patches", () => {
+  it("ships four named reference factory patches", () => {
     expect(PATCHES.map((p) => p.name)).toEqual([
       "NEON RIVIERA",
       "BASALT",

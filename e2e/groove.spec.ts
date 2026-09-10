@@ -6,7 +6,7 @@
  * The playhead LED strip is the honest proxy for "the clock is running": it is driven by the
  * same transport that schedules the audio, without reaching into the audio graph.
  *
- * Ported from Bench `e2e/groove/instrument.spec.ts`, adapted for Atrium: the LED strip is
+ * Ported from the reference `e2e/groove/instrument.spec.ts`, adapted for Atrium: the LED strip is
  * `.groove-leds` (spans `groove-led`, lit `groove-led-on`) inside `.groove-master-leds`.
  */
 import { expect, test, type Page } from "@playwright/test";

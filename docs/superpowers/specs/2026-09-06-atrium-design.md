@@ -5,7 +5,7 @@
 **Product:** Atrium
 **Repo:** https://github.com/NWFreshness/atrium.git
 **Local path:** `/Users/tylermayfield/Documents/projects/atrium`
-**Behavior source:** [ed-donner/bench](https://github.com/ed-donner/bench) (reference only, not a fork)
+**Behavior source:** the reference implementation (reference only, not a fork)
 
 This document is the approved product design. Feature specs and code come after this file is reviewed. If this file and a later spec disagree, update this file first.
 
@@ -13,7 +13,7 @@ This document is the approved product design. Feature specs and code come after 
 
 ## Problem
 
-Bench is four local-first personal apps (CRM, Space, Rolodex, Groove) behind one Vite MPA, one Express process, and SQLite files on disk. That architecture cannot host on Vercel: no durable filesystem, no long-lived Node server.
+The reference implementation is four local-first personal apps (CRM, Space, Rolodex, Groove) behind one Vite MPA, one Express process, and SQLite files on disk. That architecture cannot host on Vercel: no durable filesystem, no long-lived Node server.
 
 Atrium is a Vercel-hosted clone of those four apps as one Next.js product, with a real login for the owner and a separate demo login with seed data.
 
@@ -25,7 +25,7 @@ Atrium is a Vercel-hosted clone of those four apps as one Next.js product, with 
 
 ## What we are cloning
 
-Same jobs-to-be-done as Bench, not pixel-identical CSS and not a file-by-file port of Express + SQLite + Vite.
+Same jobs-to-be-done as the reference implementation, not pixel-identical CSS and not a file-by-file port of Express + SQLite + Vite.
 
 | App | Path | Job |
 | --- | --- | --- |
@@ -35,7 +35,7 @@ Same jobs-to-be-done as Bench, not pixel-identical CSS and not a file-by-file po
 | Rolodex | `/rolodex` | Personal CRM: people, circles, cadences, birthdays, conversation timeline, CSV and vCard import |
 | Groove | `/groove` | Browser groovebox: four synth units, one transport, master DJ filter, Web Audio only |
 
-Bench `docs/<app>/REQUIREMENTS.md` and `IMPLEMENTATION.md` are the behavior bible per app. Where they disagree with Bench's code, prefer Bench's code as the original truth, then adapt to this design (tenancy, Next.js, Postgres).
+The reference implementation's `docs/<app>/REQUIREMENTS.md` and `IMPLEMENTATION.md` are the behavior bible per app. Where they disagree with the reference implementation's code, prefer the reference implementation's code as the original truth, then adapt to this design (tenancy, Next.js, Postgres).
 
 ## Non-goals (v1)
 
@@ -44,7 +44,7 @@ Bench `docs/<app>/REQUIREMENTS.md` and `IMPLEMENTATION.md` are the behavior bibl
 - Realtime collaboration
 - Native mobile apps
 - Merging Atrium into Cascade or ReconIQ
-- Bench teaching-repo controls (gitleaks, knip, jscpd, 80% coverage gate)
+- The reference teaching-repo controls (gitleaks, knip, jscpd, 80% coverage gate)
 - SQLite, better-sqlite3, Express, Vite MPA
 - TanStack Router (Next.js owns routing)
 - TanStack Query in v1 (RSC + server actions; add later only if client cache becomes a real problem)
@@ -62,7 +62,7 @@ app/
   layout.tsx                 fonts, theme init
   login/                     credentials form (unauthenticated)
   (authenticated)/
-    layout.tsx               Bench-style nav strip, theme toggle, identity, Reset demo (demo only)
+    layout.tsx               reference-style nav strip, theme toggle, identity, Reset demo (demo only)
     page.tsx                 launcher
     crm/                     CRM UI
     space/                   Space UI
@@ -86,7 +86,7 @@ Routes:
 
 CSS: per-app CSS modules or a stylesheet scoped to that app's root. Do not load four global stylesheets into one document. Shared nav CSS is `atrium-nav`-prefixed and self-contained (literals, not theme variables), because Groove and the others will still collide on `.board`, `.app`, `:root`.
 
-Theme: `data-theme` on the document element, remembered in `localStorage` under `atrium.theme`. Init before first paint. First visit follows the OS. Groove may default dark and define `[data-theme="light"]`, matching Bench.
+Theme: `data-theme` on the document element, remembered in `localStorage` under `atrium.theme`. Init before first paint. First visit follows the OS. Groove may default dark and define `[data-theme="light"]`, matching the reference.
 
 Server work is Route Handlers and server actions. No Express. No long-lived process.
 
@@ -127,7 +127,7 @@ Reset persists during a demo until someone clicks it. Cron is optional later, no
 
 ### Seed
 
-Demo tenant: deterministic sample data ported from Bench seeds (orgs/contacts/deals, a few Space pages, a few Rolodex people).
+Demo tenant: deterministic sample data ported from the reference seeds (orgs/contacts/deals, a few Space pages, a few Rolodex people).
 
 Owner tenant: empty. No welcome records.
 
@@ -143,7 +143,7 @@ Owner tenant: empty. No welcome records.
 
 ## Phases
 
-Each Bench application is a phase. Foundation is phase 0 because auth, tenancy, and the shell must exist first.
+Each of the four applications is a phase. Foundation is phase 0 because auth, tenancy, and the shell must exist first.
 
 Build order is 0 → 1 → 2 → 3 → 4 → 5. One feature at a time. No parallel features that touch the same files.
 
@@ -202,7 +202,7 @@ Feature specs: `features/phase-5-workroom/` (5.1–5.7). Board: `features/INDEX.
 
 ## Testing and quality
 
-Not cloning Bench's course control plane.
+Not cloning the reference implementation's course control plane.
 
 - TypeScript strict
 - ESLint + Prettier
@@ -223,7 +223,7 @@ Coverage is a signal, not an 80% gate.
 | `features/INDEX.md` | The board. Phases, feature ids, status, one-line summary, link to spec. This is how you see what is done. No second progress file. |
 | `CURRENT_FEATURE.md` | Top: the single in-progress feature (id, link, status). Bottom: append-only log. When a feature finishes, add a short summary. Never delete old summaries. |
 | `features/phase-N-name/N.M-feature-name.md` | One spec per feature. writing-plans template: Goal, Scope, Files, Acceptance criteria, Verification, Commit. Status updated in the same commit as the work. |
-| `AGENTS.md` | Stack, tenancy rule (no query without tenant_id from session), CSS scoping, TDD, do not copy Bench's Express/SQLite. |
+| `AGENTS.md` | Stack, tenancy rule (no query without tenant_id from session), CSS scoping, TDD, do not copy the reference implementation's Express/SQLite. |
 | `docs/superpowers/specs/2026-09-06-atrium-design.md` | This design. Frozen after review; amend deliberately if the product changes. |
 
 Rules:
@@ -248,7 +248,7 @@ Feature granularity: independently shippable, hours to a couple of days, numbere
 
 ### TanStack
 
-Bench used `@tanstack/react-table` for CRM/Space grids. Atrium does the same, and only that:
+The reference implementation used `@tanstack/react-table` for CRM/Space grids. Atrium does the same, and only that:
 
 - **Table:** yes, when CRM (phase 1), Space table views (phase 2), and Rolodex People (phase 3) ship. Not in phase 0.
 - **Router:** no. Next.js App Router.

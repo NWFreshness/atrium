@@ -4,7 +4,7 @@
 **Status:** approved
 **Product:** Atrium / Groove
 **Parent:** [2026-09-06-atrium-design.md](./2026-09-06-atrium-design.md)
-**Behavior source:** [ed-donner/bench](https://github.com/ed-donner/bench) `docs/groove/` and `web/src/groove/`
+**Behavior source:** the reference implementation's `docs/groove/` and `web/src/groove/`
 
 If this file and a later feature spec disagree, update this file first.
 
@@ -14,7 +14,7 @@ If this file and a later feature spec disagree, update this file first.
 
 Groove is the browser groovebox in Atrium: four hardware-style units, one transport, a master DJ filter. Everything is synthesised live with the Web Audio API.
 
-Bench did this as a Vite MPA page with no login. Atrium hosts the same instrument behind Auth.js so the suite is one product. There is still no database and no persistence.
+The reference implementation did this as a Vite MPA page with no login. Atrium hosts the same instrument behind Auth.js so the suite is one product. There is still no database and no persistence.
 
 ## Users
 
@@ -24,7 +24,7 @@ Same as the parent design: owner and demo can both play it. There is no tenant-s
 
 One screen at `/groove`: a desk of four units (RHYTHM DR-16, BASS MB-1, PADS PX-4, LEAD LX-2), a transport, and a master strip (DJ filter, sweep, sidechain, send FX, scope).
 
-Clone Bench jobs-to-be-done, not pixel-identical CSS and not Vite.
+Clone the reference implementation's jobs-to-be-done, not pixel-identical CSS and not Vite.
 
 ## Decisions
 
@@ -32,8 +32,8 @@ Clone Bench jobs-to-be-done, not pixel-identical CSS and not Vite.
 | --- | --- | --- |
 | Feature slice | 4.1–4.8 Space-shaped | Domain first, then shell, grids, transport, engine, master, wiring, smoke |
 | Persistence | None | Parent design: Groove never hits the database |
-| Samples / audio libs | Web Audio only | Bench: no samples, no Tone.js, no Howler |
-| Factory patches | Port Bench A–D names, BPM, character | Prefer Bench code over the REQUIREMENTS “3 patches” line |
+| Samples / audio libs | Web Audio only | Reference: no samples, no Tone.js, no Howler |
+| Factory patches | Port the reference implementation's A–D names, BPM, character | Prefer the reference code over the REQUIREMENTS “3 patches” line |
 | Photos / files | n/a | No assets besides CSS |
 | CSS | `groove-` prefix, Groove-only import | Avoid colliding `.app` / `.board` / `:root` with other apps |
 | Theme | Panel can stay dark; define `[data-theme="light"]` | Parent design; do not force `atrium.theme` |
@@ -66,20 +66,20 @@ UI lives in `components/groove/`. Route is `app/(authenticated)/groove/`.
 
 Do not re-export Groove names from `lib/db/schema.ts`. Do not register a demo resetter.
 
-## Factory patches (Bench)
+## Factory patches (reference)
 
 Patch A is loaded at startup so the first press of play makes music. Switching is instant and works during playback.
 
-| Slot | Name | Character (Bench) |
+| Slot | Name | Character (reference) |
 | --- | --- | --- |
 | A | NEON RIVIERA | synthwave, F minor, 112 BPM |
 | B | BASALT | dark techno, A phrygian, 130 BPM |
 | C | SUNROOM | lo-fi soul, C minor, 94 BPM, heavy swing |
 | D | LATE ORBIT | filter house, F# minor, 126 BPM, eight-bar triangle sweep |
 
-Port Bench `patches.ts` rather than inventing new names or tempos. REQUIREMENTS said “3 default patches”; Bench code ships four — prefer the code.
+Port the reference implementation's `patches.ts` rather than inventing new names or tempos. REQUIREMENTS said “3 default patches”; the reference code ships four — prefer the code.
 
-## Units (Bench `UNIT_META` / `INSTRUMENT.md`)
+## Units (reference `UNIT_META` / `INSTRUMENT.md`)
 
 | Id | Face | Voice |
 | --- | --- | --- |
@@ -108,7 +108,7 @@ Every sequencer cell has a unique `aria-label` (`KICK step 3`, `BASS step 12`) p
 
 Unauthenticated `/groove` → `/login`.
 
-CSS `groove-` prefixed (or CSS-module locals), imported only from Groove files. Hardware-style desk, desktop 16:9. Not pixel-identical to Bench `styles.css`.
+CSS `groove-` prefixed (or CSS-module locals), imported only from Groove files. Hardware-style desk, desktop 16:9. Not pixel-identical to the reference implementation's `styles.css`.
 
 ## Features
 
@@ -133,7 +133,7 @@ Persistence, MIDI, recording/export, sample playback, Tone.js / extra audio libr
 
 TDD on domain: notes, chords, filter macro, params, patches, `clonePatch`, sweep/gap helpers. `env -u DATABASE_URL npm test`. Controller re-runs `npm test` and `AUTH_SECRET=ci-build-placeholder npm run build`.
 
-Playwright in 4.8 is deliberately shallow (Bench `e2e/groove/instrument.spec.ts`): units render, transport start/stop, playhead advances (accumulate LED classes — do not sample with `expect.poll` alone), drum toggle, patch changes tempo, mute, no console error. Headless has no audio device. Stop the transport before walking away from a headed run.
+Playwright in 4.8 is deliberately shallow (reference `e2e/groove/instrument.spec.ts`): units render, transport start/stop, playhead advances (accumulate LED classes — do not sample with `expect.poll` alone), drum toggle, patch changes tempo, mute, no console error. Headless has no audio device. Stop the transport before walking away from a headed run.
 
 ## Board
 
