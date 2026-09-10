@@ -193,22 +193,3 @@ p {
     transition-duration: 0.01ms !important;
   }
 }
-
-/* launcher (shared pages; replaced by 5.2's app cards) */
-.launcher-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: 1rem;
-  list-style: none;
-  margin: 1.5rem 0 0;
-  padding: 0;
-}
-
-.launcher-cards a {
-  display: block;
-  padding: 1.25rem;
-  border: 1px solid currentColor;
-  border-radius: 8px;
-  text-decoration: none;
-  color: inherit;
-}

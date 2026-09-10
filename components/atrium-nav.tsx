@@ -8,14 +8,23 @@ import {
   ResetDemoButton,
   type ResetDemoState,
 } from "./reset-demo-button";
+import {
+  CrmIcon,
+  GrooveIcon,
+  HomeIcon,
+  LogoutIcon,
+  RolodexIcon,
+  SpaceIcon,
+  ThemeIcon,
+} from "./atrium-icons";
 import styles from "./atrium-nav.module.css";
 
 const APPS = [
-  { href: "/", label: "Home", glyph: "⌂" },
-  { href: "/crm", label: "CRM", glyph: "◈" },
-  { href: "/space", label: "Space", glyph: "▣" },
-  { href: "/rolodex", label: "Rolodex", glyph: "◉" },
-  { href: "/groove", label: "Groove", glyph: "♪" },
+  { href: "/", label: "Home", Icon: HomeIcon },
+  { href: "/crm", label: "CRM", Icon: CrmIcon },
+  { href: "/space", label: "Space", Icon: SpaceIcon },
+  { href: "/rolodex", label: "Rolodex", Icon: RolodexIcon },
+  { href: "/groove", label: "Groove", Icon: GrooveIcon },
 ] as const;
 
 function isCurrent(pathname: string, href: string) {
@@ -31,6 +40,13 @@ function browserDeps() {
     document,
     matchMedia: (query: string) => window.matchMedia(query),
   };
+}
+
+function initialOf(email: string | null | undefined) {
+  if (!email) {
+    return "";
+  }
+  return email.trim().charAt(0).toUpperCase();
 }
 
 export function AtriumNav({
@@ -55,47 +71,59 @@ export function AtriumNav({
 
   return (
     <nav className={styles["atrium-nav-strip"]} aria-label="Atrium">
-      <ul className={styles["atrium-nav-list"]}>
-        {APPS.map((app) => {
-          const current = isCurrent(pathname, app.href);
-          return (
-            <li key={app.href}>
-              <Link
-                href={app.href}
-                className={
-                  current
-                    ? `${styles["atrium-nav-link"]} ${styles["atrium-nav-link-current"]}`
-                    : styles["atrium-nav-link"]
-                }
-                aria-current={current ? "page" : undefined}
-              >
-                <span className={styles["atrium-nav-glyph"]} aria-hidden="true">
-                  {app.glyph}
-                </span>
-                {app.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      <div className={styles["atrium-nav-left"]}>
+        <Link href="/" className={styles["atrium-nav-brand"]}>
+          <span className={styles["atrium-nav-brand-mark"]} aria-hidden="true" />
+          Atrium
+        </Link>
+        <ul className={styles["atrium-nav-list"]}>
+          {APPS.map((app) => {
+            const current = isCurrent(pathname, app.href);
+            return (
+              <li key={app.href}>
+                <Link
+                  href={app.href}
+                  className={
+                    current
+                      ? `${styles["atrium-nav-link"]} ${styles["atrium-nav-link-current"]}`
+                      : styles["atrium-nav-link"]
+                  }
+                  aria-current={current ? "page" : undefined}
+                >
+                  <app.Icon className={styles["atrium-nav-glyph"]} />
+                  {app.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
       <div className={styles["atrium-nav-end"]}>
-        <button
-          type="button"
-          className={styles["atrium-nav-theme"]}
-          onClick={() => {
-            toggleTheme(browserDeps());
-          }}
-        >
-          Theme
-        </button>
         {email ? (
-          <span className={styles["atrium-nav-identity"]}>{email}</span>
+          <span className={styles["atrium-nav-identity"]}>
+            <span className={styles["atrium-nav-avatar"]} aria-hidden="true">
+              {initialOf(email)}
+            </span>
+            <span className={styles["atrium-nav-email"]}>{email}</span>
+          </span>
         ) : role ? (
           <span className={styles["atrium-nav-identity"]}>{role}</span>
         ) : null}
+        <button
+          type="button"
+          className={`atrium-btn ${styles["atrium-nav-theme"]}`}
+          onClick={() => {
+            toggleTheme(browserDeps());
+          }}
+          aria-label="Toggle theme"
+        >
+          <ThemeIcon />
+          <span className={styles["atrium-nav-btn-label"]}>Theme</span>
+        </button>
         {role === "demo" ? <ResetDemoButton action={resetDemo} /> : null}
         <form action={logout}>
-          <button type="submit" className={styles["atrium-nav-logout"]}>
+          <button type="submit" className={`atrium-btn ${styles["atrium-nav-logout"]}`}>
+            <LogoutIcon />
             Logout
           </button>
         </form>

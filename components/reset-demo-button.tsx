@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { RefreshIcon } from "./atrium-icons";
 import styles from "./atrium-nav.module.css";
 
 export type ResetDemoState = {
@@ -22,7 +23,11 @@ export function ResetDemoButton({
 
   return (
     <form action={formAction} className={styles["atrium-nav-reset-form"]}>
-      <button type="submit" className={styles["atrium-nav-reset"]}>
+      <button
+        type="submit"
+        className={`atrium-btn ${styles["atrium-nav-reset"]}`}
+      >
+        <RefreshIcon />
         Reset demo
       </button>
       {state.message ? (

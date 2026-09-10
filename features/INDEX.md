@@ -104,7 +104,7 @@ Visual redesign of the whole product. Warm editorial ("The Workroom"): espresso 
 | ID  | Feature                                                            | Status  | Depends on |
 | --- | ------------------------------------------------------------------ | ------- | ---------- |
 | 5.1 | [Design system + theme scaffold](./phase-5-workroom/5.1-design-system-theme-scaffold.md) | completed | nothing    |
-| 5.2 | [Shared chrome, launcher, login](./phase-5-workroom/5.2-shared-chrome-launcher-login.md) | pending | 5.1        |
+| 5.2 | [Shared chrome, launcher, login](./phase-5-workroom/5.2-shared-chrome-launcher-login.md) | completed | 5.1        |
 | 5.3 | [CRM pass](./phase-5-workroom/5.3-crm-pass.md)                     | pending | 5.2        |
 | 5.4 | [Space pass](./phase-5-workroom/5.4-space-pass.md)                 | pending | 5.2        |
 | 5.5 | [Rolodex pass](./phase-5-workroom/5.5-rolodex-pass.md)             | pending | 5.2        |
