@@ -11,9 +11,10 @@ Only one feature `in_progress`. Later phases get specs when that phase starts.
 
 ## Build order
 
-Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8.
+Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7.
 3.4 / 3.6 / 3.7 start after 3.3 (same person page — do not parallel). 3.8 after 3.7.
 Phase 3 is sequential. Phase 4 is sequential. Do not run two Groove features in parallel.
+Phase 5 is sequential through 5.2 and the QA gate 5.7; the per-app passes 5.3–5.6 may run in any order after 5.2 (disjoint CSS module sets), but must all land before 5.7.
 
 ### Phase 0 — Atrium platform
 
@@ -95,3 +96,19 @@ Jobs-to-be-done from Bench `docs/groove/`. Web Audio only. No database, no seed,
 | 4.8 | [Playwright smoke](./phase-4-groove/4.8-playwright-smoke.md)         | completed   | 4.7        |
 
 Long pole: 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6 → 4.7 → 4.8. Do not parallel any two Groove features. Do not add Groove tables.
+
+### Phase 5 — Workroom (redesign)
+
+Visual redesign of the whole product. Warm editorial ("The Workroom"): espresso surfaces, brass accent, Fraunces display + Geist Mono data, light = paper. No new domains or databases; re-theme only. Details: [design amend](../docs/superpowers/specs/2026-09-06-atrium-design.md) + prototype [docs/prototypes/2026-09-10-workroom/](../docs/prototypes/2026-09-10-workroom/README.md). Next implementable unit: 5.1.
+
+| ID  | Feature                                                            | Status  | Depends on |
+| --- | ------------------------------------------------------------------ | ------- | ---------- |
+| 5.1 | [Design system + theme scaffold](./phase-5-workroom/5.1-design-system-theme-scaffold.md) | pending | nothing    |
+| 5.2 | [Shared chrome, launcher, login](./phase-5-workroom/5.2-shared-chrome-launcher-login.md) | pending | 5.1        |
+| 5.3 | [CRM pass](./phase-5-workroom/5.3-crm-pass.md)                     | pending | 5.2        |
+| 5.4 | [Space pass](./phase-5-workroom/5.4-space-pass.md)                 | pending | 5.2        |
+| 5.5 | [Rolodex pass](./phase-5-workroom/5.5-rolodex-pass.md)             | pending | 5.2        |
+| 5.6 | [Groove pass](./phase-5-workroom/5.6-groove-pass.md)               | pending | 5.2        |
+| 5.7 | [Theming QA + smoke](./phase-5-workroom/5.7-theming-qa-smoke.md)   | pending | 5.3–5.6    |
+
+Long pole: 5.1 → 5.2 → 5.7. 5.3–5.6 may run in any order after 5.2 (disjoint CSS module sets) but all must land before 5.7. Do not parallel two features that touch the same files. Preserve `crm-`/`space-`/`rolodex-`/`groove-`/`atrium-nav-` namespaces.
