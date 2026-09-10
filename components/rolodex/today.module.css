@@ -1,33 +1,83 @@
 .rolodex-today-lede {
-  margin: 0 0 0.75rem;
-  color: var(--foreground);
+  margin: 0 0 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--ink-faint);
 }
 
+/* KPI tiles */
 .rolodex-today-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
 }
 
 .rolodex-today-stats > div {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.75rem 0.9rem;
-  border: 1px solid currentColor;
-  border-radius: 6px;
+  gap: 0.3rem;
+  padding: 15px 17px 13px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-panel);
+}
+
+.rolodex-today-stats > div::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--stat-c, var(--brass)),
+    transparent 75%
+  );
+}
+
+.rolodex-today-stats > div:nth-child(1) {
+  --stat-c: var(--clay);
+}
+.rolodex-today-stats > div:nth-child(2) {
+  --stat-c: var(--brass);
+}
+.rolodex-today-stats > div:nth-child(3) {
+  --stat-c: var(--moss);
+}
+.rolodex-today-stats > div:nth-child(4) {
+  --stat-c: var(--moss);
 }
 
 .rolodex-today-stats strong {
-  font-size: 1.5rem;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 560;
+  line-height: 1.1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
+.rolodex-today-stats span {
+  font-size: 11px;
+  font-weight: 550;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Who-to-contact hero */
 .rolodex-today-hero {
-  background: #161616;
-  color: #f4efe4;
-  padding: 1.35rem 1.5rem 1.2rem;
-  border-radius: 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-panel);
+  padding: 1.25rem 1.35rem 1.15rem;
   margin: 0 0 1.25rem;
 }
 
@@ -37,17 +87,24 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 0.5rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.6rem;
 }
 
 .rolodex-today-hero-head h2 {
   margin: 0;
-  font-size: 1.6rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 580;
+  color: var(--ink);
 }
 
 .rolodex-today-hero-head p {
   margin: 0;
-  opacity: 0.8;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
 }
 
 .rolodex-today-hero-list {
@@ -56,72 +113,138 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 2px;
 }
 
 .rolodex-today-hero-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 0.75rem;
+  gap: 0.9rem;
   align-items: center;
+  padding: 9px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+}
+
+.rolodex-today-hero-row:hover {
+  background: color-mix(in srgb, var(--bg-2) 60%, transparent);
+  border-color: var(--line);
 }
 
 .rolodex-today-hero-row a {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.7rem;
   color: inherit;
   text-decoration: none;
   min-width: 0;
 }
 
-.rolodex-today-hero-row a span {
+.rolodex-today-hero-row a > span {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.rolodex-today-hero-row a span span {
-  font-size: 0.85rem;
-  opacity: 0.8;
+.rolodex-today-hero-row a strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.rolodex-today-hero-row a > span > span {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--ink-faint);
 }
 
 .rolodex-today-hero-row button {
-  background: #ecad0a;
-  color: #161616;
-  border: 0;
-  border-radius: 4px;
-  padding: 0.35rem 0.7rem;
-  font: inherit;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 13px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: linear-gradient(180deg, var(--brass-bright), var(--brass-deep));
+  color: #221a0c;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    var(--glow-brass);
   cursor: pointer;
+  transition:
+    transform 0.15s,
+    filter 0.2s;
+}
+
+[data-theme="light"] .rolodex-today-hero-row button {
+  color: #fdf8ec;
+}
+
+.rolodex-today-hero-row button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.rolodex-today-hero-row button:disabled {
+  opacity: 0.6;
+}
+
+/* due chips */
+.rolodex-today-overdue,
+.rolodex-today-due {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .rolodex-today-overdue {
-  color: #f87171;
+  border: 1px solid color-mix(in srgb, var(--clay) 50%, transparent);
+  background: color-mix(in srgb, var(--clay) 14%, transparent);
+  color: var(--clay);
 }
 
 .rolodex-today-due {
-  color: #fbbf24;
+  border: 1px solid color-mix(in srgb, var(--brass) 50%, transparent);
+  background: color-mix(in srgb, var(--brass) 14%, transparent);
+  color: var(--brass);
 }
 
+/* panels */
 .rolodex-today-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 0.75rem;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
 .rolodex-today-panel {
-  border: 1px solid currentColor;
-  border-radius: 8px;
-  padding: 0.85rem 1rem;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-panel);
+  padding: 1.1rem 1.2rem 1rem;
   min-height: 8rem;
 }
 
 .rolodex-today-panel h2,
 .rolodex-today-chart h2 {
   margin: 0 0 0.6rem;
-  font-size: 1.05rem;
+  font-size: 16px;
+  font-weight: 580;
+  color: var(--ink);
 }
 
 .rolodex-today-panel ul {
@@ -130,25 +253,44 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.5rem;
+}
+
+.rolodex-today-panel li {
+  font-size: 13.5px;
+  color: var(--ink-dim);
+}
+
+.rolodex-today-panel li a {
+  color: var(--brass);
+  text-decoration: none;
+}
+
+.rolodex-today-panel li a:hover {
+  text-decoration: underline;
 }
 
 .rolodex-today-empty {
   margin: 0;
+  color: var(--ink-faint);
+  font-style: italic;
+  font-size: 13.5px;
 }
 
 .rolodex-today-charts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-  gap: 0.75rem;
+  gap: 1rem;
   margin: 1rem 0;
 }
 
 .rolodex-today-chart {
   min-width: 0;
-  border: 1px solid currentColor;
-  border-radius: 8px;
-  padding: 0.85rem 1rem;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-panel);
+  padding: 1.1rem 1.2rem 1rem;
 }
 
 .rolodex-today-chart-body {

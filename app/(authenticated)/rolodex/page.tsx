@@ -7,7 +7,10 @@ export default async function RolodexPage() {
 
   return (
     <main className={styles["rolodex-page"]}>
-      <h1>Today</h1>
+      <div className="atrium-pagetitle">
+        <h1>Today</h1>
+        <p className="atrium-sub">listed by cadence urgency</p>
+      </div>
       <TodayDashboard data={data} />
     </main>
   );

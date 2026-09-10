@@ -33,7 +33,10 @@ export default async function RolodexTimelinePage({
 
   return (
     <main className={pageStyles["rolodex-page"]}>
-      <h1>Timeline</h1>
+      <div className="atrium-pagetitle">
+        <h1>Timeline</h1>
+        <p className="atrium-sub">interactions, news, and reminders</p>
+      </div>
       <form
         className={styles["rolodex-search"]}
         action="/rolodex/timeline"

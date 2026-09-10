@@ -7,7 +7,10 @@ export default async function RolodexCirclesPage() {
 
   return (
     <main className={pageStyles["rolodex-page"]}>
-      <h1>Circles</h1>
+      <div className="atrium-pagetitle">
+        <h1>Circles</h1>
+        <p className="atrium-sub">cadence circles · drag to move</p>
+      </div>
       <CirclesBoard people={people} />
     </main>
   );

@@ -39,7 +39,10 @@ export default async function RolodexCalendarPage({
 
   return (
     <main className={pageStyles["rolodex-page"]}>
-      <h1>Calendar</h1>
+      <div className="atrium-pagetitle">
+        <h1>Calendar</h1>
+        <p className="atrium-sub">dates and birthdays by month</p>
+      </div>
       <div className={calStyles.nav}>
         <Link href={`/rolodex/calendar?year=${prev.year}&month=${prev.month}`}>
           Previous
