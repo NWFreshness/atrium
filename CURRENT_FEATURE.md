@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Phase 5 Workroom 5.1–5.4 are complete. Next implementable unit: 5.5.
+Phase 5 Workroom 5.1–5.5 are complete. Next implementable unit: 5.6.
 
 ---
 
@@ -203,3 +203,7 @@ All CRM screens re-skinned with the warm palette and shared `atrium-` classes; b
 ### 5.4 Space Workroom pass (completed)
 
 Space re-skinned; page/block/row behaviour, TanStack, dnd, and autosave untouched. `lib/space/tree.ts` adds a `type` field to `PageTreeNode`; new `components/space/space-icons.tsx` (Doc/Database/Row glyphs) replaces the emoji tree/page icons in `sidebar-tree.tsx` and `[id]/page.tsx`. `space-shell.module.css` restyles the sidebar to a warm panel: Pages header + QuickFind, side-by-side New page/New db, SVG-glyph tree with brass current + hover-reveal row-actions (opacity reveal so Playwright stays clickable), and a `space-sidebar-footer` count. `editor.module.css` + `editor.tsx` add dragdot handles, a mono `space-editor-meta` line, and a real "Add a block — text, list, divider…" affordance wired to `addBlockAfter`, plus token block/quote/code/callout/slash-menu surfaces. QuickFind, database-table, database-views (table/list/filter chips), and board-view CSS restyled to token panels/chips/fields. New source-grep test `components/space/space-pass.test.ts`. Verified: `npm test` 478 passed, `npm run build` exit 0, `e2e/space.spec.ts` 4 passed (one initial failure from `display:none` row-actions → fixed to opacity reveal), headless Chromium walk: 73 sidebar links all SVG glyphs, zero emoji, editor shows 6 dragdots + add-block + meta, zero console errors. Spec PASS.
+
+### 5.5 Rolodex Workroom pass (completed)
+
+Rolodex re-skinned; people/cadence/import/timeline/date behaviour untouched. `rolodex-subnav.tsx` swaps unicode glyphs for inline SVG icons and uses the shared `atrium-subnav`/`atrium-subtab`; `rolodex-subnav.module.css` slimmed to the wrapper. Today (`rolodex/page.tsx` + `today-dashboard.tsx` + `today.module.css`) gets a `pagetitle`, four accent-keyed KPI tiles (clay overdue / brass due / moss dates+reminders) with Fraunces figures + `--i` reveal, and the who-to-contact rows restyled as contact-row cards (avatar, name+cadence, clay/brass due chips, brass `Log contact`); panels and charts become token panels. All five section pages wrap titles in `atrium-pagetitle` with a mono sub. `people.module.css`, `circles-board.module.css` (four circle accents), and `calendar-month.module.css` restyled to token panels/chips/avatars; `rolodex-status-*` classes preserved. New source-grep test `components/rolodex/rolodex-pass.test.ts`. Verified: `npm test` 485 passed, `npm run build` exit 0, `e2e/rolodex.spec.ts` 4 passed after two reliability fixes (raised the demo walk's too-tight 5 s nav/row timeouts to 15 s for the loaded dev DB, and a local **demo reset** to clear accumulated E2E person rows that pushed seed people below the fold — both pre-existing environment issues, not the redesign). Headless Chromium: 4 KPI tiles, 32 who-to-contact rows (avatar+chip+Log contact), 5 subnav SVG icons, zero console errors across all five pages. Spec PASS.

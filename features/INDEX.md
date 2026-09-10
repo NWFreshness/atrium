@@ -107,7 +107,7 @@ Visual redesign of the whole product. Warm editorial ("The Workroom"): espresso 
 | 5.2 | [Shared chrome, launcher, login](./phase-5-workroom/5.2-shared-chrome-launcher-login.md) | completed | 5.1        |
 | 5.3 | [CRM pass](./phase-5-workroom/5.3-crm-pass.md)                     | completed | 5.2        |
 | 5.4 | [Space pass](./phase-5-workroom/5.4-space-pass.md)                 | completed | 5.2        |
-| 5.5 | [Rolodex pass](./phase-5-workroom/5.5-rolodex-pass.md)             | pending | 5.2        |
+| 5.5 | [Rolodex pass](./phase-5-workroom/5.5-rolodex-pass.md)             | completed | 5.2        |
 | 5.6 | [Groove pass](./phase-5-workroom/5.6-groove-pass.md)               | pending | 5.2        |
 | 5.7 | [Theming QA + smoke](./phase-5-workroom/5.7-theming-qa-smoke.md)   | pending | 5.3–5.6    |
 

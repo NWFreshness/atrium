@@ -2,35 +2,52 @@
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1px;
-  background: currentColor;
-  border: 1px solid currentColor;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
 }
 
 .weekday {
-  background: var(--background);
-  padding: 0.4rem;
-  font-size: 0.75rem;
+  background: var(--bg-2);
+  padding: 0.45rem;
+  font-size: 10px;
   font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
 }
 
 .cell {
-  background: var(--background);
+  background: var(--bg-1);
   min-height: 5.5rem;
-  padding: 0.35rem;
+  padding: 0.4rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  transition: background 0.15s;
+}
+
+.cell:hover {
+  background: var(--bg-2);
 }
 
 .day {
   font-size: 0.8rem;
   font-weight: 600;
+  color: var(--ink);
 }
 
 .entry {
-  font-size: 0.75rem;
-  color: inherit;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--brass);
+  text-decoration: none;
   overflow-wrap: anywhere;
+}
+
+.entry:hover {
+  text-decoration: underline;
 }
 
 .nav {
@@ -38,4 +55,28 @@
   align-items: center;
   gap: 0.75rem;
   margin: 0 0 1rem;
+}
+
+.nav a,
+.nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 550;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-1);
+  color: var(--ink-dim);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nav a:hover,
+.nav button:hover {
+  color: var(--ink);
+  border-color: var(--brass);
+  background: var(--bg-2);
 }

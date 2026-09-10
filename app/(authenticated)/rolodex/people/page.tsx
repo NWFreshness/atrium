@@ -32,7 +32,10 @@ export default async function RolodexPeoplePage({
 
   return (
     <main className={pageStyles["rolodex-page"]}>
-      <h1>People</h1>
+      <div className="atrium-pagetitle">
+        <h1>People</h1>
+        <p className="atrium-sub">everyone you keep in touch with</p>
+      </div>
       <div className={styles["rolodex-toolbar"]}>
         <form
           className={styles["rolodex-search"]}

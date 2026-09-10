@@ -59,9 +59,11 @@ test("demo walks Rolodex Today, subnav, and seed people", async ({ page }) => {
       .click();
     await expect(page).toHaveURL(
       section.href === "/rolodex" ? /\/rolodex$/ : section.href,
+      { timeout: 15000 },
     );
     await expect(
       page.getByRole("heading", { name: section.label, level: 1 }),
+      { timeout: 15000 },
     ).toBeVisible();
   }
 
@@ -70,6 +72,7 @@ test("demo walks Rolodex Today, subnav, and seed people", async ({ page }) => {
     .click();
   await expect(
     page.getByRole("heading", { name: "People", level: 1 }),
+    { timeout: 15000 },
   ).toBeVisible();
   for (const name of DEMO_SEED_PEOPLE) {
     await expect(page.getByRole("link", { name })).toBeVisible();
@@ -97,10 +100,14 @@ test("demo can create a person and still see them after reload", async ({
   await dialog.getByLabel("Name").fill(name);
   await dialog.getByRole("button", { name: "Save" }).click();
   await expect(dialog).toBeHidden();
-  await expect(page.getByRole("link", { name })).toBeVisible();
+  await expect(page.getByRole("link", { name })).toBeVisible({
+    timeout: 15000,
+  });
 
   await page.reload();
-  await expect(page.getByRole("link", { name })).toBeVisible();
+  await expect(page.getByRole("link", { name })).toBeVisible({
+    timeout: 15000,
+  });
   for (const seed of DEMO_SEED_PEOPLE) {
     await expect(page.getByRole("link", { name: seed })).toBeVisible();
   }

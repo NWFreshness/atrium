@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Initials } from "@/components/rolodex/initials";
 import { CIRCLE_META, DATE_TYPES } from "@/lib/rolodex/constants";
 import type { RolodexDashboard } from "@/lib/rolodex/dashboard";
@@ -86,19 +86,19 @@ export function TodayDashboard({ data }: { data: RolodexDashboard }) {
     <div>
       <p className={styles["rolodex-today-lede"]}>{data.today}</p>
       <div className={styles["rolodex-today-stats"]}>
-        <div>
+        <div className="reveal" style={{ "--i": 1 } as CSSProperties}>
           <strong>{overdueCount}</strong>
           <span>overdue to contact</span>
         </div>
-        <div>
+        <div className="reveal" style={{ "--i": 2 } as CSSProperties}>
           <strong>{dueSoonCount}</strong>
           <span>due within a week</span>
         </div>
-        <div>
+        <div className="reveal" style={{ "--i": 3 } as CSSProperties}>
           <strong>{data.upcomingDates.length}</strong>
           <span>dates in 30 days</span>
         </div>
-        <div>
+        <div className="reveal" style={{ "--i": 4 } as CSSProperties}>
           <strong>{data.dueReminders.length}</strong>
           <span>reminders due</span>
         </div>
@@ -118,8 +118,12 @@ export function TodayDashboard({ data }: { data: RolodexDashboard }) {
           </p>
         ) : (
           <ul className={styles["rolodex-today-hero-list"]}>
-            {data.whoToContact.map((row) => (
-              <li key={row.id} className={styles["rolodex-today-hero-row"]}>
+            {data.whoToContact.map((row, index) => (
+              <li
+                key={row.id}
+                className={`${styles["rolodex-today-hero-row"]} reveal`}
+                style={{ "--i": index + 1 } as CSSProperties}
+              >
                 <Link href={`/rolodex/people/${row.id}`}>
                   <Initials name={row.name} />
                   <span>
