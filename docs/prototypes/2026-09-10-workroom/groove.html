@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Groove — Atrium</title>
+<script>(function(){try{var t=localStorage.getItem("atrium.theme");if(!t)t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.setAttribute("data-theme",t)}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/workroom.css">
+<link rel="stylesheet" href="assets/screens.css">
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="brand" href="index.html"><span class="mark"></span>Atrium</a>
+  <div class="links">
+    <a class="navlink" href="index.html"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v9h13v-9"/></svg>Home</a>
+    <a class="navlink" href="crm.html"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)"/></svg>CRM</a>
+    <a class="navlink" href="space.html"><svg viewBox="0 0 24 24"><path d="M4 7c0-1.7 3.4-3 8-3s8 1.3 8 3-3.4 3-8 3-8-1.3-8-3Zm0 0v10c0 1.7 3.4 3 8 3s8-1.3 8-3V7"/></svg>Space</a>
+    <a class="navlink" href="rolodex.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.3-3.5 3.9-5 7-5s5.7 1.5 7 5"/></svg>Rolodex</a>
+    <a class="navlink active" href="groove.html"><svg viewBox="0 0 24 24"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>Groove</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn" data-theme-toggle aria-label="Toggle theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.5 5.5 7 7m10 10 1.5 1.5m0-13L17 7M7 17l-1.5 1.5"/></svg></button>
+    <span class="identity"><span class="badge">T</span>demo@atrium.local</span>
+    <button class="btn"><svg viewBox="0 0 24 24"><path d="M12 5v14m-6-6 6 6 6-6"/></svg>Reset demo</button>
+    <button class="btn"><svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 17l-5-5 5-5M5 12h10"/></svg>Logout</button>
+  </div>
+</nav>
+
+<main class="board" style="max-width:1240px;">
+  <div class="reveal" style="--i:0">
+    <div class="pagetitle">
+      <h1>Groove</h1>
+      <p class="sub">Groovebox G-4 · four units, one transport · Web Audio only</p>
+    </div>
+  </div>
+
+  <div class="groove-shell chassis reveal" style="--i:1; margin-top:1.25rem;">
+    <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
+
+    <div class="groove-left">
+      <div class="nameplate">Groovebox G-4</div>
+
+      <div class="transport">
+        <button class="play" aria-label="Play / stop">
+          <svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>
+        </button>
+        <span class="led" style="margin-left:-2px" aria-hidden="true"></span>
+      </div>
+
+      <div class="tempo">
+        <span class="num">112</span><span class="unit">BPM</span>
+        <span class="stepper-row" style="margin-left:auto; display:flex; flex-direction:column; gap:4px;">
+          <button class="stepper">▲</button>
+          <button class="stepper">▼</button>
+        </span>
+      </div>
+
+      <div class="patches">
+        <div class="nameplate" style="margin-bottom:.55rem">Patch</div>
+        <div class="patch-row">
+          <button class="patch on">BOOM BAP</button>
+          <button class="patch">HOUSE</button>
+          <button class="patch">LATIN</button>
+          <button class="patch">DUB</button>
+        </div>
+      </div>
+
+      <div class="master-slider">
+        <span>SWNG</span><span class="track"></span><span style="width:2.5em; text-align:right; font-size:9px;">28%</span>
+      </div>
+      <div class="master-slider">
+        <span>PUMP</span><span class="track"></span><span style="width:2.5em; text-align:right; font-size:9px;">OFF</span>
+      </div>
+    </div>
+
+    <div class="units">
+      <div class="unit">
+        <div class="nameplate">Drum</div>
+        <div class="knob-row">
+          <span class="knob"><span class="dial" style="--rot:-60deg"></span><span class="klbl">Lvl</span></span>
+          <span class="knob"><span class="dial" style="--rot:-10deg"></span><span class="klbl">Dec</span></span>
+          <span class="knob"><span class="dial" style="--rot:-35deg"></span><span class="klbl">Tun</span></span>
+        </div>
+        <div class="grid16" aria-hidden="true">
+          <i class="hit" style="--i:0"></i><i></i><i></i><i></i>
+          <i></i><i></i><i class="hit" style="--i:6"></i><i></i>
+          <i></i><i></i><i></i><i></i>
+          <i class="hit" style="--i:12"></i><i></i><i></i><i class="hit" style="--i:15"></i>
+        </div>
+        <div class="mute-strip"><button class="mute">MUTE</button><button class="mute">SOLO</button></div>
+      </div>
+
+      <div class="unit">
+        <div class="nameplate">Bass</div>
+        <div class="knob-row">
+          <span class="knob"><span class="dial" style="--rot:30deg"></span><span class="klbl">Cut</span></span>
+          <span class="knob"><span class="dial" style="--rot:-45deg"></span><span class="klbl">Res</span></span>
+          <span class="knob"><span class="dial" style="--rot:-60deg"></span><span class="klbl">Lvl</span></span>
+        </div>
+        <div class="grid16" aria-hidden="true">
+          <i class="hit" style="--i:0"></i><i></i><i></i><i class="hit" style="--i:3"></i>
+          <i></i><i></i><i></i><i></i>
+          <i class="hit" style="--i:8"></i><i></i><i></i><i class="hit" style="--i:11"></i>
+          <i></i><i></i><i class="hit" style="--i:14"></i><i></i>
+        </div>
+        <div class="mute-strip"><button class="mute">MUTE</button><button class="mute on">MUTE</button></div>
+      </div>
+
+      <div class="unit">
+        <div class="nameplate">Keys</div>
+        <div class="knob-row">
+          <span class="knob"><span class="dial" style="--rot:0deg"></span><span class="klbl">Atk</span></span>
+          <span class="knob"><span class="dial" style="--rot:-35deg"></span><span class="klbl">Rel</span></span>
+          <span class="knob"><span class="dial" style="--rot:45deg"></span><span class="klbl">Lvl</span></span>
+        </div>
+        <div class="grid16" aria-hidden="true">
+          <i class="hit" style="--i:0"></i><i></i><i></i><i></i>
+          <i class="hit" style="--i:4"></i><i></i><i></i><i></i>
+          <i class="hit" style="--i:8"></i><i></i><i></i><i></i>
+          <i class="hit" style="--i:12"></i><i></i><i></i><i></i>
+        </div>
+        <div class="mute-strip"><button class="mute">MUTE</button><button class="mute">SOLO</button></div>
+      </div>
+
+      <div class="unit">
+        <div class="nameplate">Lead</div>
+        <div class="knob-row">
+          <span class="knob"><span class="dial" style="--rot:-25deg"></span><span class="klbl">Glide</span></span>
+          <span class="knob"><span class="dial" style="--rot:-50deg"></span><span class="klbl">Boost</span></span>
+          <span class="knob"><span class="dial" style="--rot:-70deg"></span><span class="klbl">Lvl</span></span>
+        </div>
+        <div class="grid16" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i>
+          <i class="hit" style="--i:12"></i><i></i><i></i><i></i>
+        </div>
+        <div class="mute-strip"><button class="mute">MUTE</button><button class="mute">SOLO</button></div>
+      </div>
+    </div>
+
+    <div class="groove-right master">
+      <div class="nameplate">Master</div>
+
+      <span class="filter-knob knob">
+        <span class="dial" style="--rot:25deg"></span>
+        <span class="klbl">Filter</span>
+      </span>
+
+      <div class="sweep-steps" aria-hidden="true">
+        <i></i><i class="on"></i><i class="on"></i><i></i>
+      </div>
+
+      <div class="scope-box"><canvas id="scope" width="360" height="152"></canvas></div>
+
+      <div class="vu" style="position:relative;">
+        <span class="tube"><span class="lvl"></span></span>
+        <span class="tube"><span class="lvl"></span></span>
+      </div>
+      <div class="vu-labels"><span>DB-∞</span><span>0</span></div>
+
+      <div class="master-slider">
+        <span>FDR</span><span class="track"></span>
+      </div>
+    </div>
+  </div>
+
+  <p class="groove-note">Click the transport — this is only a static prototype of the redesign; the real engine ships in Phase 5.</p>
+</main>
+
+<script src="assets/workroom.js"></script>
+</body>
+</html>
