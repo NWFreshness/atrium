@@ -16,7 +16,10 @@ import {
 } from "@/lib/groove/patch-edit";
 import { clonePatch, PATCHES } from "@/lib/groove/patches";
 import type { DrumLane, MelodicStep, Patch, UnitId } from "@/lib/groove/types";
-import styles from "./groove-shell.module.css";
+// The desk's class names are a tested DOM contract (e2e/groove.spec.ts selects
+// ".groove-master-leds .groove-led"), so the stylesheet declares them :global
+// rather than hashing them — see groove-pass.test.ts. Import for the side effect.
+import "./groove-shell.module.css";
 
 const UNITS: UnitId[] = ["drums", "bass", "pads", "lead"];
 
@@ -153,67 +156,74 @@ export function GrooveShell() {
   );
 
   return (
-    <div className={styles["groove-shell"]}>
-      <Transport
-        patches={FACTORY}
-        index={index}
-        onSelect={onSelect}
-        playing={playing}
-        onPlay={togglePlay}
-        bpm={patch.bpm}
-        onBpm={onBpm}
-        swing={patch.swing}
-        onSwing={onSwing}
-        current={current}
-        edited={edited}
-        onRevert={onRevert}
-      />
+    <div className="groove-shell">
+      <div className="groove-chassis" role="group" aria-label="Groovebox G-4">
+        <span className="groove-screw groove-screw-tl" aria-hidden="true" />
+        <span className="groove-screw groove-screw-tr" aria-hidden="true" />
+        <span className="groove-screw groove-screw-bl" aria-hidden="true" />
+        <span className="groove-screw groove-screw-br" aria-hidden="true" />
+        <p className="groove-nameplate">Groovebox G-4</p>
+        <Transport
+          patches={FACTORY}
+          index={index}
+          onSelect={onSelect}
+          playing={playing}
+          onPlay={togglePlay}
+          bpm={patch.bpm}
+          onBpm={onBpm}
+          swing={patch.swing}
+          onSwing={onSwing}
+          current={current}
+          edited={edited}
+          onRevert={onRevert}
+        />
 
-      <main className={styles["groove-deck"]}>
-        {UNITS.map((id) => (
-          <Unit
-            key={id}
-            id={id}
-            patch={patch}
-            current={current}
-            muted={mutes[id]}
-            onMute={() => toggleMute(id)}
-            onParam={(k, v) => onParam(id, k, v)}
-            onDrumStep={onDrumStep}
-            onNoteStep={onNoteStep}
-            onAudition={onAudition}
-          />
-        ))}
-      </main>
+        <main className="groove-deck">
+          {UNITS.map((id) => (
+            <Unit
+              key={id}
+              id={id}
+              patch={patch}
+              current={current}
+              muted={mutes[id]}
+              onMute={() => toggleMute(id)}
+              onParam={(k, v) => onParam(id, k, v)}
+              onDrumStep={onDrumStep}
+              onNoteStep={onNoteStep}
+              onAudition={onAudition}
+            />
+          ))}
+        </main>
 
-      <div className={styles["groove-master"]} aria-label="Groove master strip">
-        <Master
-          params={patch.master}
-          onParam={(key, value) =>
-            edit((p) => ({ ...p, master: { ...p.master, [key]: value } }))
-          }
-          volume={VOLUME}
-          onVolume={() => {
-            // Volume lands in 4.7 (live wiring).
-          }}
-          analyser={engineRef.current?.analyser ?? null}
-          getFilter={() => {
-            const engine = engineRef.current;
-            if (playing && engine) {
+        <div className="groove-master" aria-label="Groove master strip">
+          <Master
+            params={patch.master}
+            onParam={(key, value) =>
+              edit((p) => ({ ...p, master: { ...p.master, [key]: value } }))
+            }
+            volume={VOLUME}
+            onVolume={() => {
+              // Volume lands in 4.7 (live wiring).
+            }}
+            analyser={engineRef.current?.analyser ?? null}
+            getFilter={() => {
+              const engine = engineRef.current;
+              if (playing && engine) {
+                return {
+                  macro: engine.filterMacro,
+                  reso: patch.master.filterReso,
+                };
+              }
               return {
-                macro: engine.filterMacro,
+                macro: patch.master.filter,
                 reso: patch.master.filterReso,
               };
-            }
-            return {
-              macro: patch.master.filter,
-              reso: patch.master.filterReso,
-            };
-          }}
-          liveFilter={engineRef.current?.filterMacro ?? patch.master.filter}
-          sweepPhase={engineRef.current?.sweepPhase ?? 0}
-        />
-        <LedStrip current={current} />
+            }}
+            liveFilter={engineRef.current?.filterMacro ?? patch.master.filter}
+            sweepPhase={engineRef.current?.sweepPhase ?? 0}
+          />
+          <LedStrip current={current} />
+        </div>
       </div>
     </div>
   );

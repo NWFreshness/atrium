@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { Params, ParamSpec } from "@/lib/groove/types";
 import { SWEEP_BARS } from "@/lib/groove/types";
 import { FILTER_SPEC, MASTER_GROUPS } from "@/lib/groove/params";
@@ -58,12 +59,64 @@ function SweepMeter({ bars, phase }: { bars: number; phase: number }) {
   );
 }
 
+/** Twin output meters: peak-hold and slow average of the live output. */
+function VuMeter({ analyser }: { analyser: AnalyserNode | null }) {
+  const peakRef = useRef<HTMLSpanElement>(null);
+  const avgRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const peak = peakRef.current;
+    const avg = avgRef.current;
+    if (!peak || !avg || !analyser) return;
+    const bins = new Uint8Array(analyser.fftSize);
+    let raf = 0;
+    let held = 0;
+    let slow = 0;
+
+    const tick = () => {
+      analyser.getByteTimeDomainData(bins);
+      let sum = 0;
+      for (let i = 0; i < bins.length; i += 1) {
+        const v = (bins[i] - 128) / 128;
+        sum += v * v;
+      }
+      const rms = Math.min(1, Math.sqrt(sum / bins.length) * 2.6);
+      held = Math.max(rms, held * 0.88);
+      slow += (rms - slow) * 0.12;
+      peak.style.height = `${(1 - held) * 100}%`;
+      avg.style.height = `${(1 - slow) * 100}%`;
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [analyser]);
+
+  return (
+    <div className="groove-meter">
+      <div className="groove-vu" aria-hidden="true">
+        <span className="groove-tube">
+          <span className="groove-tube-lvl" ref={peakRef} />
+        </span>
+        <span className="groove-tube">
+          <span className="groove-tube-lvl" ref={avgRef} />
+        </span>
+      </div>
+      <div className="groove-vu-labels">
+        <span>PEAK</span>
+        <span>AVG</span>
+      </div>
+    </div>
+  );
+}
+
 export function Master(p: MasterProps) {
   const readout = useReadout();
   const bars = SWEEP_BARS[Math.round(p.params.sweepBars)] ?? 0;
 
   return (
     <section className="groove-master-strip" aria-label="Groove master">
+      <p className="groove-nameplate">MASTER</p>
       <div className="groove-master-hero">
         <div className="groove-hero-knob">
           <Knob
@@ -120,6 +173,7 @@ export function Master(p: MasterProps) {
           onChange={p.onVolume}
           testId="groove-master-volume"
         />
+        <VuMeter analyser={p.analyser} />
       </div>
     </section>
   );
