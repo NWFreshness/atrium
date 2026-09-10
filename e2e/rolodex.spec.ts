@@ -46,6 +46,13 @@ test("demo walks Rolodex Today, subnav, and seed people", async ({ page }) => {
     "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
   );
 
+  // The walk opens six screens against the demo tenant on a remote dev DB, which
+  // renders each Rolodex list in seconds. The per-assertion timeouts below were
+  // already raised for that; the walk as a whole then blew the 30s default budget
+  // whenever the full suite was running, so the ceiling moves up too. It is a
+  // ceiling, not a wait — a fast run still finishes in seconds.
+  test.setTimeout(90_000);
+
   await login(page, demoEmail!, demoPassword!);
   await page.goto("/rolodex");
   await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();

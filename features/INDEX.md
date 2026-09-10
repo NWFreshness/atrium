@@ -99,7 +99,7 @@ Long pole: 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6 → 4.7 → 4.8. Do not p
 
 ### Phase 5 — Workroom (redesign)
 
-Visual redesign of the whole product. Warm editorial ("The Workroom"): espresso surfaces, brass accent, Fraunces display + Geist Mono data, light = paper. No new domains or databases; re-theme only. Details: [design amend](../docs/superpowers/specs/2026-09-06-atrium-design.md) + prototype [docs/prototypes/2026-09-10-workroom/](../docs/prototypes/2026-09-10-workroom/README.md). Next implementable unit: 5.1.
+Visual redesign of the whole product. Warm editorial ("The Workroom"): espresso surfaces, brass accent, Fraunces display + Geist Mono data, light = paper. No new domains or databases; re-theme only. Details: [design amend](../docs/superpowers/specs/2026-09-06-atrium-design.md) + prototype [docs/prototypes/2026-09-10-workroom/](../docs/prototypes/2026-09-10-workroom/README.md). Phase 5 complete (5.1–5.7).
 
 | ID  | Feature                                                                                  | Status    | Depends on |
 | --- | ---------------------------------------------------------------------------------------- | --------- | ---------- |
@@ -109,6 +109,6 @@ Visual redesign of the whole product. Warm editorial ("The Workroom"): espresso 
 | 5.4 | [Space pass](./phase-5-workroom/5.4-space-pass.md)                                       | completed | 5.2        |
 | 5.5 | [Rolodex pass](./phase-5-workroom/5.5-rolodex-pass.md)                                   | completed | 5.2        |
 | 5.6 | [Groove pass](./phase-5-workroom/5.6-groove-pass.md)                                     | completed | 5.2        |
-| 5.7 | [Theming QA + smoke](./phase-5-workroom/5.7-theming-qa-smoke.md)                         | pending   | 5.3–5.6    |
+| 5.7 | [Theming QA + smoke](./phase-5-workroom/5.7-theming-qa-smoke.md)                         | completed | 5.3–5.6    |
 
 Long pole: 5.1 → 5.2 → 5.7. 5.3–5.6 may run in any order after 5.2 (disjoint CSS module sets) but all must land before 5.7. Do not parallel two features that touch the same files. Preserve `crm-`/`space-`/`rolodex-`/`groove-`/`atrium-nav-` namespaces.
