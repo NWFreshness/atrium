@@ -1,18 +1,100 @@
+/* ============================================================
+   THE WORKROOM — Atrium design system (gated by Phase 5.1)
+   Warm editorial: espresso surfaces, brass accent, Fraunces
+   display + Geist body + Geist Mono data. Dark is the default;
+   light is warm "paper".
+   ============================================================ */
+
+/* ---------- Tokens ---------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  /* surfaces (dark) */
+  --bg-0: #13100c;
+  --bg-1: #1b1712;
+  --bg-2: #231e16;
+  --bg-3: #2b251b;
+  --line: #312a1f;
+  --line-strong: #463c2a;
+
+  /* ink (warm) */
+  --ink: #f0e9da;
+  --ink-dim: #a99e88;
+  --ink-faint: #7a6f5b;
+
+  /* brass accent */
+  --brass: #dfa33c;
+  --brass-bright: #f2bd63;
+  --brass-deep: #8a5f1e;
+  --brass-soft: rgba(223, 163, 60, 0.13);
+  --brass-glow: rgba(223, 163, 60, 0.45);
+
+  /* data palette (warm-shifted) */
+  --moss: #8fae83;
+  --clay: #cd7258;
+  --slate: #8b9fc2;
+  --violet: #a88fc0;
+  --good: var(--moss);
+  --warn: var(--brass);
+  --bad: var(--clay);
+
+  /* type */
+  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-geist-sans), -apple-system, "Helvetica Neue", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* geometry */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --shadow-panel:
+    0 1px 0 rgba(255, 255, 255, 0.03) inset,
+    0 18px 44px -26px rgba(0, 0, 0, 0.7);
+  --glow-brass: 0 10px 30px -10px var(--brass-glow);
+
+  /* backward-compat aliases referenced by existing per-app CSS modules */
+  /* until their 5.3–5.6 passes swap to the Workroom tokens */
+  --background: var(--bg-0);
+  --foreground: var(--ink);
 }
 
 [data-theme="light"] {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-0: #ece5d6;
+  --bg-1: #f5efe2;
+  --bg-2: #fbf7ec;
+  --bg-3: #fffdf6;
+  --line: #d9cdb4;
+  --line-strong: #b3a483;
+
+  --ink: #262015;
+  --ink-dim: #6d6250;
+  --ink-faint: #94876c;
+
+  --brass: #a86f14;
+  --brass-bright: #c08524;
+  --brass-deep: #7c5210;
+  --brass-soft: rgba(168, 111, 20, 0.11);
+  --brass-glow: rgba(168, 111, 20, 0.35);
+
+  --moss: #4f7a49;
+  --clay: #b0512f;
+  --slate: #46608a;
+  --violet: #6f5590;
+
+  --shadow-panel:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 16px 36px -24px rgba(94, 74, 38, 0.35);
+
+  --background: var(--bg-0);
+  --foreground: var(--ink);
   color-scheme: light;
 }
 
-[data-theme="dark"] {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  color-scheme: dark;
+/* ---------- Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html,
@@ -22,19 +104,61 @@ body {
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: var(--bg-0);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  margin: 0;
+}
+
+[data-theme="light"] body {
+  color-scheme: light;
+}
+
+/* paper grain over everything — above the page colour, below nothing interactive */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* warm brass glow from the top */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    640px 320px at 50% -8%,
+    rgba(223, 163, 60, 0.07),
+    transparent 70%
+  );
+}
+
+[data-theme="light"] body::before {
+  opacity: 0.03;
+}
+
+::selection {
+  background: var(--brass-soft);
 }
 
 main {
   padding: 2rem;
+  position: relative;
+  z-index: 1;
 }
 
 h1 {
+  font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 600;
   margin: 0 0 0.5rem;
@@ -42,17 +166,35 @@ h1 {
 
 p {
   margin: 0;
-  color: #555;
 }
 
-[data-theme="light"] p {
-  color: #555;
+/* ---------- Motion ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: reveal 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
 }
 
-[data-theme="dark"] p {
-  color: #aaa;
+@keyframes reveal {
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* launcher (shared pages; replaced by 5.2's app cards) */
 .launcher-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
