@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Phase 4 Groove is complete (through 4.8). Phase 5 Workroom specs are written (docs PR). Next implementable unit: 5.1.
+Phase 5 Workroom 5.1 is complete. Next implementable unit: 5.2.
 
 ---
 
@@ -187,3 +187,7 @@ Instrument edits land in the audio graph while the clock runs. The 4.5 engine al
 ### Phase 5 Workroom specs (written, not implemented)
 
 Seven feature specs in `features/phase-5-workroom/` (5.1–5.7), plus a design amend to `docs/superpowers/specs/2026-09-06-atrium-design.md` folding in the Workroom prototype (`docs/prototypes/2026-09-10-workroom/`, PR #46). Warm editorial redesign: espresso surfaces, brass accent, Fraunces display + Geist body + Geist Mono data, light = paper, Groove stays instrument-dark. Foundation 5.1 (tokens, fonts, theme scaffold), chrome 5.2 (top nav, launcher, login, shared classes), per-app passes 5.3–5.6 (disjoint CSS modules, any order after 5.2), QA gate 5.7 (theme + no-console + namespace smoke). Preservation: `crm-`/`space-`/`rolodex-`/`groove-`/`atrium-nav-` namespaces stay; Groove keeps the Phase 4 unit and patch names (the prototype's Drum/Bass/Keys/Lead + BOOM BAP names are visual-only stand-ins). Docs-only PR; no implementation yet. Next implementable unit: 5.1.
+
+### 5.1 Design system + theme scaffold (completed)
+
+Workroom foundation. `app/globals.css` rewritten with the design tokens (espresso surfaces `--bg-0 #13100c`→`--bg-3 #2b251b`, warm ink, brass accent, warm-shifted data palette, geometry/shadows) and the matching `[data-theme="light"]` warm-paper overrides; body adopts the espresso surface + warm ink + `--font-sans`; fixed non-interactive paper-grain overlay + top brass glow; brass selection; `.reveal` stagger keyframed on `--i` with `prefers-reduced-motion` guard. `app/layout.tsx` loads Fraunces (`--font-fraunces`) via next/font alongside Geist/Geist Mono; type tokens map display/sans/mono. Kept `--background`/`--foreground` aliases so the existing CRM/Rolodex/Space modules keep resolving until their 5.3–5.6 passes. New source-grep test `app/globals.test.ts` locks the token values, light overrides, overlays, reveal, and the no-per-app-namespace guarantee. Verified: `npm test` 456 passed, `npm run build` exit 0, Chromium check shows dark `#13100c` / light `#ece5d6` with grain+glow and zero console errors, login+launcher+theme Playwright smokes 6 passed (first run failed from an empty `AUTH_SECRET` in `.env` — an env issue, not a regression; re-ran with `AUTH_SECRET=ci-build-placeholder`). Spec PASS.
