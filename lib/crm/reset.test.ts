@@ -24,7 +24,7 @@ const demoSession = {
   },
 };
 
-const BENCH_ORGS = [
+const REFERENCE_ORGS = [
   "Bluepeak Software",
   "Harbor & Lane",
   "Northwind Logistics",
@@ -59,7 +59,7 @@ describe("resetCrm", () => {
     await resetCrm(undefined, demoTenant, repo);
 
     const orgs = await listOrganizations(demoTenant, repo);
-    expect(orgs.map((org) => org.name).sort()).toEqual(BENCH_ORGS);
+    expect(orgs.map((org) => org.name).sort()).toEqual(REFERENCE_ORGS);
     expect(orgs.some((org) => org.name === "Stale Acme")).toBe(false);
   });
 

@@ -8,7 +8,7 @@ import {
 } from "./constants";
 
 describe("DEAL_STAGES", () => {
-  it("lists Bench pipeline stages in order", () => {
+  it("lists the reference pipeline stages in order", () => {
     expect(DEAL_STAGES).toEqual([
       "New",
       "Qualified",
@@ -21,7 +21,7 @@ describe("DEAL_STAGES", () => {
 });
 
 describe("STAGE_PROBABILITY", () => {
-  it("matches Bench win probabilities for each stage", () => {
+  it("matches the reference win probabilities for each stage", () => {
     expect(STAGE_PROBABILITY).toEqual({
       New: 10,
       Qualified: 25,
@@ -48,13 +48,13 @@ describe("expectedValue", () => {
 });
 
 describe("CONTACT_STATUSES", () => {
-  it("matches Bench contact statuses", () => {
+  it("matches the reference contact statuses", () => {
     expect(CONTACT_STATUSES).toEqual(["lead", "qualified", "customer"]);
   });
 });
 
 describe("ACTIVITY_TYPES", () => {
-  it("matches Bench activity types", () => {
+  it("matches the reference activity types", () => {
     expect(ACTIVITY_TYPES).toEqual(["note", "call", "email"]);
   });
 });

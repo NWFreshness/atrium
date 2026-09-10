@@ -28,7 +28,7 @@ Phase 5 is sequential through 5.2 and the QA gate 5.7; the per-app passes 5.3–
 
 ### Phase 1 — CRM
 
-Jobs-to-be-done from Bench `docs/crm/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite.
+Jobs-to-be-done from the reference `docs/crm/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite.
 
 | ID  | Feature                                                                  | Status    | Depends on |
 | --- | ------------------------------------------------------------------------ | --------- | ---------- |
@@ -46,7 +46,7 @@ Long pole: 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 → 1.8 → 1.9. 1.7 can 
 
 ### Phase 2 — Space
 
-Jobs-to-be-done from Bench `docs/space/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite.
+Jobs-to-be-done from the reference `docs/space/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite.
 
 | ID  | Feature                                                                    | Status    | Depends on |
 | --- | -------------------------------------------------------------------------- | --------- | ---------- |
@@ -63,7 +63,7 @@ Long pole: 2.1 → 2.2 → 2.3 → 2.4 → 2.5 → 2.6 → 2.8. 2.7 can start af
 
 ### Phase 3 — Rolodex
 
-Jobs-to-be-done from Bench `docs/rolodex/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite. Initials only (no photo column). Design: [2026-09-09-rolodex-design.md](../docs/superpowers/specs/2026-09-09-rolodex-design.md).
+Jobs-to-be-done from the reference `docs/rolodex/`. Tenant-scoped. Demo seed. Not pixel-identical, not Express/SQLite. Initials only (no photo column). Design: [2026-09-09-rolodex-design.md](../docs/superpowers/specs/2026-09-09-rolodex-design.md).
 
 | ID   | Feature                                                                        | Status    | Depends on    |
 | ---- | ------------------------------------------------------------------------------ | --------- | ------------- |
@@ -82,7 +82,7 @@ Long pole: 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10. 3.4, 3.6, 3.7 can start
 
 ### Phase 4 — Groove
 
-Jobs-to-be-done from Bench `docs/groove/`. Web Audio only. No database, no seed, no tenant rows. Still behind login. Design: [2026-09-09-groove-design.md](../docs/superpowers/specs/2026-09-09-groove-design.md).
+Jobs-to-be-done from the reference `docs/groove/`. Web Audio only. No database, no seed, no tenant rows. Still behind login. Design: [2026-09-09-groove-design.md](../docs/superpowers/specs/2026-09-09-groove-design.md).
 
 | ID  | Feature                                                                         | Status    | Depends on |
 | --- | ------------------------------------------------------------------------------- | --------- | ---------- |

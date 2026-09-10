@@ -2,7 +2,7 @@
 
 Four personal apps, one login, hosted on Vercel: CRM, Space, Rolodex, Groove.
 
-Clone of the jobs in [ed-donner/bench](https://github.com/ed-donner/bench), not a fork. Next.js + Postgres. Owner account plus a resettable demo account.
+A Next.js + Postgres reimplementation of those jobs-to-be-done, not a fork. Owner account plus a resettable demo account.
 
 Design: [docs/superpowers/specs/2026-09-06-atrium-design.md](docs/superpowers/specs/2026-09-06-atrium-design.md)
 

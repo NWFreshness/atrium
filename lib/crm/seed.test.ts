@@ -13,7 +13,7 @@ const demoTenant = "tenant-demo";
 const ownerTenant = "tenant-owner";
 
 describe("seedCrm", () => {
-  it("populates the demo tenant with Bench organizations and leaves owner empty", async () => {
+  it("populates the demo tenant with the reference organizations and leaves owner empty", async () => {
     const repo = createMemoryCrmRepository();
 
     await seedCrm(demoTenant, repo);

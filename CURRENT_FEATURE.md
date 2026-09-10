@@ -32,7 +32,7 @@ Nine feature specs in `features/phase-1-crm/` (1.1–1.9): schema/seed/resetter,
 
 ### 1.1 CRM schema, seed, resetter (completed)
 
-Drizzle tables organizations/contacts/deals/activities with tenantId, UUID ids, SET NULL FKs. Query helpers require tenantId (memory + Drizzle). STAGE_PROBABILITY and expectedValue match Bench. Demo seed (Northwind, Bluepeak, Harbor & Lane) is idempotent; owner empty. Reset demo registers CRM wipe+reseed. Migration `drizzle/0001_light_saracen.sql`. `/crm` still Coming soon. Controller: npm test 78 passed, npm run build exit 0. Spec PASS, quality APPROVED.
+Drizzle tables organizations/contacts/deals/activities with tenantId, UUID ids, SET NULL FKs. Query helpers require tenantId (memory + Drizzle). STAGE_PROBABILITY and expectedValue match the reference implementation. Demo seed (Northwind, Bluepeak, Harbor & Lane) is idempotent; owner empty. Reset demo registers CRM wipe+reseed. Migration `drizzle/0001_light_saracen.sql`. `/crm` still Coming soon. Controller: npm test 78 passed, npm run build exit 0. Spec PASS, quality APPROVED.
 
 ### 1.2 CRM shell and subnav (completed)
 
@@ -72,7 +72,7 @@ Eight feature specs in `features/phase-2-space/` (2.1–2.8): schema/seed/resett
 
 ### 2.1 Space schema, seed, resetter (completed)
 
-Drizzle tables pages/blocks/properties/propertyOptions/rowValues/views with tenantId, UUID ids, cascade FKs. Query helpers require tenantId (memory + Drizzle). Demo seed is a nested Bench page tree with icons; owner empty. Reset demo registers Space wipe+reseed. Migration `drizzle/0002_panoramic_smasher.sql`. `/space` still Coming soon. Controller: npm test 188 passed, npm run build exit 0. Spec PASS.
+Drizzle tables pages/blocks/properties/propertyOptions/rowValues/views with tenantId, UUID ids, cascade FKs. Query helpers require tenantId (memory + Drizzle). Demo seed is a nested reference page tree with icons; owner empty. Reset demo registers Space wipe+reseed. Migration `drizzle/0002_panoramic_smasher.sql`. `/space` still Coming soon. Controller: npm test 188 passed, npm run build exit 0. Spec PASS.
 
 ### 2.2 Space shell (completed)
 
@@ -108,7 +108,7 @@ Ten feature specs in `features/phase-3-rolodex/` (3.1–3.10): schema/seed/reset
 
 ### 3.1 Rolodex schema, seed, resetter (completed)
 
-Drizzle tables people/interactions/importantDates/facts/news/reminders/gifts/connections with tenantId, UUID ids, cascade FKs. Query helpers require tenantId (memory + Drizzle). Cadence and annual-date helpers match Bench. Demo seed ≥30 people across every circle; owner empty. Reset demo registers Rolodex wipe+reseed. Migration `drizzle/0003_dapper_shinobi_shaw.sql`. `/rolodex` still Coming soon. Controller: npm test 294 passed, npm run build exit 0. Spec PASS.
+Drizzle tables people/interactions/importantDates/facts/news/reminders/gifts/connections with tenantId, UUID ids, cascade FKs. Query helpers require tenantId (memory + Drizzle). Cadence and annual-date helpers match the reference implementation. Demo seed ≥30 people across every circle; owner empty. Reset demo registers Rolodex wipe+reseed. Migration `drizzle/0003_dapper_shinobi_shaw.sql`. `/rolodex` still Coming soon. Controller: npm test 294 passed, npm run build exit 0. Spec PASS.
 
 ### 3.2 Rolodex shell and subnav (completed)
 
@@ -152,7 +152,7 @@ Eight feature specs in `features/phase-4-groove/` (4.1–4.8): domain, shell, se
 
 ### 4.1 Groove domain (completed)
 
-Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, four Bench factory patches + `clonePatch`. No AudioContext, no Drizzle, `/groove` still Coming soon. Controller: npm test 380 passed, npm run build exit 0. Spec PASS.
+Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, four reference factory patches + `clonePatch`. No AudioContext, no Drizzle, `/groove` still Coming soon. Controller: npm test 380 passed, npm run build exit 0. Spec PASS.
 
 ### 4.2 Groove shell (completed)
 
@@ -160,7 +160,7 @@ Pure TypeScript in `lib/groove/`: types, music, DJ filter mapping, param specs, 
 
 ### 4.3 Groove sequencer controls (completed)
 
-`components/groove/`: `knob`, `fader`, `drum-grid`, `note-grid`, `velocity-lane`, `led-strip`, `unit`, `use-readout` ported from Bench. Each unit is `role="region"` named RHYTHM / BASS / PADS / LEAD; pads render `DrumGrid`, the others render `NoteGrid` + `VelocityLane`. Unique aria-labels (`KICK step 3`, `BASS step 1`, etc.) proven by both unit tests and a manual Chromium walk. Shell mounts four Units on a read-only `clonePatch(PATCHES[0])`. MUTE toggles a muted class. No AudioContext anywhere. Controller: npm test 421 passed, npm run build exit 0. Spec PASS.
+`components/groove/`: `knob`, `fader`, `drum-grid`, `note-grid`, `velocity-lane`, `led-strip`, `unit`, `use-readout` ported from the reference implementation. Each unit is `role="region"` named RHYTHM / BASS / PADS / LEAD; pads render `DrumGrid`, the others render `NoteGrid` + `VelocityLane`. Unique aria-labels (`KICK step 3`, `BASS step 1`, etc.) proven by both unit tests and a manual Chromium walk. Shell mounts four Units on a read-only `clonePatch(PATCHES[0])`. MUTE toggles a muted class. No AudioContext anywhere. Controller: npm test 421 passed, npm run build exit 0. Spec PASS.
 
 ### 4.4 Groove transport and patches (completed)
 
@@ -180,7 +180,7 @@ Instrument edits land in the audio graph while the clock runs. The 4.5 engine al
 
 ### 4.8 Playwright smoke (completed)
 
-`e2e/groove.spec.ts`, ported from Bench `e2e/groove/instrument.spec.ts` with Atrium login (demo pair, owner fallback; skip if missing) and `groove-led`/`groove-master-leds` selectors — no component changes needed. Unauth `/groove` → login; four unit regions; transport start/stop with playhead −1 → lit → back; KICK step 3 aria-pressed toggle; BASS/PADS/LEAD step 1 each count 1; BASALT changes the BPM copy; RHYTHM MUTE toggles the muted class; MutationObserver-accumulated LED steps (≥12 of 16 in 10 s) prove the clock runs while the console stays error-free; transport stopped in afterEach. Controller: `npx playwright test e2e/groove.spec.ts` 8 passed, stable across repeated runs; `env -u DATABASE_URL npm test` 446 passed; `npm run build` exit 0; full suite 26 passed (two Rolodex subnav tests flaked once under full-suite load, both green on re-run — pre-existing, unrelated to Groove). Spec PASS.
+`e2e/groove.spec.ts`, ported from the reference implementation's `e2e/groove/instrument.spec.ts` with Atrium login (demo pair, owner fallback; skip if missing) and `groove-led`/`groove-master-leds` selectors — no component changes needed. Unauth `/groove` → login; four unit regions; transport start/stop with playhead −1 → lit → back; KICK step 3 aria-pressed toggle; BASS/PADS/LEAD step 1 each count 1; BASALT changes the BPM copy; RHYTHM MUTE toggles the muted class; MutationObserver-accumulated LED steps (≥12 of 16 in 10 s) prove the clock runs while the console stays error-free; transport stopped in afterEach. Controller: `npx playwright test e2e/groove.spec.ts` 8 passed, stable across repeated runs; `env -u DATABASE_URL npm test` 446 passed; `npm run build` exit 0; full suite 26 passed (two Rolodex subnav tests flaked once under full-suite load, both green on re-run — pre-existing, unrelated to Groove). Spec PASS.
 
 ### Phase 5 Workroom specs (written, not implemented)
 

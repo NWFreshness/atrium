@@ -8,7 +8,7 @@ import {
 } from "./constants";
 
 describe("PAGE_TYPES", () => {
-  it("lists Bench page types in order", () => {
+  it("lists the reference page types in order", () => {
     expect(PAGE_TYPES).toEqual(["page", "database", "row"]);
   });
 });
@@ -46,7 +46,7 @@ describe("filterBlockMenu", () => {
 });
 
 describe("PROPERTY_TYPES", () => {
-  it("lists Bench property types with type fixed at create", () => {
+  it("lists the reference property types with type fixed at create", () => {
     expect(PROPERTY_TYPES).toEqual([
       "text",
       "number",

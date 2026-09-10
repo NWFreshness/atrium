@@ -11,13 +11,13 @@ import {
 } from "./constants";
 
 describe("CIRCLES", () => {
-  it("lists Bench circles from closest outwards", () => {
+  it("lists the reference circles from closest outwards", () => {
     expect(CIRCLES).toEqual(["inner", "close", "wider", "distant"]);
   });
 });
 
 describe("CIRCLE_META", () => {
-  it("matches Bench cadence days", () => {
+  it("matches the reference cadence days", () => {
     expect(CIRCLE_META.inner.cadenceDays).toBe(30);
     expect(CIRCLE_META.close.cadenceDays).toBe(91);
     expect(CIRCLE_META.wider.cadenceDays).toBe(182);
@@ -26,7 +26,7 @@ describe("CIRCLE_META", () => {
 });
 
 describe("enums", () => {
-  it("matches Bench interaction, date, gift, status, and connection values", () => {
+  it("matches the reference interaction, date, gift, status, and connection values", () => {
     expect(INTERACTION_TYPES).toEqual([
       "call",
       "message",

@@ -66,7 +66,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved; 
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
 6. `features/phase-5-workroom/5.1-design-system-theme-scaffold.md` — the next feature to implement after this docs PR merges
 
-Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
+Behavior bible for later apps: the reference implementation's `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
 ## How we ship
 

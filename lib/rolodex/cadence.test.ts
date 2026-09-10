@@ -25,7 +25,7 @@ describe("cadenceDays", () => {
 
 describe("computeStatus", () => {
   it("marks never-contacted as due_soon (clock starts on the computation day)", () => {
-    // Bench code: nextDue = today when lastContacted is null, so they are not red on day one.
+    // Reference code: nextDue = today when lastContacted is null, so they are not red on day one.
     expect(computeStatus(close, null, "2026-03-01").status).toBe("due_soon");
     expect(computeStatus(close, null, "2026-03-02").status).toBe("due_soon");
   });
