@@ -2,7 +2,7 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 4 Groove is complete.** All four apps are built. Do not push to `main`. Do not merge unless asked.
+**Stop. Phase 4 Groove is complete (through 4.8, PR #45).** Phase 5 Workroom specs 5.1–5.7 are written in this docs PR. Do not push to `main`. Do not merge unless asked. After this docs PR merges, implement 5.1.
 
 ## Where we are (2026-09-06)
 
@@ -51,11 +51,11 @@ Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.g
 | **4.7 Live wiring** | **completed** |
 | **4.8 Playwright smoke** | **completed** |
 
-Phase 1–3 are complete. Phase 4 Groove is complete. No Groove tables. Web Audio only. All four apps are built.
+Phase 1–4 are complete. Phase 4 Groove is complete, no Groove tables, Web Audio only. Phase 5 Workroom (redesign) specs 5.1–5.7 are written in `features/phase-5-workroom/` (this docs PR); no implementation yet. Next implementable unit: 5.1.
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
-Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved). Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. If a spec and the design disagree, update the design first.
+Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved; amended for Phase 5 Workroom). Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom redesign prototype is the visual authority for Phase 5: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
 
 ## Read order
 
@@ -64,7 +64,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved).
 3. `README.md`
 4. Design doc above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Wait for the user. All four apps are built. Do not invent new work.
+6. `features/phase-5-workroom/5.1-design-system-theme-scaffold.md` — the next feature to implement after this docs PR merges
 
 Behavior bible for later apps: [ed-donner/bench](https://github.com/ed-donner/bench) `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
 
@@ -104,4 +104,4 @@ npm test
 npm run build
 ```
 
-Then wait for the user. All four apps are built.
+Then implement `features/phase-5-workroom/5.1-design-system-theme-scaffold.md` once this docs PR (and its design amend) has merged to `main`.

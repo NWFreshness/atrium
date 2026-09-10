@@ -145,7 +145,7 @@ Owner tenant: empty. No welcome records.
 
 Each Bench application is a phase. Foundation is phase 0 because auth, tenancy, and the shell must exist first.
 
-Build order is 0 → 1 → 2 → 3 → 4. One feature at a time. No parallel features that touch the same files.
+Build order is 0 → 1 → 2 → 3 → 4 → 5. One feature at a time. No parallel features that touch the same files.
 
 ### Phase 0 — Atrium platform
 
@@ -174,6 +174,29 @@ Feature specs: `features/phase-3-rolodex/` (3.1–3.10). Design: `docs/superpowe
 Four synths, one transport, master DJ filter, Web Audio only. No DB. Behind login.
 
 Feature specs: `features/phase-4-groove/` (4.1–4.8). Design: `docs/superpowers/specs/2026-09-09-groove-design.md`. Board: `features/INDEX.md`.
+
+### Phase 5 — Workroom (redesign)
+
+Phases 0–4 shipped functional but visually bare: Geist + Arial fallbacks, flat near-black surfaces, no texture or motion, emoji icons in the Space tree, and placeholder empty states. Phase 5 is a single visual direction applied across the whole product. No new domains, no new databases, no new features — it re-themes and restyles what exists. Approval artifact: [docs/prototypes/2026-09-10-workroom/](../../../prototypes/2026-09-10-workroom/README.md) (a static prototype, merged in PR #46, not production code).
+
+The direction, “the Workroom”: warm editorial rather than a generic dark dashboard.
+
+| Element | Decision | Why |
+| --- | --- | --- |
+| Surfaces | Espresso / ink browns `#13100c` → `#2b251b` (dark), warm paper (light) | Personal, not corporate-dashboard |
+| Ink | Warm off-white `#f0e9da`, dimmed `#a99e88` / `#7a6f5b` | Calm, readable |
+| Accent | Brass `#dfa33c` — evolution of the existing amber active state | Continuity with the nav |
+| Display type | Fraunces (characterful serif) for titles, KPI figures, brand | Distinctive identity |
+| Body type | Geist, already loaded | No regression in readability |
+| Data type | Geist Mono for labels, dates, tempo, IDs, chips | Editorial data texture |
+| Theme | Dark default; light is warm “paper”, not white | Follows existing `atrium.theme` |
+| Texture | Low-opacity SVG paper grain + top radial brass glow | Quiet depth, not noise |
+| Motion | Staggered load reveals, nav underline sweep, card lift, animated meters. `<prefers-reduced-motion>` respected | Alive without gimmick |
+| Groove | Stays instrument-dark in both themes, per its spec | Hardware panel needs contrast |
+
+Shared presentational classes (buttons, fields, panels, KPI cards, chips, avatars, subnav, page titles) and the design tokens land in the foundation features 5.1–5.2; per-app passes (5.3–5.6) apply them to each app’s own components. The per-app CSS namespaces (`crm-`, `space-`, `rolodex-`, `groove-`) and the `atrium-nav-` prefix rule from `AGENTS.md` still hold — the prototype uses unprefixed classes because it never ships into the app.
+
+Feature specs: `features/phase-5-workroom/` (5.1–5.7). Board: `features/INDEX.md`.
 
 ---
 
@@ -249,4 +272,4 @@ Do not add TanStack packages until the feature that uses them.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-Progress: `features/INDEX.md`. Phase 0–3 complete. Phase 4 Groove specs 4.1–4.8 exist. Next implementable unit is 4.1.
+Progress: `features/INDEX.md`. Phases 0–4 complete (all settings end at 4.8, PR #45). Workroom prototype merged in PR #46. Phase 5 Workroom specs 5.1–5.7 exist. Next implementable unit is 5.1.

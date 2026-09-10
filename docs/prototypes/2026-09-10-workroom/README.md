@@ -60,6 +60,11 @@ the play button, VU meters, and oscilloscope are simulated in
   $66,500 expected) so the screens look like real tenant data.
 - Forms do not submit. `login.html` navigates straight to the launcher.
 - Groove has no Web Audio; the real engine stays in the Phase 4 implementation.
+- Sub-section subnav tabs (CRM Organizations/Contacts/Deals/Pipeline; Rolodex
+  People/Circles/Calendar/Timeline) have no dedicated mock screen yet, so in this
+  static prototype they point at their app's dashboard mock (`crm.html` /
+  `rolodex.html`). They become real per-section routes with the 5.3–5.6
+  implementation; the running app already routes them correctly.
 
 ## What comes next
 

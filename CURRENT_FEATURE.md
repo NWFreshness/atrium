@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Phase 4 Groove is complete. All four apps are built. Wait for the user.
+Phase 4 Groove is complete (through 4.8). Phase 5 Workroom specs are written (docs PR). Next implementable unit: 5.1.
 
 ---
 
@@ -183,3 +183,7 @@ Instrument edits land in the audio graph while the clock runs. The 4.5 engine al
 ### 4.8 Playwright smoke (completed)
 
 `e2e/groove.spec.ts`, ported from Bench `e2e/groove/instrument.spec.ts` with Atrium login (demo pair, owner fallback; skip if missing) and `groove-led`/`groove-master-leds` selectors — no component changes needed. Unauth `/groove` → login; four unit regions; transport start/stop with playhead −1 → lit → back; KICK step 3 aria-pressed toggle; BASS/PADS/LEAD step 1 each count 1; BASALT changes the BPM copy; RHYTHM MUTE toggles the muted class; MutationObserver-accumulated LED steps (≥12 of 16 in 10 s) prove the clock runs while the console stays error-free; transport stopped in afterEach. Controller: `npx playwright test e2e/groove.spec.ts` 8 passed, stable across repeated runs; `env -u DATABASE_URL npm test` 446 passed; `npm run build` exit 0; full suite 26 passed (two Rolodex subnav tests flaked once under full-suite load, both green on re-run — pre-existing, unrelated to Groove). Spec PASS.
+
+### Phase 5 Workroom specs (written, not implemented)
+
+Seven feature specs in `features/phase-5-workroom/` (5.1–5.7), plus a design amend to `docs/superpowers/specs/2026-09-06-atrium-design.md` folding in the Workroom prototype (`docs/prototypes/2026-09-10-workroom/`, PR #46). Warm editorial redesign: espresso surfaces, brass accent, Fraunces display + Geist body + Geist Mono data, light = paper, Groove stays instrument-dark. Foundation 5.1 (tokens, fonts, theme scaffold), chrome 5.2 (top nav, launcher, login, shared classes), per-app passes 5.3–5.6 (disjoint CSS modules, any order after 5.2), QA gate 5.7 (theme + no-console + namespace smoke). Preservation: `crm-`/`space-`/`rolodex-`/`groove-`/`atrium-nav-` namespaces stay; Groove keeps the Phase 4 unit and patch names (the prototype's Drum/Bass/Keys/Lead + BOOM BAP names are visual-only stand-ins). Docs-only PR; no implementation yet. Next implementable unit: 5.1.
