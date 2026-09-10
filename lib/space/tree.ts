@@ -4,6 +4,7 @@ export type PageTreeNode = {
   id: string;
   title: string;
   icon: string | null;
+  type: Page["type"];
   parentId: string | null;
   position: number;
   children: PageTreeNode[];
@@ -22,6 +23,7 @@ export function buildPageTree(pages: Page[]): PageTreeNode[] {
       id: page.id,
       title: page.title,
       icon: page.icon,
+      type: page.type,
       parentId: page.parentId,
       position: page.position,
       children: [],

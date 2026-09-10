@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Phase 5 Workroom 5.1–5.3 are complete. Next implementable unit: 5.4.
+Phase 5 Workroom 5.1–5.4 are complete. Next implementable unit: 5.5.
 
 ---
 
@@ -199,3 +199,7 @@ Workroom chrome. `components/atrium-icon.tsx` adds stroked `currentColor` SVG gl
 ### 5.3 CRM Workroom pass (completed)
 
 All CRM screens re-skinned with the warm palette and shared `atrium-` classes; behaviour, TanStack, and recharts untouched. `crm-subnav.tsx` swaps unicode glyphs for inline SVG icons and uses the shared `atrium-subnav`/`atrium-subtab` (brass active underline); `dashboard-charts.tsx` re-themes recharts to brass/moss/slate/clay (keeps `isAnimationActive={false}` + the lib aggregation split; win-rate empty copy → "No closed deals yet"). `dashboard.module.css` restyles KPI tiles (top accent rule per tone, Fraunces figures, mono labels) and charts/feeds into Workroom panels; `stat-tile.tsx` adds a `--i` reveal stagger. `org.module.css` restyles tables/fields/dialogs/detail to token panels, fields, and `button[type=submit]` brass-primary (buttons styled via CRM-scoped descendants, no TSX churn); `pipeline-board.module.css` maps the six stages to the warm palette. All five CRM pages (`/crm` + orgs/contacts/deals/pipeline) wrap their titles in `atrium-pagetitle` with a mono sub. New source-grep test `components/crm/crm-pass.test.ts`. Verified: `npm test` 472 passed, `npm run build` exit 0, `e2e/crm.spec.ts` 4 passed, headless Chromium walk of all five CRM screens zero console errors (KPI values come straight from `lib/crm` dashboard/seed, matching the prototype's 4 / $130k / $66.5k). Spec PASS.
+
+### 5.4 Space Workroom pass (completed)
+
+Space re-skinned; page/block/row behaviour, TanStack, dnd, and autosave untouched. `lib/space/tree.ts` adds a `type` field to `PageTreeNode`; new `components/space/space-icons.tsx` (Doc/Database/Row glyphs) replaces the emoji tree/page icons in `sidebar-tree.tsx` and `[id]/page.tsx`. `space-shell.module.css` restyles the sidebar to a warm panel: Pages header + QuickFind, side-by-side New page/New db, SVG-glyph tree with brass current + hover-reveal row-actions (opacity reveal so Playwright stays clickable), and a `space-sidebar-footer` count. `editor.module.css` + `editor.tsx` add dragdot handles, a mono `space-editor-meta` line, and a real "Add a block — text, list, divider…" affordance wired to `addBlockAfter`, plus token block/quote/code/callout/slash-menu surfaces. QuickFind, database-table, database-views (table/list/filter chips), and board-view CSS restyled to token panels/chips/fields. New source-grep test `components/space/space-pass.test.ts`. Verified: `npm test` 478 passed, `npm run build` exit 0, `e2e/space.spec.ts` 4 passed (one initial failure from `display:none` row-actions → fixed to opacity reveal), headless Chromium walk: 73 sidebar links all SVG glyphs, zero emoji, editor shows 6 dragdots + add-block + meta, zero console errors. Spec PASS.

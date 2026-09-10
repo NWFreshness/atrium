@@ -5,6 +5,14 @@
   max-width: 44rem;
 }
 
+.space-editor-meta {
+  margin: 0 0 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--ink-faint);
+}
+
 .space-block {
   display: flex;
   align-items: flex-start;
@@ -15,17 +23,38 @@
 .space-block-handle {
   flex-shrink: 0;
   margin-top: 0.35rem;
-  padding: 0.1rem 0.2rem;
+  padding: 0.35rem 0.25rem;
   border: none;
   background: transparent;
-  color: #737373;
+  color: var(--ink-faint);
   cursor: grab;
-  font-size: 0.75rem;
-  letter-spacing: -0.15em;
+  opacity: 0;
+  transition: opacity 0.18s;
+}
+
+.space-block:hover .space-block-handle {
+  opacity: 0.6;
+}
+
+.space-block-handle:hover {
+  opacity: 1;
 }
 
 .space-block-handle:active {
   cursor: grabbing;
+}
+
+.space-dragdots {
+  display: grid;
+  grid-template-columns: repeat(2, 3px);
+  gap: 3px;
+}
+
+.space-dragdots i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .space-block-body {
@@ -44,23 +73,29 @@
   background: transparent;
   color: inherit;
   font: inherit;
-  line-height: 1.5;
-  padding: 0.25rem 0;
+  line-height: 1.6;
+  padding: 0.3rem 0;
 }
 
 .space-block-input:focus {
   outline: none;
 }
 
+.space-block-input::placeholder {
+  color: var(--ink-faint);
+}
+
 .space-block-heading1 .space-block-input {
+  font-family: var(--font-display);
   font-size: 1.85rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
 }
 
 .space-block-heading2 .space-block-input {
+  font-family: var(--font-display);
   font-size: 1.4rem;
-  font-weight: 650;
+  font-weight: 580;
   line-height: 1.25;
 }
 
@@ -70,45 +105,80 @@
 }
 
 .space-block-quote {
-  border-left: 3px solid #f59e0b;
-  padding-left: 0.65rem;
-  color: #a3a3a3;
+  border-left: 3px solid var(--brass);
+  padding-left: 0.7rem;
+  color: var(--ink-dim);
   font-style: italic;
 }
 
 .space-block-code .space-block-input {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.9rem;
-  background: #171717;
-  color: #e5e5e5;
-  padding: 0.65rem 0.75rem;
-  border-radius: 6px;
+  background: var(--bg-3);
+  color: var(--ink);
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
 }
 
 .space-block-callout .space-block-body {
-  background: #2a2416;
-  border: 1px solid #f59e0b55;
-  border-radius: 8px;
-  padding: 0.45rem 0.7rem;
+  background: var(--brass-soft);
+  border: 1px solid color-mix(in srgb, var(--brass) 35%, transparent);
+  border-radius: var(--r-sm);
+  padding: 0.5rem 0.75rem;
 }
 
 .space-block-mark {
   flex-shrink: 0;
   margin-top: 0.35rem;
   width: 1.2rem;
-  color: #a3a3a3;
+  color: var(--ink-faint);
 }
 
 .space-block-check {
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
   flex-shrink: 0;
+  accent-color: var(--brass);
 }
 
 .space-block-rule {
   flex: 1;
-  margin: 0.85rem 0;
+  margin: 0.9rem 0;
   border: none;
-  border-top: 1px solid #525252;
+  border-top: 1px solid var(--line);
+}
+
+.space-add-block {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 0.9rem;
+  padding: 10px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-faint);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.space-add-block:hover {
+  color: var(--brass);
+  border-color: color-mix(in srgb, var(--brass) 55%, transparent);
+  background: var(--brass-soft);
+}
+
+.space-add-block-plus {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  font-size: 11px;
 }
 
 .space-slash {
@@ -120,11 +190,11 @@
   margin: 0;
   padding: 0.3rem;
   list-style: none;
-  background: #171717;
-  color: #f5f5f5;
-  border: 1px solid #404040;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px #0008;
+  background: var(--bg-1);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-panel), var(--glow-brass);
 }
 
 .space-slash-item {
@@ -142,12 +212,12 @@
 
 .space-slash-item-current,
 .space-slash-item:hover {
-  background: #2a2416;
-  color: #f59e0b;
+  background: var(--brass-soft);
+  color: var(--brass);
 }
 
 .space-slash-empty {
   margin: 0;
   padding: 0.4rem 0.55rem;
-  color: #a3a3a3;
+  color: var(--ink-faint);
 }
