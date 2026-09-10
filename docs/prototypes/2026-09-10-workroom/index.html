@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atrium</title>
+<script>(function(){try{var t=localStorage.getItem("atrium.theme");if(!t)t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.setAttribute("data-theme",t)}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/workroom.css">
+<link rel="stylesheet" href="assets/screens.css">
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="brand" href="index.html"><span class="mark"></span>Atrium</a>
+  <div class="links">
+    <a class="navlink active" href="index.html">
+      <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v9h13v-9"/></svg>Home
+    </a>
+    <a class="navlink" href="crm.html">
+      <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)"/></svg>CRM
+    </a>
+    <a class="navlink" href="space.html">
+      <svg viewBox="0 0 24 24"><path d="M4 7c0-1.7 3.4-3 8-3s8 1.3 8 3-3.4 3-8 3-8-1.3-8-3Zm0 0v10c0 1.7 3.4 3 8 3s8-1.3 8-3V7"/></svg>Space
+    </a>
+    <a class="navlink" href="rolodex.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.3-3.5 3.9-5 7-5s5.7 1.5 7 5"/></svg>Rolodex
+    </a>
+    <a class="navlink" href="groove.html">
+      <svg viewBox="0 0 24 24"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>Groove
+    </a>
+  </div>
+  <div class="nav-right">
+    <button class="btn" data-theme-toggle aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.5 5.5 7 7m10 10 1.5 1.5m0-13L17 7M7 17l-1.5 1.5"/></svg>
+    </button>
+    <span class="identity"><span class="badge">T</span>demo@atrium.local</span>
+    <button class="btn"><svg viewBox="0 0 24 24"><path d="M12 5v14m-6-6 6 6 6-6"/></svg>Reset demo</button>
+    <button class="btn"><svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 17l-5-5 5-5M5 12h10"/></svg>Logout</button>
+  </div>
+</nav>
+
+<main class="launcher">
+  <div class="pagetitle" style="margin-top:1rem;">
+    <div class="reveal" style="--i:0">
+      <h1>Atrium</h1>
+      <p class="sub">Four personal apps, one login.</p>
+    </div>
+  </div>
+
+  <div class="graph">
+    <a class="appcard reveal" href="crm.html" style="--i:1; --app-glow: rgba(205,114,88,.12)">
+      <span class="icon"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)"/><path d="M9 12h6M12 9v6" opacity=".45"/></svg></span>
+      <h3>CRM</h3>
+      <p>Organizations, contacts, deals, and a drag-and-drop pipeline for the work you're chasing.</p>
+      <span class="open">Open →</span>
+    </a>
+    <a class="appcard reveal" href="space.html" style="--i:2; --app-glow: rgba(139,159,194,.12)">
+      <span class="icon"><svg viewBox="0 0 24 24"><path d="M4 7c0-1.7 3.4-3 8-3s8 1.3 8 3-3.4 3-8 3-8-1.3-8-3Zm0 0v10c0 1.7 3.4 3 8 3s8-1.3 8-3V7"/></svg></span>
+      <h3>Space</h3>
+      <p>Pages, blocks, and databases — a quiet place to keep everything you read and decide.</p>
+      <span class="open">Open →</span>
+    </a>
+    <a class="appcard reveal" href="rolodex.html" style="--i:3; --app-glow: rgba(143,174,131,.12)">
+      <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.3-3.5 3.9-5 7-5s5.7 1.5 7 5"/></svg></span>
+      <h3>Rolodex</h3>
+      <p>People, circles, and cadences — so no one you care about slips away.</p>
+      <span class="open">Open →</span>
+    </a>
+    <a class="appcard reveal" href="groove.html" style="--i:4; --app-glow: rgba(223,163,60,.16)">
+      <span class="icon"><svg viewBox="0 0 24 24"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg></span>
+      <h3>Groove</h3>
+      <p>A four-unit groovebox that lives in your browser. Web Audio, no database, all play.</p>
+      <span class="open">Open →</span>
+    </a>
+  </div>
+</main>
+
+<script src="assets/workroom.js"></script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRM · Dashboard — Atrium</title>
+<script>(function(){try{var t=localStorage.getItem("atrium.theme");if(!t)t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.setAttribute("data-theme",t)}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/workroom.css">
+<link rel="stylesheet" href="assets/screens.css">
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="brand" href="index.html"><span class="mark"></span>Atrium</a>
+  <div class="links">
+    <a class="navlink" href="index.html"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v9h13v-9"/></svg>Home</a>
+    <a class="navlink active" href="crm.html"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)"/></svg>CRM</a>
+    <a class="navlink" href="space.html"><svg viewBox="0 0 24 24"><path d="M4 7c0-1.7 3.4-3 8-3s8 1.3 8 3-3.4 3-8 3-8-1.3-8-3Zm0 0v10c0 1.7 3.4 3 8 3s8-1.3 8-3V7"/></svg>Space</a>
+    <a class="navlink" href="rolodex.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.3-3.5 3.9-5 7-5s5.7 1.5 7 5"/></svg>Rolodex</a>
+    <a class="navlink" href="groove.html"><svg viewBox="0 0 24 24"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>Groove</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn" data-theme-toggle aria-label="Toggle theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.5 5.5 7 7m10 10 1.5 1.5m0-13L17 7M7 17l-1.5 1.5"/></svg></button>
+    <span class="identity"><span class="badge">T</span>demo@atrium.local</span>
+    <button class="btn"><svg viewBox="0 0 24 24"><path d="M12 5v14m-6-6 6 6 6-6"/></svg>Reset demo</button>
+    <button class="btn"><svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 17l-5-5 5-5M5 12h10"/></svg>Logout</button>
+  </div>
+</nav>
+
+<main class="board">
+  <div class="reveal" style="--i:0">
+    <div class="pagetitle">
+      <h1>Dashboard</h1>
+      <p class="sub">Wed, Sep 9 2026 · all figures tenant-scoped</p>
+    </div>
+  </div>
+
+  <div class="subnav reveal" style="--i:1">
+    <a class="subtab active" href="#"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
+    <a class="subtab" href="#"><svg viewBox="0 0 24 24"><path d="M4 21h16M6 21V8l6-4 6 4v13"/><path d="M10 21v-5h4v5"/></svg>Organizations</a>
+    <a class="subtab" href="#"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c1-3 3-4.5 5.5-4.5S13 16 14 19"/><circle cx="16.5" cy="10.5" r="2.4"/><path d="M15.5 14.6c2.8.2 4.5 1.6 5.3 4.4"/></svg>Contacts</a>
+    <a class="subtab" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5v9M14.5 9.2c-.5-1-1.4-1.4-2.5-1.4-1.4 0-2.5.8-2.5 2 0 2.5 5 1.5 5 4 0 1.2-1.1 2-2.5 2-1.2 0-2.1-.5-2.6-1.5"/></svg>Deals</a>
+    <a class="subtab" href="#"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="8" height="14" rx="1.5"/><rect x="16" y="5" width="5" height="4" rx="1"/><rect x="16" y="10" width="5" height="4" rx="1"/><rect x="16" y="15" width="5" height="4" rx="1"/></svg>Pipeline</a>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi reveal" style="--i:1; --kpi-c: var(--violet)">
+      <div class="label">Open deals</div>
+      <div class="value accent">4</div>
+      <div class="sub">across 3 organizations</div>
+    </div>
+    <div class="kpi reveal" style="--i:2; --kpi-c: var(--slate)">
+      <div class="label">Pipeline value</div>
+      <div class="value">$130,000</div>
+      <div class="sub">sum of open deal amounts</div>
+    </div>
+    <div class="kpi reveal" style="--i:3; --kpi-c: var(--brass)">
+      <div class="label">Expected revenue</div>
+      <div class="value accent">$66,500</div>
+      <div class="sub">amount × stage probability</div>
+    </div>
+    <div class="kpi reveal" style="--i:4; --kpi-c: var(--moss)">
+      <div class="label">Deals won</div>
+      <div class="value">0</div>
+      <div class="sub">trailing 6 months</div>
+    </div>
+    <div class="kpi reveal" style="--i:5; --kpi-c: var(--moss)">
+      <div class="label">Revenue won</div>
+      <div class="value">$0</div>
+      <div class="sub">trailing 6 months</div>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-panel reveal" style="--i:2; grid-column: span 7">
+      <div class="head">
+        <h3>Revenue &amp; deal volume</h3>
+        <span class="label">Jun → Mar</span>
+      </div>
+      <svg class="plot" viewBox="0 0 520 130" preserveAspectRatio="none">
+        <g stroke="var(--line)" stroke-dasharray="3 4">
+          <line x1="0" y1="30" x2="520" y2="30"/>
+          <line x1="0" y1="60" x2="520" y2="60"/>
+          <line x1="0" y1="90" x2="520" y2="90"/>
+        </g>
+        <path d="M0 108 C 60 104, 110 96, 170 92 S 290 78, 350 62 S 470 30, 520 22"
+              fill="none" stroke="var(--slate)" stroke-width="1.5" opacity=".85"/>
+        <path d="M0 100 C 70 98, 140 90, 220 82 S 380 58, 520 40"
+              fill="none" stroke="var(--brass)" stroke-width="2.5"
+              style="filter: drop-shadow(0 2px 6px rgba(223,163,60,.45))"/>
+        <g fill="var(--brass-deep)">
+          <circle cx="130" cy="88" r="3"/><circle cx="260" cy="70" r="3"/><circle cx="390" cy="48" r="3"/>
+        </g>
+        <g fill="var(--ink-faint)" font-size="9.5" font-family="Geist Mono, monospace">
+          <text x="4" y="122">JUN</text><text x="250" y="122">OCT</text><text x="495" y="122">MAR</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="chart-panel reveal" style="--i:3; grid-column: span 5">
+      <div class="head">
+        <h3>Pipeline funnel</h3>
+        <span class="label">by stage</span>
+      </div>
+      <div class="bars" style="margin-top:6px">
+        <div class="bar-row"><span class="stage">New</span><div class="bar-track"><div class="bar-fill" style="--i:0; width:96%"></div></div><span class="amount">$45,000</span></div>
+        <div class="bar-row"><span class="stage">Qualified</span><div class="bar-track"><div class="bar-fill" style="--i:1; width:68%"></div></div><span class="amount">$32,000</span></div>
+        <div class="bar-row"><span class="stage">Proposal</span><div class="bar-track"><div class="bar-fill" style="--i:2; width:49%"></div></div><span class="amount">$23,000</span></div>
+        <div class="bar-row"><span class="stage">Negotiation</span><div class="bar-track"><div class="bar-fill" style="--i:3; width:31%"></div></div><span class="amount">$30,000</span></div>
+        <div class="bar-row"><span class="stage">Won</span><div class="bar-track"><div class="bar-fill" style="--i:4; width:2%"></div></div><span class="amount">—</span></div>
+      </div>
+    </div>
+
+    <div class="chart-panel reveal" style="--i:4; grid-column: span 4">
+      <div class="head"><h3>Win rate</h3><span class="label">6 mo</span></div>
+      <div class="empty-chart">
+        <span class="ring"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14m-7-7h14"/></svg></span>
+        <em>No closed deals yet</em>
+        <span class="label">closes will land here</span>
+      </div>
+    </div>
+
+    <div class="chart-panel reveal" style="--i:5; grid-column: span 8">
+      <div class="head"><h3>Top organizations</h3><span class="label">by pipeline value</span></div>
+      <div class="bars" style="margin-top:6px">
+        <div class="bar-row"><span class="stage">Harbor &amp; Lane</span><div class="bar-track"><div class="bar-fill" style="--i:1; width:88%; --bar-c:var(--slate)"></div></div><span class="amount">$48,000</span></div>
+        <div class="bar-row"><span class="stage">Bluepeak</span><div class="bar-track"><div class="bar-fill" style="--i:2; width:60%; background:linear-gradient(90deg,var(--slate),color-mix(in srgb,var(--slate) 60%,transparent))"></div></div><span class="amount">$37,000</span></div>
+        <div class="bar-row"><span class="stage">Northwind</span><div class="bar-track"><div class="bar-fill" style="--i:3; width:41%; background:linear-gradient(90deg,var(--slate),color-mix(in srgb,var(--slate) 60%,transparent))"></div></div><span class="amount">$25,000</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/workroom.js"></script>
+</body>
+</html>
