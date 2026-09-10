@@ -15,7 +15,27 @@ import {
   pageIdsWithChildren,
   type PageTreeNode,
 } from "@/lib/space/tree";
+import { SpaceGlyph } from "./space-icons";
 import styles from "./space-shell.module.css";
+
+function countTree(
+  nodes: PageTreeNode[],
+): { pages: number; databases: number } {
+  let pages = 0;
+  let databases = 0;
+  function walk(list: PageTreeNode[]) {
+    for (const node of list) {
+      if (node.type === "database") {
+        databases += 1;
+      } else {
+        pages += 1;
+      }
+      walk(node.children);
+    }
+  }
+  walk(nodes);
+  return { pages, databases };
+}
 
 function displayTitle(title: string): string {
   return title.trim() === "" ? "Untitled" : title;
@@ -97,7 +117,7 @@ function TreeList({
                     className={styles["space-sidebar-glyph"]}
                     aria-hidden="true"
                   >
-                    {node.icon ?? "▣"}
+                    <SpaceGlyph type={node.type} />
                   </span>
                   {label}
                 </Link>
@@ -213,6 +233,8 @@ export function SidebarTree({ tree }: { tree: PageTreeNode[] }) {
     router.refresh();
   }
 
+  const { pages, databases } = countTree(tree);
+
   return (
     <>
       <div className={styles["space-sidebar-toolbar"]}>
@@ -260,6 +282,10 @@ export function SidebarTree({ tree }: { tree: PageTreeNode[] }) {
           }}
         />
       )}
+      <p className={styles["space-sidebar-footer"]}>
+        {pages} page{pages === 1 ? "" : "s"} · {databases} database
+        {databases === 1 ? "" : "s"}
+      </p>
     </>
   );
 }

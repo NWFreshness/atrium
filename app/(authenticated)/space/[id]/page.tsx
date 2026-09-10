@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { DatabaseViews } from "@/components/space/database-views";
 import { RowProperties } from "@/components/space/database-table";
 import { BlockEditor } from "@/components/space/editor";
+import { SpaceGlyph } from "@/components/space/space-icons";
 import styles from "@/components/space/space-shell.module.css";
 import { createBlockAction, listBlocksAction } from "@/lib/space/block-actions";
 import { getDatabaseSnapshotAction } from "@/lib/space/database-actions";
@@ -25,7 +26,7 @@ export default async function SpacePage({
   const header = (
     <header className={styles["space-page-header"]}>
       <span className={styles["space-page-icon"]} aria-hidden="true">
-        {page.icon ?? "▣"}
+        <SpaceGlyph type={page.type} />
       </span>
       <h1>{page.title.trim() === "" ? "Untitled" : page.title}</h1>
     </header>

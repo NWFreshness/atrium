@@ -215,6 +215,10 @@ export function BlockEditor({
             ref={provided.innerRef}
             {...provided.droppableProps}
           >
+            <p className={styles["space-editor-meta"]}>
+              {blocks.length} block{blocks.length === 1 ? "" : "s"} · autosaves as
+              you type
+            </p>
             {blocks.map((block, index) => {
               const text = textOf(block.content);
               const query = slashQuery(text);
@@ -233,7 +237,14 @@ export function BlockEditor({
                         aria-label="Drag to reorder"
                         {...drag.dragHandleProps}
                       >
-                        ⋮⋮
+                        <span className={styles["space-dragdots"]} aria-hidden="true">
+                          <i />
+                          <i />
+                          <i />
+                          <i />
+                          <i />
+                          <i />
+                        </span>
                       </button>
                       {block.type === "todo" ? (
                         <input
@@ -361,6 +372,16 @@ export function BlockEditor({
               );
             })}
             {provided.placeholder}
+            <button
+              type="button"
+              className={styles["space-add-block"]}
+              onClick={() => void addBlockAfter(blocks.length - 1)}
+            >
+              <span className={styles["space-add-block-plus"]} aria-hidden="true">
+                +
+              </span>
+              Add a block — text, list, divider…
+            </button>
           </div>
         )}
       </Droppable>
