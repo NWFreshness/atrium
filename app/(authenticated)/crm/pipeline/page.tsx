@@ -6,7 +6,10 @@ export default async function PipelinePage() {
 
   return (
     <main>
-      <h1>Pipeline</h1>
+      <div className="atrium-pagetitle">
+        <h1>Pipeline</h1>
+        <p className="atrium-sub">Six stages · drag deals to move</p>
+      </div>
       <PipelineBoard deals={deals} />
     </main>
   );

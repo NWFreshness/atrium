@@ -31,7 +31,10 @@ export default async function ContactsPage({
 
   return (
     <main>
-      <h1>Contacts</h1>
+      <div className="atrium-pagetitle">
+        <h1>Contacts</h1>
+        <p className="atrium-sub">The people you work with</p>
+      </div>
       <div className={styles["crm-toolbar"]}>
         <form
           className={styles["crm-search"]}

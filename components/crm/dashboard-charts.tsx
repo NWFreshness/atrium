@@ -23,11 +23,11 @@ import type {
 } from "@/lib/crm/dashboard";
 import styles from "./dashboard.module.css";
 
-const WON = "#16a34a";
-const FORECAST = "#d97706";
-const COUNT = "#7c3aed";
-const OPEN = "#2563eb";
-const LATE = "#dc2626";
+const WON = "#8fae83"; // moss
+const FORECAST = "#a88fc0"; // violet
+const OPEN = "#8b9fc2"; // slate
+const LATE = "#cd7258"; // clay
+const BRASS = "#dfa33c";
 
 export function DashboardCharts({
   monthly,
@@ -76,7 +76,7 @@ export function DashboardCharts({
                 type="monotone"
                 dataKey="count"
                 name="Deals"
-                stroke={COUNT}
+                stroke={BRASS}
                 isAnimationActive={false}
               />
             </ComposedChart>
@@ -102,7 +102,7 @@ export function DashboardCharts({
       <section className={styles.chart}>
         <h2 className={styles.chartTitle}>Win rate</h2>
         {winLossEmpty ? (
-          <p className={styles.empty}>No closed deals</p>
+          <p className={styles.empty}>No closed deals yet</p>
         ) : (
           <div className={styles.chartBody}>
             <ResponsiveContainer width="100%" height="100%">

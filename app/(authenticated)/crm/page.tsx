@@ -11,34 +11,42 @@ export default async function CrmPage() {
 
   return (
     <main className={styles.page}>
-      <h1>Dashboard</h1>
+      <div className="atrium-pagetitle">
+        <h1>Dashboard</h1>
+        <p className="atrium-sub">All figures tenant-scoped</p>
+      </div>
       <div className={styles.tiles}>
         <StatTile
           label="Open deals"
           value={data.tiles.openDealCount}
           tone="count"
+          index={1}
         />
         <StatTile
           label="Pipeline value"
           value={formatMoney(data.tiles.pipelineValue)}
           tone="open"
+          index={2}
         />
         <StatTile
           label="Expected revenue"
           value={formatMoney(data.tiles.expectedRevenue)}
           tone="forecast"
+          index={3}
         />
         <StatTile
           label="Deals won"
           value={data.tiles.dealsWon}
           sub="Trailing 6 months"
           tone="won"
+          index={4}
         />
         <StatTile
           label="Revenue won"
           value={formatMoney(data.tiles.revenueWon)}
           sub="Trailing 6 months"
           tone="won"
+          index={5}
         />
       </div>
       <DashboardCharts
