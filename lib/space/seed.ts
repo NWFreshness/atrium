@@ -1,4 +1,4 @@
-import { BLOCK_TYPES, type BlockType } from "./constants";
+import { DEMO_PAGES, READING_LIST_ROWS, type SeedPage } from "./seed-content";
 import {
   createBlock,
   createPage,
@@ -10,112 +10,55 @@ import {
   type SpaceRepository,
 } from "./queries";
 
-type PageSpec = {
+type PageTreeNode = {
   title: string;
   icon: string;
-  children?: PageSpec[];
+  blocks: NonNullable<SeedPage["blocks"]>;
+  children: PageTreeNode[];
 };
 
-const DEMO_TREE: PageSpec[] = [
-  { title: "Home", icon: "🏠" },
-  {
-    title: "Projects",
-    icon: "🗂️",
-    children: [
+/**
+ * The content module keeps pages flat, one entry per page with an explicit
+ * `parent`, so adding a page is a one-line edit rather than a nesting puzzle.
+ * The page model itself is a tree, so build one here — and fail loudly on a
+ * parent title that doesn't exist, since a typo would otherwise silently orphan
+ * a page into the root of the sidebar.
+ */
+export function buildDemoTree(pages: SeedPage[]): PageTreeNode[] {
+  const nodes = new Map<string, PageTreeNode>(
+    pages.map((page) => [
+      page.title,
       {
-        title: "Balcony Garden",
-        icon: "🌱",
-        children: [{ title: "Planting Calendar", icon: "📅" }],
+        title: page.title,
+        icon: page.icon,
+        blocks: page.blocks ?? [],
+        children: [],
       },
-      {
-        title: "Home Lab Rebuild",
-        icon: "🖥️",
-        children: [
-          { title: "Parts Inventory", icon: "📦" },
-          { title: "Network Map", icon: "🕸️" },
-        ],
-      },
-      {
-        title: "Writing",
-        icon: "✍️",
-        children: [
-          { title: "Blog: Slow Tools", icon: "📝" },
-          { title: "Essay Ideas", icon: "🗒️" },
-        ],
-      },
-      { title: "Bike Restoration", icon: "🚲" },
-    ],
-  },
-  {
-    title: "Travel",
-    icon: "✈️",
-    children: [
-      {
-        title: "Japan 2026",
-        icon: "🗾",
-        children: [
-          { title: "Tokyo Food Shortlist", icon: "🍜" },
-          { title: "Kyoto Notes", icon: "⛩️" },
-        ],
-      },
-      { title: "Points and Miles", icon: "🎫" },
-      { title: "Packing Checklist", icon: "🧳" },
-    ],
-  },
-  {
-    title: "Notes",
-    icon: "🧠",
-    children: [
-      {
-        title: "Recipes",
-        icon: "🍝",
-        children: [{ title: "Sourdough, Slowly", icon: "🍞" }],
-      },
-      { title: "Quotes", icon: "💬" },
-      { title: "Films to Watch", icon: "🎬" },
-      { title: "Ideas Inbox", icon: "💡" },
-    ],
-  },
-  {
-    title: "Health & Habits",
-    icon: "💪",
-    children: [
-      { title: "Training Plan", icon: "🏋️" },
-      { title: "Sleep Log", icon: "😴" },
-    ],
-  },
-  {
-    title: "Work",
-    icon: "💼",
-    children: [
-      { title: "Weekly Review", icon: "🔁" },
-      { title: "Who Does What", icon: "👥" },
-      {
-        title: "Meeting Notes",
-        icon: "📓",
-        children: [{ title: "Platform Kickoff", icon: "🚀" }],
-      },
-    ],
-  },
-  {
-    title: "Learning",
-    icon: "🎓",
-    children: [
-      { title: "Rust Notes", icon: "🦀" },
-      { title: "Shortcuts Worth Learning", icon: "⌨️" },
-    ],
-  },
-  {
-    title: "Archive",
-    icon: "🗄️",
-    children: [{ title: "2025 in Review", icon: "🧾" }],
-  },
-];
+    ]),
+  );
+
+  const roots: PageTreeNode[] = [];
+  for (const page of pages) {
+    const node = nodes.get(page.title)!;
+    if (page.parent === null) {
+      roots.push(node);
+      continue;
+    }
+    const parent = nodes.get(page.parent);
+    if (!parent) {
+      throw new Error(
+        `Seed page "${page.title}" names an unknown parent "${page.parent}"`,
+      );
+    }
+    parent.children.push(node);
+  }
+  return roots;
+}
 
 async function seedTree(
   tenantId: string,
   parentId: string | null,
-  specs: PageSpec[],
+  specs: PageTreeNode[],
   repo?: SpaceRepository,
 ): Promise<void> {
   for (const spec of specs) {
@@ -129,6 +72,13 @@ async function seedTree(
       },
       repo,
     );
+    for (const blockSpec of spec.blocks ?? []) {
+      await createBlock(
+        tenantId,
+        { pageId: page.id, type: blockSpec.type, content: blockSpec.content },
+        repo,
+      );
+    }
     if (spec.children?.length) {
       await seedTree(tenantId, page.id, spec.children, repo);
     }
@@ -143,59 +93,8 @@ export async function seedSpace(
   if (existing.length > 0) {
     return;
   }
-  await seedTree(tenantId, null, DEMO_TREE, repo);
+  await seedTree(tenantId, null, buildDemoTree(DEMO_PAGES), repo);
   const pages = await listPages(tenantId, repo);
-  const home = pages.find(
-    (page) => page.title === "Home" && page.parentId === null,
-  );
-  if (!home) {
-    return;
-  }
-  const showcase: { type: BlockType; content: Record<string, unknown> }[] = [
-    { type: "heading1", content: { text: "Welcome back" } },
-    {
-      type: "paragraph",
-      content: {
-        text: "This is your personal space: notes, plans and lists in one place.",
-      },
-    },
-    { type: "heading2", content: { text: "This week" } },
-    { type: "heading3", content: { text: "Tips" } },
-    {
-      type: "callout",
-      content: {
-        text: "Type / anywhere in an empty block to change its type.",
-      },
-    },
-    {
-      type: "todo",
-      content: { text: "Water the balcony garden", checked: true },
-    },
-    {
-      type: "bulleted_list",
-      content: { text: "Projects — anything with an outcome" },
-    },
-    { type: "numbered_list", content: { text: "Write the slow tools draft" } },
-    { type: "quote", content: { text: "Slow is smooth, smooth is fast." } },
-    { type: "divider", content: {} },
-    {
-      type: "code",
-      content: { text: "hostnamectl set-hostname node-01" },
-    },
-  ];
-  for (const spec of showcase) {
-    await createBlock(
-      tenantId,
-      { pageId: home.id, type: spec.type, content: spec.content },
-      repo,
-    );
-  }
-  const seededTypes = new Set(showcase.map((spec) => spec.type));
-  for (const type of BLOCK_TYPES) {
-    if (!seededTypes.has(type)) {
-      await createBlock(tenantId, { pageId: home.id, type, content: {} }, repo);
-    }
-  }
   await seedDemoDatabases(tenantId, pages, repo);
 }
 
@@ -406,24 +305,60 @@ async function seedDemoDatabases(
     { databaseId: reading.id, name: "Status", type: "select" },
     repo,
   );
-  const finished = await createPropertyOption(
+  const readStatusIds = new Map<string, string>();
+  for (const [name, color] of [
+    ["Finished", "green"],
+    ["Reading", "blue"],
+    ["Queued", "amber"],
+    ["Shelved", "gray"],
+  ] as const) {
+    const option = await createPropertyOption(
+      tenantId,
+      { propertyId: readStatus.id, name, color },
+      repo,
+    );
+    readStatusIds.set(name, option.id);
+  }
+  const rating = await createProperty(
     tenantId,
-    { propertyId: readStatus.id, name: "Finished", color: "green" },
+    { databaseId: reading.id, name: "Rating", type: "number" },
     repo,
   );
-  const dune = await createPage(
+  const pageCount = await createProperty(
     tenantId,
-    { title: "Dune", type: "row", parentId: reading.id },
+    { databaseId: reading.id, name: "Pages", type: "number" },
     repo,
   );
-  await createRowValue(
-    tenantId,
-    { rowId: dune.id, propertyId: author.id, value: "Frank Herbert" },
-    repo,
-  );
-  await createRowValue(
-    tenantId,
-    { rowId: dune.id, propertyId: readStatus.id, value: finished.id },
-    repo,
-  );
+  const readingProperties: Record<string, string> = {
+    Author: author.id,
+    Status: readStatus.id,
+    Rating: rating.id,
+    Pages: pageCount.id,
+  };
+
+  for (const book of READING_LIST_ROWS) {
+    const row = await createPage(
+      tenantId,
+      { title: book.title, type: "row", parentId: reading.id },
+      repo,
+    );
+    for (const [name, value] of Object.entries(book.values)) {
+      const propertyId = readingProperties[name];
+      if (!propertyId) {
+        continue;
+      }
+      await createRowValue(
+        tenantId,
+        {
+          rowId: row.id,
+          propertyId,
+          value:
+            name === "Status"
+              ? (readStatusIds.get(String(value)) ?? value)
+              : value,
+        },
+        repo,
+      );
+    }
+  }
 }
