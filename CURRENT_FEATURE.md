@@ -2,7 +2,7 @@
 
 **None in progress.**
 
-Phase 5 Workroom 5.1 is complete. Next implementable unit: 5.2.
+Phase 5 Workroom 5.1–5.2 are complete. Next implementable unit: 5.3.
 
 ---
 
@@ -191,3 +191,7 @@ Seven feature specs in `features/phase-5-workroom/` (5.1–5.7), plus a design a
 ### 5.1 Design system + theme scaffold (completed)
 
 Workroom foundation. `app/globals.css` rewritten with the design tokens (espresso surfaces `--bg-0 #13100c`→`--bg-3 #2b251b`, warm ink, brass accent, warm-shifted data palette, geometry/shadows) and the matching `[data-theme="light"]` warm-paper overrides; body adopts the espresso surface + warm ink + `--font-sans`; fixed non-interactive paper-grain overlay + top brass glow; brass selection; `.reveal` stagger keyframed on `--i` with `prefers-reduced-motion` guard. `app/layout.tsx` loads Fraunces (`--font-fraunces`) via next/font alongside Geist/Geist Mono; type tokens map display/sans/mono. Kept `--background`/`--foreground` aliases so the existing CRM/Rolodex/Space modules keep resolving until their 5.3–5.6 passes. New source-grep test `app/globals.test.ts` locks the token values, light overrides, overlays, reveal, and the no-per-app-namespace guarantee. Verified: `npm test` 456 passed, `npm run build` exit 0, Chromium check shows dark `#13100c` / light `#ece5d6` with grain+glow and zero console errors, login+launcher+theme Playwright smokes 6 passed (first run failed from an empty `AUTH_SECRET` in `.env` — an env issue, not a regression; re-ran with `AUTH_SECRET=ci-build-placeholder`). Spec PASS.
+
+### 5.2 Shared chrome, launcher, and login (completed)
+
+Workroom chrome. `components/atrium-icon.tsx` adds stroked `currentColor` SVG glyphs (Home/CRM/Space/Rolodex/Groove, Theme, Refresh, Logout). `components/atrium-nav.module.css` + `atrium-nav.tsx` redesign the top nav into a sticky translucent-blur strip with the brass diamond brand (Fraunces "Atrium"), five SVG-glyph app links with brass active + underline sweep, the avatar-badge identity chip, and Theme/Reset/Logout surfaced as `atrium-btn` controls (Theme keeps aria-label "Toggle theme" so e2e still matches). `app/workroom.css` is the new shared `atrium-` presentational layer (btn/btn-primary, field, panel, label, chip, avatar, kpi, subnav/subtab, pagetitle/sub, appcard) loaded in the layout; launcher + login consume it and 5.3–5.6 will too. `app/(authenticated)/page.tsx` is four described app cards with inline SVG icons, `--app-glow` hover edge, and staggered `reveal`. Login gets the oversized brass "A" watermark, brand row/tagline, and `btn-primary` Sign in (fields keep Email/Password labels + the existing server action). Existing `.launcher-cards` globals removed. New source-grep test `app/workroom.test.ts` locks the shared class set, the five nav labels, SVG-not-emoji glyphs, and the login labels. Verified: `npm test` 464 passed, `npm run build` exit 0, `npx playwright test` 25/26 passed — the 2 Rolodex failures (demo subnav walk + create-person) reproduce **identically on clean `main`** (stashed & confirmed) and stem from slow `/rolodex` renders (~5 s) hitting the e2e 5 s nav timeout; they are pre-existing environment/DB-load flakes, not a 5.2 regression. Headless Chromium: espresso login, launcher brand+4 cards+`h1` Atrium, theme toggle works, zero console errors. Spec PASS.

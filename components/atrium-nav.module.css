@@ -1,71 +1,160 @@
 .atrium-nav-strip {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding: 0.5rem 1rem;
-  background: #171717;
-  color: #f5f5f5;
-  font-size: 0.875rem;
+  gap: 1.25rem;
+  min-height: 54px;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg-0) 78%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.atrium-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  min-width: 0;
+}
+
+.atrium-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 620;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.atrium-nav-brand-mark {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  background: linear-gradient(160deg, var(--brass-bright), var(--brass-deep));
+  box-shadow: 0 0 8px var(--brass-glow);
 }
 
 .atrium-nav-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: 1.4rem;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .atrium-nav-link {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.65rem;
-  color: #e5e5e5;
+  gap: 7px;
+  padding: 4px 2px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-dim);
   text-decoration: none;
-  border-bottom: 2px solid transparent;
+  transition: color 0.2s;
+}
+
+.atrium-nav-link svg {
+  width: 15px;
+  height: 15px;
+}
+
+.atrium-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--brass), transparent 160%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.atrium-nav-link:hover {
+  color: var(--ink);
+}
+
+.atrium-nav-link:hover::after {
+  transform: scaleX(1);
 }
 
 .atrium-nav-link-current {
-  color: #f59e0b;
-  border-bottom-color: #f59e0b;
+  color: var(--brass);
+}
+
+.atrium-nav-link-current::after {
+  transform: scaleX(1);
 }
 
 .atrium-nav-glyph {
-  font-size: 0.95rem;
+  display: inline-flex;
   line-height: 1;
 }
 
 .atrium-nav-end {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
+  min-width: 0;
 }
 
-.atrium-nav-theme,
-.atrium-nav-logout,
+.atrium-nav-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+
+.atrium-nav-avatar {
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brass);
+  border: 1.5px solid color-mix(in srgb, var(--brass) 55%, transparent);
+  background: var(--brass-soft);
+}
+
+.atrium-nav-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.atrium-nav-btn-label {
+  display: inline-flex;
+}
+
+/* Reset demo (used by ResetDemoButton, restyled with the shared .atrium-btn) */
 .atrium-nav-reset {
-  background: #2a2a2a;
-  color: #f5f5f5;
-  border: 1px solid #444444;
-  border-radius: 4px;
-  padding: 0.3rem 0.6rem;
-  cursor: pointer;
+  border-color: color-mix(in srgb, var(--brass) 40%, var(--line-strong));
+  color: var(--brass);
 }
 
 .atrium-nav-reset-form {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .atrium-nav-reset-status {
-  color: #d4d4d4;
-}
-
-.atrium-nav-identity {
-  color: #d4d4d4;
+  font-size: 12px;
+  color: var(--ink-dim);
 }

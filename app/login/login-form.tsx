@@ -8,28 +8,33 @@ export function LoginForm() {
 
   return (
     <form action={formAction}>
-      <div>
-        <label htmlFor="email">Email</label>
+      <label className="atrium-field">
+        <span>Email</span>
         <input
-          id="email"
           name="email"
           type="email"
           autoComplete="username"
+          placeholder="you@atrium.local"
           required
         />
-      </div>
-      <div>
-        <label htmlFor="password">Password</label>
+      </label>
+      <label className="atrium-field">
+        <span>Password</span>
         <input
-          id="password"
           name="password"
           type="password"
           autoComplete="current-password"
+          placeholder="••••••••"
           required
         />
-      </div>
+      </label>
       {error ? <p role="alert">{error}</p> : null}
-      <button type="submit" disabled={pending}>
+      <button
+        type="submit"
+        className="atrium-btn atrium-btn-primary"
+        style={{ width: "100%", marginTop: ".4rem", padding: "11px 16px", fontSize: "13.5px" }}
+        disabled={pending}
+      >
         Sign in
       </button>
     </form>
