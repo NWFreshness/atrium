@@ -2,17 +2,19 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 5 Workroom is complete (through 5.7).** Phase 6 Accounts specs 6.1–6.4 are written in this docs PR. Do not push to `main`. Do not merge unless asked. After this docs PR merges, implement 6.1.
+**Stop. Phase 5 Workroom is complete (through 5.7). Phase 6 Accounts is in progress: 6.1 and 6.2 are done.** Do not push to `main`. Do not merge unless asked. Next implementable unit is 6.3.
 
 ## Where we are (2026-09-11)
 
-Phases 0–5 are complete. Phase 6 Accounts (self-serve signup + change-password) specs are in `features/phase-6-accounts/`. Next implementable unit: **6.1** after this docs PR merges.
+Phases 0–5 are complete. Phase 6 Accounts: 6.1 (member role + `signUp` helper) and 6.2 (`/signup` + auto sign-in) are merged. 6.3 (`changePassword` + `/settings`) and 6.4 (Playwright smoke) are specced and waiting.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
 Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phase 6). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
+
+Open decisions carried forward: the `users_email_unique` index is still case-sensitive (a `lower(email)` unique index would close the concurrent case-variant signup race), and sessions are stateless JWTs with no revocation list — so 6.3 must decide whether changing a password signs other devices out.
 
 ## Read order
 
@@ -21,7 +23,7 @@ Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended fo
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-6-accounts/6.1-member-role-signup.md` — the next feature to implement after this docs PR merges
+6. `features/phase-6-accounts/6.3-change-password-settings.md` — the next feature to implement
 
 ## How we ship
 
@@ -60,4 +62,4 @@ npm test
 npm run build
 ```
 
-Then implement `features/phase-6-accounts/6.1-member-role-signup.md` once this docs PR (and its design amend) has merged to `main`.
+Then implement `features/phase-6-accounts/6.3-change-password-settings.md`.

@@ -122,7 +122,7 @@ Flag-gated credentials signup, `member` role with an empty personal tenant, logg
 | ID  | Feature                                                                              | Status  | Depends on |
 | --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
 | 6.1 | [Member role + signUp helper](./phase-6-accounts/6.1-member-role-signup.md)          | completed | 0.5        |
-| 6.2 | [Signup page and auto sign-in](./phase-6-accounts/6.2-signup-page.md)                | specced | 6.1        |
+| 6.2 | [Signup page and auto sign-in](./phase-6-accounts/6.2-signup-page.md)                | completed | 6.1        |
 | 6.3 | [Change password and settings](./phase-6-accounts/6.3-change-password-settings.md)   | specced | 6.2        |
 | 6.4 | [Playwright smoke](./phase-6-accounts/6.4-playwright-smoke.md)                        | specced | 6.2, 6.3   |
 

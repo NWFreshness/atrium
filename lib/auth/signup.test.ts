@@ -182,7 +182,10 @@ describe("signUp", () => {
     expect(repo.users.map((user) => user.email)).toEqual(["Tyler@Example.com"]);
   });
 
-  it("keeps the email verbatim rather than folding case, matching exact-match login", async () => {
+  it("stores the email verbatim while treating it as one mailbox", async () => {
+    // Case is preserved (what the member typed is what they see), but the
+    // duplicate check is case-insensitive, and login matches it on both sides —
+    // see lib/auth/users.ts.
     const { create } = harness();
 
     const member = await create({
