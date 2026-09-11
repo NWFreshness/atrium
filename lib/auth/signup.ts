@@ -2,10 +2,11 @@ import { sql } from "drizzle-orm";
 import { getDb, type Database } from "../db";
 import { hashPassword } from "../db/password";
 import { tenants, users, type UserRole } from "../db/schema";
+import { checkPasswordStrength } from "./password-policy";
 
-export const MIN_PASSWORD_LENGTH = 12;
-/** bcrypt truncates its input at 72 bytes, so anything longer would alias. */
-export const MAX_PASSWORD_BYTES = 72;
+// One definition, in the policy module. Re-exported here so existing imports of
+// these names from `./signup` keep working without a second source of truth.
+export { MAX_PASSWORD_BYTES, MIN_PASSWORD_LENGTH } from "./password-policy";
 
 export type SignUpErrorCode =
   | "closed"
@@ -52,19 +53,16 @@ export function normalizeEmail(email: unknown): string {
 }
 
 /**
- * Length only — no composition rules. The upper bound is the bcrypt input
- * limit: beyond 72 bytes the hash stops seeing the tail, so two different long
- * passwords would verify against each other.
+ * Signup's mapping of the shared policy: the decision is
+ * `checkPasswordStrength`'s, the error class is this module's. Length only — no
+ * composition rules.
  */
 export function assertPasswordStrength(password: unknown): string {
-  const value = typeof password === "string" ? password : "";
-  if (value.length < MIN_PASSWORD_LENGTH) {
-    throw new SignUpError("weak_password");
+  const result = checkPasswordStrength(password);
+  if (!result.ok) {
+    throw new SignUpError(result.code);
   }
-  if (Buffer.byteLength(value, "utf8") > MAX_PASSWORD_BYTES) {
-    throw new SignUpError("password_too_long");
-  }
-  return value;
+  return result.value;
 }
 
 export type MemberUser = {

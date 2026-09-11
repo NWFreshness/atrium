@@ -3,7 +3,7 @@ import { getDb, type Database } from "../db";
 import { hashPassword, verifyPassword } from "../db/password";
 import { users } from "../db/schema";
 import type { PasswordVerifier } from "./authorize";
-import { MAX_PASSWORD_BYTES, MIN_PASSWORD_LENGTH } from "./signup";
+import { checkPasswordStrength } from "./password-policy";
 
 export type ChangePasswordErrorCode =
   | "wrong_current"
@@ -82,17 +82,14 @@ export async function changePassword(
     throw new ChangePasswordError("unchanged");
   }
 
-  // The 6.1 rules, not a second policy: length only, with the upper bound set
-  // by bcrypt's 72-byte input truncation.
-  if (next.length < MIN_PASSWORD_LENGTH) {
-    throw new ChangePasswordError("weak_password");
-  }
-  if (Buffer.byteLength(next, "utf8") > MAX_PASSWORD_BYTES) {
-    throw new ChangePasswordError("password_too_long");
+  // The shared policy, not a second copy of the rule: 12 code points, 72 bytes.
+  const strength = checkPasswordStrength(next);
+  if (!strength.ok) {
+    throw new ChangePasswordError(strength.code);
   }
 
   const hash = deps.hash ?? hashPassword;
-  const passwordHash = await hash(next);
+  const passwordHash = await hash(strength.value);
 
   if (!(await repo.updatePasswordHash(userId, passwordHash))) {
     // The row vanished between the read and the write. Reporting success would
