@@ -172,7 +172,7 @@ Close six AppSec holes: known HIGH in `drizzle-orm`, isolation headers, login ti
 
 | ID  | Feature                                                                              | Status  | Depends on |
 | --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
-| 9.1 | [Patch drizzle-orm + CI SCA](./phase-9-security/9.1-drizzle-advisory-sca.md)         | specced | nothing    |
+| 9.1 | [Patch drizzle-orm + CI SCA](./phase-9-security/9.1-drizzle-advisory-sca.md)         | completed | nothing    |
 | 9.2 | [Isolation headers](./phase-9-security/9.2-isolation-headers.md)                     | specced | nothing    |
 | 9.3 | [Dummy-hash login verify](./phase-9-security/9.3-login-dummy-hash.md)                | specced | nothing    |
 | 9.4 | [Auth attempt throttle](./phase-9-security/9.4-auth-throttle.md)                     | specced | 9.3        |

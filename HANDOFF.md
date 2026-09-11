@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Nothing is in progress.** Phase 9 Security specs are written (9.1–9.6). Do not implement 9.1 until this docs PR is merged. Do not push to `main`. Do not merge unless asked.
+**Stop. Nothing is in progress.** 9.1 is complete on this branch (awaiting merge). Do not start 9.2 until 9.1 has a `mergedAt`. Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-11)
 
-Phases 0–8 are complete. Phase 9 Security is specced, not implemented: known HIGH in `drizzle-orm` + CI audit, isolation headers, dummy-hash login verify, auth attempt throttle, bounded Rolodex import, text ceilings + LIKE escape. Design: `docs/superpowers/specs/2026-09-11-security-design.md`. Next implementable unit is 9.1 after this docs PR merges.
+Phases 0–8 are complete. 9.1 bumped `drizzle-orm` to 0.45.2 and added `npm audit --omit=dev --audit-level=high` to the `ci` job. Next is 9.2 after this PR merges. Design: `docs/superpowers/specs/2026-09-11-security-design.md`.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -23,7 +23,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Phase 9 Security, starting at `features/phase-9-security/9.1-drizzle-advisory-sca.md` once this docs PR has a `mergedAt`. Do not start 9.1 on the docs branch.
+6. After 9.1 merges: `features/phase-9-security/9.2-isolation-headers.md`. Do not start 9.2 on this branch.
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Phase 8 is complete and the dev branch carries every migration (`0000`–`0006`). Phase 9 specs are written. After this docs PR merges: `git checkout main && git pull`, branch `feat/9.1-drizzle-advisory-sca`, and implement 9.1 only.
+Phase 8 is complete and the dev branch carries every migration (`0000`–`0006`). 9.1 is complete on this branch. After it merges: `git checkout main && git pull`, branch `feat/9.2-isolation-headers`, and implement 9.2 only.
