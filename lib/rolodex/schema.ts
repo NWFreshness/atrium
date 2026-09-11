@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -31,165 +32,197 @@ export const connectionKindEnum = pgEnum(
   CONNECTION_KINDS,
 );
 
-export const people = pgTable("people", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  name: text("name").notNull(),
-  email: text("email"),
-  phone: text("phone"),
-  jobTitle: text("jobTitle"),
-  company: text("company"),
-  city: text("city"),
-  timezone: text("timezone"),
-  circle: circleEnum("circle").notNull(),
-  cadenceOverrideDays: integer("cadenceOverrideDays"),
-  checkinsOff: boolean("checkinsOff").notNull().default(false),
-  snoozedUntil: text("snoozedUntil"),
-  howMet: text("howMet"),
-  metWhere: text("metWhere"),
-  metOn: text("metOn"),
-  notes: text("notes"),
-  tags: jsonb("tags").$type<string[]>().notNull(),
-  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const people = pgTable(
+  "people",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    email: text("email"),
+    phone: text("phone"),
+    jobTitle: text("jobTitle"),
+    company: text("company"),
+    city: text("city"),
+    timezone: text("timezone"),
+    circle: circleEnum("circle").notNull(),
+    cadenceOverrideDays: integer("cadenceOverrideDays"),
+    checkinsOff: boolean("checkinsOff").notNull().default(false),
+    snoozedUntil: text("snoozedUntil"),
+    howMet: text("howMet"),
+    metWhere: text("metWhere"),
+    metOn: text("metOn"),
+    notes: text("notes"),
+    tags: jsonb("tags").$type<string[]>().notNull(),
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("people_tenantId_idx").on(table.tenantId)],
+);
 
-export const interactions = pgTable("interactions", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  personId: text("personId")
-    .notNull()
-    .references(() => people.id, { onDelete: "cascade" }),
-  type: interactionTypeEnum("type").notNull(),
-  date: text("date").notNull(),
-  notes: text("notes"),
-  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const interactions = pgTable(
+  "interactions",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    personId: text("personId")
+      .notNull()
+      .references(() => people.id, { onDelete: "cascade" }),
+    type: interactionTypeEnum("type").notNull(),
+    date: text("date").notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("interactions_tenantId_idx").on(table.tenantId)],
+);
 
-export const importantDates = pgTable("importantDates", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  personId: text("personId")
-    .notNull()
-    .references(() => people.id, { onDelete: "cascade" }),
-  type: importantDateTypeEnum("type").notNull(),
-  label: text("label"),
-  month: integer("month").notNull(),
-  day: integer("day").notNull(),
-  year: integer("year"),
-  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const importantDates = pgTable(
+  "importantDates",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    personId: text("personId")
+      .notNull()
+      .references(() => people.id, { onDelete: "cascade" }),
+    type: importantDateTypeEnum("type").notNull(),
+    label: text("label"),
+    month: integer("month").notNull(),
+    day: integer("day").notNull(),
+    year: integer("year"),
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("importantDates_tenantId_idx").on(table.tenantId)],
+);
 
-export const facts = pgTable("facts", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  personId: text("personId")
-    .notNull()
-    .references(() => people.id, { onDelete: "cascade" }),
-  text: text("text").notNull(),
-  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const facts = pgTable(
+  "facts",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    personId: text("personId")
+      .notNull()
+      .references(() => people.id, { onDelete: "cascade" }),
+    text: text("text").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("facts_tenantId_idx").on(table.tenantId)],
+);
 
-export const news = pgTable("news", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  personId: text("personId")
-    .notNull()
-    .references(() => people.id, { onDelete: "cascade" }),
-  text: text("text").notNull(),
-  date: text("date").notNull(),
-  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const news = pgTable(
+  "news",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    personId: text("personId")
+      .notNull()
+      .references(() => people.id, { onDelete: "cascade" }),
+    text: text("text").notNull(),
+    date: text("date").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("news_tenantId_idx").on(table.tenantId)],
+);
 
-export const reminders = pgTable("reminders", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  personId: text("personId")
-    .notNull()
-    .references(() => people.id, { onDelete: "cascade" }),
-  text: text("text").notNull(),
-  dueDate: text("dueDate").notNull(),
-  done: boolean("done").notNull().default(false),
-  doneAt: text("doneAt"),
-  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const reminders = pgTable(
+  "reminders",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    personId: text("personId")
+      .notNull()
+      .references(() => people.id, { onDelete: "cascade" }),
+    text: text("text").notNull(),
+    dueDate: text("dueDate").notNull(),
+    done: boolean("done").notNull().default(false),
+    doneAt: text("doneAt"),
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("reminders_tenantId_idx").on(table.tenantId)],
+);
 
-export const gifts = pgTable("gifts", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  personId: text("personId")
-    .notNull()
-    .references(() => people.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  kind: giftKindEnum("kind").notNull(),
-  occasion: text("occasion"),
-  date: text("date").notNull(),
-  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const gifts = pgTable(
+  "gifts",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    personId: text("personId")
+      .notNull()
+      .references(() => people.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    kind: giftKindEnum("kind").notNull(),
+    occasion: text("occasion"),
+    date: text("date").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("gifts_tenantId_idx").on(table.tenantId)],
+);
 
-export const connections = pgTable("connections", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  personA: text("personA")
-    .notNull()
-    .references(() => people.id, { onDelete: "cascade" }),
-  personB: text("personB")
-    .notNull()
-    .references(() => people.id, { onDelete: "cascade" }),
-  kind: connectionKindEnum("kind").notNull(),
-  aIsParent: boolean("aIsParent").notNull().default(false),
-  label: text("label"),
-  inverseLabel: text("inverseLabel"),
-  note: text("note"),
-  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const connections = pgTable(
+  "connections",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    personA: text("personA")
+      .notNull()
+      .references(() => people.id, { onDelete: "cascade" }),
+    personB: text("personB")
+      .notNull()
+      .references(() => people.id, { onDelete: "cascade" }),
+    kind: connectionKindEnum("kind").notNull(),
+    aIsParent: boolean("aIsParent").notNull().default(false),
+    label: text("label"),
+    inverseLabel: text("inverseLabel"),
+    note: text("note"),
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("connections_tenantId_idx").on(table.tenantId)],
+);

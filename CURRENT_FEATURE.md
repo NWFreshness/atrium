@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** Phase 7 Architecture: 7.1 (ADRs) and 7.2 (atomic demo reset) are done — the reset is one Neon `db.batch` (see the log). Next implementable unit is **7.3**, the `tenantId` indexes. Branch `feat/7.3-…` from current `main`.
+**None in progress.** Phase 7 Architecture: 7.1 (ADRs), 7.2 (atomic demo reset) and 7.3 (`tenantId` indexes) are done. Next implementable unit is **7.4**, the query-module split. Branch `feat/7.4-…` from current `main`.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 7 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`.
 
@@ -281,3 +281,13 @@ Verified live against the Neon **dev** branch as the demo user, not only in unit
 `app/(authenticated)/layout.tsx` is deliberately unchanged — the spec allows relying on the new default, and putting the batch in the default is what stops a caller from keeping the no-op by accident. `ADR-0002`'s "known deviation" bullet got a tense fix (the no-op runner it names is what this feature closes); no ADR decision changed. Controller: `env -u DATABASE_URL npm test` 621 passed (99 files), `AUTH_SECRET=ci-build-placeholder npm run build` exit 0 with the route table unchanged. Spec PASS on all eight criteria.
 
 The rollback itself is Neon's guarantee, not something these tests observe: they prove the collection, the single call, and that a failing batch rejects with nothing committed. A future seed that doubles the statement count is unguarded — both recorded as deliberate limits in the spec.
+
+### 7.3 tenantId indexes (completed)
+
+Nineteen tenant-scoped tables now declare `index("<table>_tenantId_idx").on(table.tenantId)` in a `pgTable` third argument — `users`, CRM's four, Space's six, Rolodex's eight — appended to the arrays that already existed, so `pages` keeps its self-referencing FK and `rowValues`/`views` keep their composite primary keys. No query, route or dependency changed.
+
+`drizzle/0005_uneven_prodigy.sql` is exactly nineteen `CREATE INDEX IF NOT EXISTS "<table>_tenantId_idx" ON "<table>" USING btree ("tenantId");` statements: no drop, no alter, no enum change, no RLS. `IF NOT EXISTS` is the one hand edit (drizzle-kit omits it), the same choice 0004 made for its enum label, with the caveat written into the file that Postgres matches an existing index by *name* only, not by definition. `npm run db:generate` now reports "No schema changes", and `drizzle/meta/0005_snapshot.json` lists exactly those nineteen indexes.
+
+Verified: 633 unit tests (99 files), `npm run build` exit 0, no schema drift. The gate was proven by injection rather than by reading it twice — deleting `activities`' index failed the test, and after the review tightened the assertion, a composite `on(table.tenantId, table.type)` failed too (both probes reversed; the schema diff is the feature's own). Spec compliance passed criteria 1–4 and 6 with no table left unindexed; the quality review found no blocking issue and three should-fix items, all fixed: the assertion asked whether the index's columns *include* `tenantId` rather than *are* `tenantId` (a composite would not serve `where tenantId = ?`), the migration test compared only the table set (so a name/table swap would have passed), and the hand-added `IF NOT EXISTS` had no rationale where 0004 documents its own.
+
+Deliberate: single-column `tenantId` only (the spec's call — composites are the lever if a plan ever needs the secondary predicates), the migration is not concurrent (sub-second at this size, and `CONCURRENTLY` cannot run inside the migrator's transaction), `lower(email)` stays a scan (the 6.1 follow-up, not tenant-scoped), and prettier reflowed the four schema files (~660 diff lines for nineteen one-line additions, because a third `pgTable` argument breaks the compact call form). **The dev branch is not migrated yet** — `npm run db:migrate` for 0005 after merge, as the spec says and HANDOFF now notes.

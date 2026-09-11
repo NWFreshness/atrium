@@ -1,5 +1,6 @@
 import {
   foreignKey,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -48,53 +49,66 @@ export const pages = pgTable(
       foreignColumns: [table.id],
       name: "pages_parentId_pages_id_fk",
     }).onDelete("cascade"),
+    index("pages_tenantId_idx").on(table.tenantId),
   ],
 );
 
-export const blocks = pgTable("blocks", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  pageId: text("pageId")
-    .notNull()
-    .references(() => pages.id, { onDelete: "cascade" }),
-  type: blockTypeEnum("type").notNull(),
-  content: jsonb("content").$type<Record<string, unknown>>().notNull(),
-  position: integer("position").notNull(),
-});
+export const blocks = pgTable(
+  "blocks",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    pageId: text("pageId")
+      .notNull()
+      .references(() => pages.id, { onDelete: "cascade" }),
+    type: blockTypeEnum("type").notNull(),
+    content: jsonb("content").$type<Record<string, unknown>>().notNull(),
+    position: integer("position").notNull(),
+  },
+  (table) => [index("blocks_tenantId_idx").on(table.tenantId)],
+);
 
-export const properties = pgTable("properties", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  databaseId: text("databaseId")
-    .notNull()
-    .references(() => pages.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  type: propertyTypeEnum("type").notNull(),
-  position: integer("position").notNull(),
-});
+export const properties = pgTable(
+  "properties",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    databaseId: text("databaseId")
+      .notNull()
+      .references(() => pages.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    type: propertyTypeEnum("type").notNull(),
+    position: integer("position").notNull(),
+  },
+  (table) => [index("properties_tenantId_idx").on(table.tenantId)],
+);
 
-export const propertyOptions = pgTable("propertyOptions", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  propertyId: text("propertyId")
-    .notNull()
-    .references(() => properties.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  color: text("color").notNull(),
-  position: integer("position").notNull(),
-});
+export const propertyOptions = pgTable(
+  "propertyOptions",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    propertyId: text("propertyId")
+      .notNull()
+      .references(() => properties.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    color: text("color").notNull(),
+    position: integer("position").notNull(),
+  },
+  (table) => [index("propertyOptions_tenantId_idx").on(table.tenantId)],
+);
 
 export const rowValues = pgTable(
   "rowValues",
@@ -110,7 +124,10 @@ export const rowValues = pgTable(
       .references(() => properties.id, { onDelete: "cascade" }),
     value: jsonb("value").$type<unknown>(),
   },
-  (table) => [primaryKey({ columns: [table.rowId, table.propertyId] })],
+  (table) => [
+    primaryKey({ columns: [table.rowId, table.propertyId] }),
+    index("rowValues_tenantId_idx").on(table.tenantId),
+  ],
 );
 
 export const views = pgTable(
@@ -125,5 +142,8 @@ export const views = pgTable(
     kind: viewKindEnum("kind").notNull(),
     config: jsonb("config").$type<Record<string, unknown>>().notNull(),
   },
-  (table) => [primaryKey({ columns: [table.databaseId, table.kind] })],
+  (table) => [
+    primaryKey({ columns: [table.databaseId, table.kind] }),
+    index("views_tenantId_idx").on(table.tenantId),
+  ],
 );
