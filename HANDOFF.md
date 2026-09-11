@@ -2,17 +2,17 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Nothing is in progress, and nothing is queued.** Phase 8 Integrity is complete (8.1–8.3 merged). The next unit of work starts as a phase spec set — a docs PR — not as an implementation. Do not push to `main`. Do not merge unless asked.
+**Stop. Nothing is in progress.** Phase 9 Security specs are written (9.1–9.6). Do not implement 9.1 until this docs PR is merged. Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-11)
 
-Phases 0–8 are complete. 8.1 shipped the `lower(email)` unique index (`users_email_lower_idx`), its migration applied on the dev branch, plus the seed change that followed from it. 8.2 moved the password floor to 12 Unicode code points behind `lib/auth/password-policy.ts`, which signup and change-password both call. 8.3 gave Rolodex import one `PERSON_FIELDS` catalog in `lib/rolodex/person-fields.ts`, read by the parser and the import dialog — the dialog's drifted copy (it never carried `required: true`) is gone. Nothing is queued: the next step is a spec set for whatever comes next, written as a docs PR first.
+Phases 0–8 are complete. Phase 9 Security is specced, not implemented: known HIGH in `drizzle-orm` + CI audit, isolation headers, dummy-hash login verify, auth attempt throttle, bounded Rolodex import, text ceilings + LIKE escape. Design: `docs/superpowers/specs/2026-09-11-security-design.md`. Next implementable unit is 9.1 after this docs PR merges.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
-Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phase 8). Architecture: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Integrity: `docs/superpowers/specs/2026-09-11-integrity-design.md`. Decisions: `docs/adr/` (ADR-0001 … ADR-0006 + a C4 context/container view; the design doc wins if an ADR and it disagree). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
+Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phase 9). Architecture: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Integrity: `docs/superpowers/specs/2026-09-11-integrity-design.md`. Security: `docs/superpowers/specs/2026-09-11-security-design.md`. Decisions: `docs/adr/` (ADR-0001 … ADR-0006 + a C4 context/container view; the design doc wins if an ADR and it disagree). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
 
 Open decisions carried forward: Session revocation was decided in 6.3: passwords can be changed, but existing JWTs stay valid — no revocation list, no `passwordChangedAt` claim, by spec. RLS is deferred: neon-http cannot persist `SET LOCAL`. 8.1 closed the case-sensitive `users_email_unique` index — uniqueness is now `users_email_lower_idx` on `lower(email)`. 8.2 closed the UTF-16 password floor. Deliberately still open, and not to be reopened without a spec: RLS (neon-http cannot persist `SET LOCAL`), session revocation, OAuth, a mailer, `tenants.name` moving to `lower(name)`, `Intl.Segmenter` grapheme counting, and Next 16's `middleware.ts` → `proxy` rename (it stays out until a feature has to touch that file).
 
@@ -23,7 +23,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Nothing is queued. `features/INDEX.md` is the board and every phase through 8 is complete; the shipped specs stay as the record of what those features decided. A new phase begins as a docs PR — the spec set plus a design amend — and only then is `N.1` implemented from `main`.
+6. Phase 9 Security, starting at `features/phase-9-security/9.1-drizzle-advisory-sca.md` once this docs PR has a `mergedAt`. Do not start 9.1 on the docs branch.
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Phase 8 is complete and the dev branch carries every migration (`0000`–`0006`). Nothing is in progress. When a new phase is wanted, write its spec set as a docs PR first; then `git checkout main && git pull`, branch `feat/N.1`, and implement one feature at a time.
+Phase 8 is complete and the dev branch carries every migration (`0000`–`0006`). Phase 9 specs are written. After this docs PR merges: `git checkout main && git pull`, branch `feat/9.1-drizzle-advisory-sca`, and implement 9.1 only.
