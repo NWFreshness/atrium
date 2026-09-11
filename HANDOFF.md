@@ -2,71 +2,26 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 4 Groove is complete (through 4.8, PR #45).** Phase 5 Workroom specs 5.1–5.7 are written in this docs PR. Do not push to `main`. Do not merge unless asked. After this docs PR merges, implement 5.1.
+**Stop. Phase 5 Workroom is complete (through 5.7).** Phase 6 Accounts specs 6.1–6.4 are written in this docs PR. Do not push to `main`. Do not merge unless asked. After this docs PR merges, implement 6.1.
 
-## Where we are (2026-09-06)
+## Where we are (2026-09-11)
 
-Phase 1 of Atrium (specs written). Repo: https://github.com/NWFreshness/atrium.git
+Phases 0–5 are complete. Phase 6 Accounts (self-serve signup + change-password) specs are in `features/phase-6-accounts/`. Next implementable unit: **6.1** after this docs PR merges.
 
-| ID | Status |
-| --- | --- |
-| 0.1 Next.js scaffold + CI | completed (PR #1) |
-| 0.2 Drizzle + Neon users/tenants | completed (PR #2) |
-| 0.3 Auth.js credentials login | completed (PR #3) |
-| 0.4 Nav, theme, launcher | completed (PR #5) |
-| 0.5 Tenancy helper + Reset demo | completed (PR #6) |
-| 1.1 CRM schema, seed, resetter | completed (PR #8) |
-| 1.2 CRM shell and subnav | completed (PR #9) |
-| 1.3 Organizations table and detail | completed (PR #10) |
-| 1.4 Contacts table and detail | completed (PR #11) |
-| 1.5 Deals table | completed (PR #12) |
-| 1.6 Pipeline board | completed (PR #13) |
-| 1.7 Activities and follow-ups | completed (PR #14) |
-| 1.8 Dashboard | completed (PR #15) |
-| 1.9 Playwright smoke | completed (PR #16) |
-| 2.1 Space schema, seed, resetter | completed (PR #18) |
-| 2.2 Space shell | completed (PR #19) |
-| 2.3 Pages tree in the sidebar | completed (PR #20) |
-| 2.4 Block editor | completed (PR #21) |
-| 2.5 Databases and table view | completed (PR #22) |
-| 2.6 Board, list, filters, sorts | completed (PR #23) |
-| 2.7 Quick-find search | completed (PR #24) |
-| 2.8 Playwright smoke | completed (PR #25) |
-| **3.1 Schema, seed, resetter** | **completed** |
-| **3.2 Shell and subnav** | **completed** |
-| **3.3 People table and person page** | **completed** |
-| **3.4 CSV and vCard import** | **completed** |
-| **3.5 Circles board, cadence, snooze** | **completed** |
-| **3.6 Log, facts, news, reminders, Timeline** | **completed** |
-| **3.7 Important dates and calendar** | **completed** |
-| **3.8 Gifts and connections** | **completed** |
-| **3.9 Today dashboard** | **completed** |
-| **3.10 Playwright smoke** | **completed** |
-| **4.1 Domain** | **completed** |
-| **4.2 Shell** | **completed** |
-| **4.3 Sequencer controls** | **completed** |
-| **4.4 Transport and patches** | **completed** |
-| **4.5 Audio engine** | **completed** |
-| **4.6 Master** | **completed** |
-| **4.7 Live wiring** | **completed** |
-| **4.8 Playwright smoke** | **completed** |
-
-Phase 1–4 are complete. Phase 4 Groove is complete, no Groove tables, Web Audio only. Phase 5 Workroom (redesign) specs 5.1–5.7 are written in `features/phase-5-workroom/` (this docs PR); no implementation yet. Next implementable unit: 5.1.
+Repo: https://github.com/NWFreshness/atrium.git
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
-Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (approved; amended for Phase 5 Workroom). Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom redesign prototype is the visual authority for Phase 5: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
+Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phase 6). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
 
 ## Read order
 
 1. This file
 2. `AGENTS.md`
 3. `README.md`
-4. Design doc above
+4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-5-workroom/5.1-design-system-theme-scaffold.md` — the next feature to implement after this docs PR merges
-
-Behavior bible for later apps: the reference implementation's `docs/<app>/` — clone jobs-to-be-done, not Express/SQLite/Vite.
+6. `features/phase-6-accounts/6.1-member-role-signup.md` — the next feature to implement after this docs PR merges
 
 ## How we ship
 
@@ -81,16 +36,17 @@ Behavior bible for later apps: the reference implementation's `docs/<app>/` — 
 
 `.env` is gitignored. Do not commit it. Do not paste connection strings or passwords into chat or tickets.
 
-- **Dev:** local `.env` points at a Neon **dev** branch. Schema through `drizzle/0002_panoramic_smasher.sql` (Space tables) must be migrated there. If CRM pages 500 on missing tables, run `npm run db:migrate` then `npm run db:seed` against the dev URL. Dummy local users live only on that branch.
+- **Dev:** local `.env` points at a Neon **dev** branch. If pages 500 on missing tables, run `npm run db:migrate` then `npm run db:seed` against the dev URL. Dummy local users live only on that branch.
 - **Prod:** production `DATABASE_URL` belongs in Vercel only. Git `drizzle/` is the schema source of truth. Apply the same `npm run db:migrate` against prod when deploying; do not copy data from dev. Seed prod with the real owner email/password via env, not the dummy local pair.
 - Unit tests must pass **without** `DATABASE_URL`.
 - CI job `ci`: `npm ci`, `npm test`, `npm run build` (dummy `AUTH_SECRET` for build). Job `e2e`: Playwright, skips unless GitHub secrets `DATABASE_URL`, `AUTH_SECRET`, `AUTH_OWNER_EMAIL`, `AUTH_OWNER_PASSWORD` exist.
+- Phase 6: `AUTH_SIGNUP_ENABLED` — only the string `true` opens signup. Missing or anything else is closed. Open-signup Playwright needs the flag on in the Next process env.
 
 `.env.example` lists names only.
 
 ## Stack locks
 
-Next.js App Router, Neon Postgres, Drizzle, Auth.js Credentials + JWT. No Express, no SQLite, no Tailwind, no TanStack until a CRM/Space/Rolodex table spec. Session `user` has `id`, `email`, `tenantId`, `role`. Never take `tenantId` from the client.
+Next.js App Router, Neon Postgres, Drizzle, Auth.js Credentials + JWT. No Express, no SQLite, no Tailwind, no TanStack until a CRM/Space/Rolodex table spec. Session `user` has `id`, `email`, `tenantId`, `role` (`owner` | `demo` | `member` after 6.1). Never take `tenantId` from the client.
 
 Next 16 warns that `middleware.ts` is deprecated in favor of `proxy`. Leave middleware unless a feature spec says to rename it.
 
@@ -104,4 +60,4 @@ npm test
 npm run build
 ```
 
-Then implement `features/phase-5-workroom/5.1-design-system-theme-scaffold.md` once this docs PR (and its design amend) has merged to `main`.
+Then implement `features/phase-6-accounts/6.1-member-role-signup.md` once this docs PR (and its design amend) has merged to `main`.

@@ -5,16 +5,18 @@ Cold start: [HANDOFF.md](../HANDOFF.md)
 Design: [docs/superpowers/specs/2026-09-06-atrium-design.md](../docs/superpowers/specs/2026-09-06-atrium-design.md)
 Rolodex: [docs/superpowers/specs/2026-09-09-rolodex-design.md](../docs/superpowers/specs/2026-09-09-rolodex-design.md)
 Groove: [docs/superpowers/specs/2026-09-09-groove-design.md](../docs/superpowers/specs/2026-09-09-groove-design.md)
+Accounts: [docs/superpowers/specs/2026-09-11-accounts-design.md](../docs/superpowers/specs/2026-09-11-accounts-design.md)
 In progress: [CURRENT_FEATURE.md](../CURRENT_FEATURE.md)
 
 Only one feature `in_progress`. Later phases get specs when that phase starts.
 
 ## Build order
 
-Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7.
+Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7 → 6.1 → 6.2 → 6.3 → 6.4.
 3.4 / 3.6 / 3.7 start after 3.3 (same person page — do not parallel). 3.8 after 3.7.
 Phase 3 is sequential. Phase 4 is sequential. Do not run two Groove features in parallel.
 Phase 5 is sequential through 5.2 and the QA gate 5.7; the per-app passes 5.3–5.6 may run in any order after 5.2 (disjoint CSS module sets), but must all land before 5.7.
+Phase 6 is sequential. Do not run two Accounts features in parallel.
 
 ### Phase 0 — Atrium platform
 
@@ -112,3 +114,17 @@ Visual redesign of the whole product. Warm editorial ("The Workroom"): espresso 
 | 5.7 | [Theming QA + smoke](./phase-5-workroom/5.7-theming-qa-smoke.md)                         | completed | 5.3–5.6    |
 
 Long pole: 5.1 → 5.2 → 5.7. 5.3–5.6 may run in any order after 5.2 (disjoint CSS module sets) but all must land before 5.7. Do not parallel two features that touch the same files. Preserve `crm-`/`space-`/`rolodex-`/`groove-`/`atrium-nav-` namespaces.
+
+### Phase 6 — Accounts (self-serve)
+
+Flag-gated credentials signup, `member` role with an empty personal tenant, logged-in change-password. Owner and demo unchanged. No mailer, OAuth, forgot-password, extra members. Design: [2026-09-11-accounts-design.md](../docs/superpowers/specs/2026-09-11-accounts-design.md).
+
+| ID  | Feature                                                                              | Status  | Depends on |
+| --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
+| 6.1 | [Member role + signUp helper](./phase-6-accounts/6.1-member-role-signup.md)          | specced | 0.5        |
+| 6.2 | [Signup page and auto sign-in](./phase-6-accounts/6.2-signup-page.md)                | specced | 6.1        |
+| 6.3 | [Change password and settings](./phase-6-accounts/6.3-change-password-settings.md)   | specced | 6.2        |
+| 6.4 | [Playwright smoke](./phase-6-accounts/6.4-playwright-smoke.md)                        | specced | 6.2, 6.3   |
+
+Long pole: 6.1 → 6.2 → 6.3 → 6.4. Do not parallel any two Accounts features. Do not add OAuth or a mailer.
+

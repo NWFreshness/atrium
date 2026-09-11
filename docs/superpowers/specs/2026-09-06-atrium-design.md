@@ -21,7 +21,7 @@ Atrium is a Vercel-hosted clone of those four apps as one Next.js product, with 
 
 - **Owner** — Tyler. Persistent personal data. Never wiped by demo tooling.
 - **Demo** — whoever has the demo password. Seeded data. Can be reset on demand without touching owner data.
-- **No public signup.** Two env-configured accounts only in v1.
+- **Member** — self-serve signup (Phase 6) when `AUTH_SIGNUP_ENABLED=true`. Own empty tenant. No Reset demo. See [2026-09-11-accounts-design.md](./2026-09-11-accounts-design.md).
 
 ## What we are cloning
 
@@ -39,7 +39,7 @@ The reference implementation's `docs/<app>/REQUIREMENTS.md` and `IMPLEMENTATION.
 
 ## Non-goals (v1)
 
-- Public signup, OAuth, magic links, billing
+- Ungated public signup (Phase 6 is flag-gated), OAuth, magic links, billing
 - Multi-member tenants / team sharing
 - Realtime collaboration
 - Native mobile apps
@@ -49,7 +49,7 @@ The reference implementation's `docs/<app>/REQUIREMENTS.md` and `IMPLEMENTATION.
 - TanStack Router (Next.js owns routing)
 - TanStack Query in v1 (RSC + server actions; add later only if client cache becomes a real problem)
 
-OAuth and signup are deferred, not forbidden. The user/session schema must not block adding them later.
+OAuth is deferred, not forbidden. Credentials signup is Phase 6, behind `AUTH_SIGNUP_ENABLED`. The user/session schema must not block adding Google later (`accounts` / `sessions` tables stay).
 
 ---
 
@@ -61,7 +61,9 @@ One Next.js App Router app. One Vercel project. One Postgres database.
 app/
   layout.tsx                 fonts, theme init
   login/                     credentials form (unauthenticated)
+  signup/                    create member + tenant (flag-gated)
   (authenticated)/
+    settings/                change password
     layout.tsx               reference-style nav strip, theme toggle, identity, Reset demo (demo only)
     page.tsx                 launcher
     crm/                     CRM UI
@@ -79,6 +81,8 @@ Routes:
 
 - `/` launcher (behind login)
 - `/login` credentials form
+- `/signup` flag-gated member signup
+- `/settings` change password (behind login)
 - `/crm/*` CRM
 - `/space/*` Space
 - `/rolodex/*` Rolodex
@@ -98,18 +102,20 @@ Vercel hosts the Next app as usual. The database engine is PostgreSQL, hosted on
 
 ### Accounts
 
-Two users, created at migrate/bootstrap from env:
+Two users are still created at migrate/bootstrap from env:
 
 - `AUTH_OWNER_EMAIL` / `AUTH_OWNER_PASSWORD`
 - `AUTH_DEMO_EMAIL` / `AUTH_DEMO_PASSWORD` (default email `demo@atrium.local`)
 
 Auth.js with the Credentials provider. JWT session cookie.
 
-`User`: `id`, `email`, `passwordHash`, `tenantId`, `role` (`owner` | `demo`), `createdAt`.
+`User`: `id`, `email`, `passwordHash`, `tenantId`, `role` (`owner` | `demo` | `member`), `createdAt`.
 
-Auth.js `Account` and `Session` tables exist in the adapter shape even if unused in v1, so a Google provider later is an adapter add, not a schema rewrite. No signup UI until that day.
+Phase 6 adds flag-gated `/signup` (instant access, no mailer) and logged-in `/settings` change-password. Details: [2026-09-11-accounts-design.md](./2026-09-11-accounts-design.md).
 
-Login errors: generic "Invalid email or password". Unauthenticated requests redirect to `/login`.
+Auth.js `Account` and `Session` tables exist in the adapter shape even if unused, so a Google provider later is an adapter add, not a schema rewrite.
+
+Login errors: generic "Invalid email or password". Unauthenticated requests redirect to `/login` (except `/signup` and Auth.js routes).
 
 ### Tenancy
 
@@ -145,7 +151,7 @@ Owner tenant: empty. No welcome records.
 
 Each of the four applications is a phase. Foundation is phase 0 because auth, tenancy, and the shell must exist first.
 
-Build order is 0 → 1 → 2 → 3 → 4 → 5. One feature at a time. No parallel features that touch the same files.
+Build order is 0 → 1 → 2 → 3 → 4 → 5 → 6. One feature at a time. No parallel features that touch the same files.
 
 ### Phase 0 — Atrium platform
 
@@ -198,6 +204,12 @@ Shared presentational classes (buttons, fields, panels, KPI cards, chips, avatar
 
 Feature specs: `features/phase-5-workroom/` (5.1–5.7). Board: `features/INDEX.md`.
 
+### Phase 6 — Accounts (self-serve)
+
+Public credentials signup behind `AUTH_SIGNUP_ENABLED`, a `member` role with an empty personal tenant, and logged-in change-password. Owner and demo stay env-seeded. No mailer, OAuth, forgot-password, or extra members on a tenant.
+
+Feature specs: `features/phase-6-accounts/` (6.1–6.4). Design: [2026-09-11-accounts-design.md](./2026-09-11-accounts-design.md). Board: `features/INDEX.md`.
+
 ---
 
 ## Testing and quality
@@ -242,7 +254,7 @@ Feature granularity: independently shippable, hours to a couple of days, numbere
 - TypeScript strict
 - PostgreSQL hosted on Neon (`DATABASE_URL`)
 - Drizzle ORM + drizzle-kit migrations (TypeScript schema, SQL-shaped queries, no Prisma engine)
-- Auth.js (Credentials now)
+- Auth.js (Credentials; signup in Phase 6)
 - Vitest + Playwright
 - Vercel
 
@@ -262,6 +274,7 @@ Do not add TanStack packages until the feature that uses them.
 - `AUTH_SECRET`
 - `AUTH_OWNER_EMAIL` / `AUTH_OWNER_PASSWORD`
 - `AUTH_DEMO_EMAIL` / `AUTH_DEMO_PASSWORD`
+- `AUTH_SIGNUP_ENABLED` (Phase 6; only the string `true` opens `/signup`)
 - Never commit `.env`. Example values live in `.env.example` without real passwords.
 
 ---
