@@ -1,14 +1,21 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import Papa from "papaparse";
 import {
   applyImport,
   applyMapping,
   findDuplicates,
+  ImportTooLargeError,
+  IMPORT_TOO_LARGE,
+  MAX_IMPORT_CHARS,
+  MAX_IMPORT_ROWS,
   parseCSV,
   parseVcf,
 } from "./import";
+import { parseImportForSession } from "./import-actions";
+import { MAX_IMPORT_NOTES } from "./import-limits";
 import {
   createMemoryRolodexRepository,
   createPerson,
@@ -217,7 +224,68 @@ describe("applyImport", () => {
     ).rejects.toThrow("boom");
     expect(repo.people).toHaveLength(0);
   });
+
+  it("refuses 501 people before listing", async () => {
+    const repo = createMemoryRolodexRepository();
+    const people = Array.from({ length: MAX_IMPORT_ROWS + 1 }, (_, index) =>
+      person(`Person ${index}`),
+    );
+    await expect(applyImport(tenantA(), people, repo)).rejects.toThrow(
+      ImportTooLargeError,
+    );
+    expect(await listPeople(tenantA(), repo)).toHaveLength(0);
+  });
 });
+
+describe("import size caps", () => {
+  it("defines the caps once", () => {
+    expect(MAX_IMPORT_CHARS).toBe(1_000_000);
+    expect(MAX_IMPORT_ROWS).toBe(500);
+  });
+
+  it("does not invoke Papa for an oversized string", () => {
+    const spy = vi.spyOn(Papa, "parse");
+    expect(() => parseCSV("a".repeat(MAX_IMPORT_CHARS + 1))).toThrow(
+      ImportTooLargeError,
+    );
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it("skips a notes field over the ceiling instead of truncating", () => {
+    const csv = `Name,Notes\nAda,${"n".repeat(MAX_IMPORT_NOTES + 1)}\n`;
+    const parsed = parseCSV(csv);
+    const { people, skipped } = applyMapping(parsed, parsed.suggestedMapping!);
+    expect(people).toEqual([]);
+    expect(skipped).toBe(1);
+  });
+
+  it("surfaces That file is too large from parseImportForSession", async () => {
+    const repo = createMemoryRolodexRepository();
+    const result = await parseImportForSession(
+      async () => ({
+        user: { id: "user-a", tenantId: tenantA(), role: "owner" },
+      }),
+      { text: "a".repeat(MAX_IMPORT_CHARS + 1), filename: "huge.csv" },
+      repo,
+    );
+    expect(result.error).toBe(IMPORT_TOO_LARGE);
+    expect(result.people).toEqual([]);
+  });
+});
+
+function person(name: string) {
+  return {
+    name,
+    email: null,
+    phone: null,
+    jobTitle: null,
+    company: null,
+    city: null,
+    birthday: null,
+    notes: null,
+  };
+}
 
 function tenantA() {
   return "tenant-a";

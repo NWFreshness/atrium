@@ -1,5 +1,12 @@
 import Papa from "papaparse";
 import VCARD from "vcf";
+import {
+  IMPORT_TOO_LARGE,
+  MAX_IMPORT_CHARS,
+  MAX_IMPORT_NOTES,
+  MAX_IMPORT_ROWS,
+  MAX_IMPORT_SHORT_FIELD,
+} from "./import-limits";
 import { PERSON_FIELDS } from "./person-fields";
 import {
   createImportantDate,
@@ -7,6 +14,31 @@ import {
   listPeople,
   type RolodexRepository,
 } from "./queries";
+
+export {
+  IMPORT_TOO_LARGE,
+  MAX_IMPORT_CHARS,
+  MAX_IMPORT_ROWS,
+} from "./import-limits";
+
+export class ImportTooLargeError extends Error {
+  constructor() {
+    super(IMPORT_TOO_LARGE);
+    this.name = "ImportTooLargeError";
+  }
+}
+
+export function assertImportTextSize(text: string): void {
+  if (text.length > MAX_IMPORT_CHARS) {
+    throw new ImportTooLargeError();
+  }
+}
+
+export function assertImportRowCount(count: number): void {
+  if (count > MAX_IMPORT_ROWS) {
+    throw new ImportTooLargeError();
+  }
+}
 
 export type ParsedPerson = {
   name: string;
@@ -92,6 +124,7 @@ export function suggestMapping(headers: string[]): Record<string, string> {
 }
 
 export function parseCSV(text: string): ImportParseResult {
+  assertImportTextSize(text);
   const parsed = Papa.parse<CsvRow>(text.trim(), {
     header: true,
     skipEmptyLines: true,
@@ -163,7 +196,7 @@ export function applyMapping(
       skipped += 1;
       continue;
     }
-    people.push({
+    const person: ParsedPerson = {
       name: mapped.name,
       email: mapped.email ?? null,
       phone: mapped.phone ?? null,
@@ -172,9 +205,36 @@ export function applyMapping(
       city: mapped.city ?? null,
       birthday: normalizeBirthday(mapped.birthday),
       notes: mapped.notes ?? null,
-    });
+    };
+    if (!withinFieldLimits(person)) {
+      skipped += 1;
+      continue;
+    }
+    people.push(person);
   }
+  assertImportRowCount(people.length);
   return { people, skipped };
+}
+
+function withinFieldLimits(person: ParsedPerson): boolean {
+  const short = [
+    person.name,
+    person.email,
+    person.phone,
+    person.jobTitle,
+    person.company,
+    person.city,
+    person.birthday,
+  ];
+  for (const value of short) {
+    if (value && value.length > MAX_IMPORT_SHORT_FIELD) {
+      return false;
+    }
+  }
+  if (person.notes && person.notes.length > MAX_IMPORT_NOTES) {
+    return false;
+  }
+  return true;
 }
 
 function company(org: string | null): string | null {
@@ -213,6 +273,7 @@ function cityFromAdr(adr: string | null): string | null {
 }
 
 export function parseVcf(text: string): ParsedPerson[] {
+  assertImportTextSize(text);
   const normalized = text
     .replace(/\r?\n/g, "\r\n")
     .replace(/^VERSION:4(\.0)?$/gim, "VERSION:3.0");
@@ -228,7 +289,7 @@ export function parseVcf(text: string): ParsedPerson[] {
     if (!name) {
       continue;
     }
-    people.push({
+    const person: ParsedPerson = {
       name,
       email: propValue(card, "email"),
       phone: propValue(card, "tel"),
@@ -237,8 +298,13 @@ export function parseVcf(text: string): ParsedPerson[] {
       city: cityFromAdr(propValue(card, "adr")),
       birthday: normalizeBirthday(propValue(card, "bday")),
       notes: propValue(card, "note"),
-    });
+    };
+    if (!withinFieldLimits(person)) {
+      continue;
+    }
+    people.push(person);
   }
+  assertImportRowCount(people.length);
   return people;
 }
 
@@ -354,6 +420,7 @@ export async function applyImport(
   people: ParsedPerson[],
   repo?: RolodexRepository,
 ): Promise<{ imported: number; skippedDuplicate: number }> {
+  assertImportRowCount(people.length);
   const snapshot = repo ? snapshotRepo(repo) : null;
   try {
     const existing = (await listPeople(tenantId, repo)).map((person) => ({

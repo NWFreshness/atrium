@@ -5,11 +5,13 @@ import {
   applyImport,
   applyMapping,
   findDuplicates,
+  ImportTooLargeError,
   parseCSV,
   parseVcf,
   type DuplicateCheck,
   type ParsedPerson,
 } from "./import";
+import { IMPORT_TOO_LARGE, MAX_IMPORT_CHARS } from "./import-limits";
 import { listPeople, type RolodexRepository } from "./queries";
 
 type ClientTenantInput = { tenantId?: string };
@@ -30,8 +32,18 @@ export async function parseImportForSession(
   error: string | null;
 }> {
   const { tenantId } = await requireTenant(getSession, input);
-  const existing = await listPeople(tenantId, repo);
   const name = input.filename.toLowerCase();
+  if (input.text.length > MAX_IMPORT_CHARS) {
+    return {
+      format: name.endsWith(".vcf") || name.endsWith(".vcard") ? "vcf" : "csv",
+      headers: [],
+      suggestedMapping: null,
+      people: [],
+      skipped: 0,
+      error: IMPORT_TOO_LARGE,
+    };
+  }
+  const existing = await listPeople(tenantId, repo);
   try {
     if (name.endsWith(".vcf") || name.endsWith(".vcard")) {
       const people = parseVcf(input.text);
@@ -61,7 +73,17 @@ export async function parseImportForSession(
       skipped,
       error: null,
     };
-  } catch {
+  } catch (error) {
+    if (error instanceof ImportTooLargeError) {
+      return {
+        format: name.endsWith(".vcf") ? "vcf" : "csv",
+        headers: [],
+        suggestedMapping: null,
+        people: [],
+        skipped: 0,
+        error: IMPORT_TOO_LARGE,
+      };
+    }
     return {
       format: name.endsWith(".vcf") ? "vcf" : "csv",
       headers: [],

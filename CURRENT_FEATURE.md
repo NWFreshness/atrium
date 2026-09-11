@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** 9.4 (auth attempt throttle) is complete on this branch. Next implementable unit is 9.5 after this PR merges.
+**None in progress.** 9.5 (bounded Rolodex import) is complete on this branch. Next implementable unit is 9.6 after this PR merges.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 9 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`. A `script-src` CSP stays out until a feature has to touch `middleware.ts`.
 
@@ -371,3 +371,9 @@ Verified: `env -u DATABASE_URL npm test` 668 passed (104 files, up from 666/104)
 `auth_throttles` (no `tenantId`) plus memory/Drizzle stores. 5 failures / 15 min per email, 20 per IP. Login skips bcrypt when blocked; signup returns generic `unavailable` and does not insert. Auth.js `authorize(credentials, request)` is used; IP is the first `x-forwarded-for` hop. Migration `0007_jittery_retro_girl.sql`.
 
 Verified: `env -u DATABASE_URL npm test` 679 passed (105 files); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0. No Playwright. `db:migrate` is post-merge. Next is 9.5 after this PR merges.
+
+### 9.5 Bounded Rolodex import (completed)
+
+`lib/rolodex/import-limits.ts` holds 1_000_000 chars / 500 rows / 500 short / 8_000 notes. Papa is not called on oversize text. `applyImport` throws before writes. Oversize notes are skipped. `parseImportForSession` returns `That file is too large.`
+
+Verified: `env -u DATABASE_URL npm test` 684 passed (105 files); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0. No Playwright. Next is 9.6 after this PR merges.
