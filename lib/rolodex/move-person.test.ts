@@ -4,10 +4,9 @@ import {
   createMemoryRolodexRepository,
   createPerson,
   getPerson,
-  listPeople,
   updatePerson,
 } from "./queries";
-import { circleColumnStats, movePersonCircle } from "./move-person";
+import { movePersonCircle } from "./move-person";
 
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
@@ -86,35 +85,5 @@ describe("status overrides", () => {
     expect((await getPerson(tenantA, person.id, memory))?.status).toBe(
       "snoozed",
     );
-  });
-});
-
-describe("circleColumnStats", () => {
-  it("counts people and overdue per circle", async () => {
-    const memory = createMemoryRolodexRepository();
-    const inner = await createPerson(
-      tenantA,
-      { name: "Overdue Inner", circle: "inner" },
-      memory,
-    );
-    await createPerson(
-      tenantA,
-      { name: "Close Friend", circle: "close" },
-      memory,
-    );
-    await createInteraction(
-      tenantA,
-      { personId: inner.id, type: "call", date: "2020-01-01" },
-      memory,
-    );
-    const people = await listPeople(tenantA, memory);
-    const stats = circleColumnStats(people);
-    expect(stats.find((row) => row.circle === "inner")).toEqual({
-      circle: "inner",
-      count: 1,
-      overdue: 1,
-    });
-    expect(stats.find((row) => row.circle === "close")?.count).toBe(1);
-    expect(stats.find((row) => row.circle === "close")?.overdue).toBe(0);
   });
 });

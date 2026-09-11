@@ -1,4 +1,4 @@
-import { CIRCLES, type Circle } from "./constants";
+import type { Circle } from "./constants";
 import {
   getPerson,
   updatePerson,
@@ -21,15 +21,4 @@ export async function movePersonCircle(
   }
   await updatePerson(tenantId, id, { circle }, repo);
   return getPerson(tenantId, id, repo);
-}
-
-export function circleColumnStats(people: PersonComputed[]) {
-  return CIRCLES.map((circle) => {
-    const column = people.filter((person) => person.circle === circle);
-    return {
-      circle,
-      count: column.length,
-      overdue: column.filter((person) => person.status === "overdue").length,
-    };
-  });
 }
