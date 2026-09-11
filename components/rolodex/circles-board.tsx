@@ -16,7 +16,7 @@ import {
   type CheckInStatus,
   type Circle,
 } from "@/lib/rolodex/constants";
-import { circleColumnStats } from "@/lib/rolodex/move-person";
+import { circleColumnStats } from "@/lib/rolodex/circle-stats";
 import { movePersonCircleAction } from "@/lib/rolodex/person-actions";
 import type { PersonComputed } from "@/lib/rolodex/queries";
 import styles from "./circles-board.module.css";

@@ -142,7 +142,7 @@ Harden the modular monolith already shipped: ADRs, atomic demo reset, `tenantId`
 | 7.2 | [Atomic demo reset](./phase-7-architecture/7.2-atomic-demo-reset.md)                 | completed | 0.5        |
 | 7.3 | [tenantId indexes](./phase-7-architecture/7.3-tenant-id-indexes.md)                  | completed | 7.2        |
 | 7.4 | [Split query modules](./phase-7-architecture/7.4-split-query-modules.md)             | completed | 7.2        |
-| 7.5 | [Client/server import boundary](./phase-7-architecture/7.5-client-server-boundary.md) | specced | 7.4        |
+| 7.5 | [Client/server import boundary](./phase-7-architecture/7.5-client-server-boundary.md) | completed | 7.4        |
 
 Long pole: 7.1 → 7.2 → 7.3 → 7.4 → 7.5. Do not parallel. Do not add RLS, OAuth, or a mailer. Implement 7.1 only after this docs PR merges.
 

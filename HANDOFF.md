@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 7 Architecture is in progress: 7.1 (ADRs), 7.2 (atomic demo reset), 7.3 (`tenantId` indexes) and 7.4 (query-module split) are done.** Do not push to `main`. Do not merge unless asked. Next implementable unit is 7.5, the client/server import boundary — the phase's last feature.
+**Stop. Phase 7 Architecture is complete: 7.1 (ADRs), 7.2 (atomic demo reset), 7.3 (`tenantId` indexes), 7.4 (query-module split) and 7.5 (client/server import boundary) are done.** Do not push to `main`. Do not merge unless asked. Nothing is specced after 7.5: the next unit is a docs PR writing the next phase's specs.
 
 ## Where we are (2026-09-11)
 
-Phases 0–6 are complete. Phase 7 Architecture: 7.1 shipped `docs/adr/` (six accepted ADRs plus a C4, docs-only), 7.2 made Reset demo one Neon `db.batch` — 717 statements collected by `lib/db/batch-transaction.ts`, verified live against the dev branch — 7.3 added a B-tree index on `tenantId` for all nineteen tenant-scoped tables (migration `drizzle/0005_uneven_prodigy.sql`) and 7.4 split each app's query module into `queries.ts` (barrel) + `queries-shared.ts` + `queries-memory.ts` + `queries-drizzle.ts`. 7.5 (client/server import boundary) is specced and waiting; it closes the phase.
+Phases 0–6 are complete. Phase 7 Architecture is complete: 7.1 shipped `docs/adr/` (six accepted ADRs plus a C4, docs-only), 7.2 made Reset demo one Neon `db.batch` — 717 statements collected by `lib/db/batch-transaction.ts`, verified live against the dev branch — 7.3 added a B-tree index on `tenantId` for all nineteen tenant-scoped tables (migration `drizzle/0005_uneven_prodigy.sql`), 7.4 split each app's query module into `queries.ts` (barrel) + `queries-shared.ts` + `queries-memory.ts` + `queries-drizzle.ts`, and 7.5 added `lib/client-boundary.test.ts`, which walks the value-import graph from every file under `components/` and fails if any of them reaches `lib/db`, a query module, a schema, a seed, a reset, `drizzle-orm` or `@neondatabase/serverless` — directly or through a helper three modules away. Nothing is specced yet for the next phase; that docs PR is the next unit.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -23,7 +23,7 @@ Open decisions carried forward: the `users_email_unique` index is still case-sen
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-7-architecture/7.5-client-server-boundary.md` — the next feature to implement, and the last of Phase 7
+6. Nothing is specced after 7.5 — the next unit is a docs PR writing the next phase's specs (the shape 7.1–7.5 arrived in, as `#64`)
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Then implement `features/phase-7-architecture/7.5-client-server-boundary.md`.
+Phase 7 is complete. The next unit is a docs PR speccing the next phase — one spec per feature, in `features/<phase>/`, an `INDEX.md` row each, and no implementation until it merges.
