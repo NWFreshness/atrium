@@ -151,7 +151,7 @@ Owner tenant: empty. No welcome records.
 
 Each of the four applications is a phase. Foundation is phase 0 because auth, tenancy, and the shell must exist first.
 
-Build order is 0 → 1 → 2 → 3 → 4 → 5 → 6. One feature at a time. No parallel features that touch the same files.
+Build order is 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7. One feature at a time. No parallel features that touch the same files.
 
 ### Phase 0 — Atrium platform
 
@@ -209,6 +209,12 @@ Feature specs: `features/phase-5-workroom/` (5.1–5.7). Board: `features/INDEX.
 Public credentials signup behind `AUTH_SIGNUP_ENABLED`, a `member` role with an empty personal tenant, and logged-in change-password. Owner and demo stay env-seeded. No mailer, OAuth, forgot-password, or extra members on a tenant.
 
 Feature specs: `features/phase-6-accounts/` (6.1–6.4). Design: [2026-09-11-accounts-design.md](./2026-09-11-accounts-design.md). Board: `features/INDEX.md`.
+
+### Phase 7 — Architecture (modular monolith)
+
+Harden the structure Phases 0–6 already chose. No new product. ADRs in `docs/adr/`, demo reset as one Neon `db.batch`, `tenantId` indexes, split query modules, a client/server import fitness function. Stay one Next.js deployable on one Neon database. No RLS (neon-http cannot hold `SET LOCAL`), no session revocation (6.3), no extracting Groove, no unifying drag libraries, no TanStack Query.
+
+Feature specs: `features/phase-7-architecture/` (7.1–7.5). Design: [2026-09-11-architecture-design.md](./2026-09-11-architecture-design.md). Board: `features/INDEX.md`.
 
 ---
 
@@ -285,4 +291,4 @@ Do not add TanStack packages until the feature that uses them.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-Progress: `features/INDEX.md`. Phases 0–4 complete (all settings end at 4.8, PR #45). Workroom prototype merged in PR #46. Phase 5 Workroom specs 5.1–5.7 exist. Next implementable unit is 5.1.
+Progress: `features/INDEX.md`. Phases 0–6 complete. Phase 7 Architecture specs 7.1–7.5 exist. Next implementable unit is 7.1, after the Phase 7 docs PR merges.

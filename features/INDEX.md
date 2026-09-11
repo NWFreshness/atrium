@@ -6,17 +6,19 @@ Design: [docs/superpowers/specs/2026-09-06-atrium-design.md](../docs/superpowers
 Rolodex: [docs/superpowers/specs/2026-09-09-rolodex-design.md](../docs/superpowers/specs/2026-09-09-rolodex-design.md)
 Groove: [docs/superpowers/specs/2026-09-09-groove-design.md](../docs/superpowers/specs/2026-09-09-groove-design.md)
 Accounts: [docs/superpowers/specs/2026-09-11-accounts-design.md](../docs/superpowers/specs/2026-09-11-accounts-design.md)
+Architecture: [docs/superpowers/specs/2026-09-11-architecture-design.md](../docs/superpowers/specs/2026-09-11-architecture-design.md)
 In progress: [CURRENT_FEATURE.md](../CURRENT_FEATURE.md)
 
 Only one feature `in_progress`. Later phases get specs when that phase starts.
 
 ## Build order
 
-Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7 → 6.1 → 6.2 → 6.3 → 6.4.
+Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7 → 6.1 → 6.2 → 6.3 → 6.4 → 7.1 → 7.2 → 7.3 → 7.4 → 7.5.
 3.4 / 3.6 / 3.7 start after 3.3 (same person page — do not parallel). 3.8 after 3.7.
 Phase 3 is sequential. Phase 4 is sequential. Do not run two Groove features in parallel.
 Phase 5 is sequential through 5.2 and the QA gate 5.7; the per-app passes 5.3–5.6 may run in any order after 5.2 (disjoint CSS module sets), but must all land before 5.7.
 Phase 6 is sequential. Do not run two Accounts features in parallel.
+Phase 7 is sequential. Do not run two Architecture features in parallel. Do not add RLS, extract Groove, or unify the drag libraries.
 
 ### Phase 0 — Atrium platform
 
@@ -129,4 +131,18 @@ Flag-gated credentials signup, `member` role with an empty personal tenant, logg
 **Phase 6 is complete** — 6.1–6.4 shipped: flag-gated signup, the `member` role with its own empty tenant, change-password on `/settings`, and the Accounts Playwright smoke.
 
 Long pole: 6.1 → 6.2 → 6.3 → 6.4. Do not parallel any two Accounts features. Do not add OAuth or a mailer.
+
+### Phase 7 — Architecture (modular monolith)
+
+Harden the modular monolith already shipped: ADRs, atomic demo reset, `tenantId` indexes, split query modules, client/server import boundary. No new app, no RLS, no session revocation. Design: [2026-09-11-architecture-design.md](../docs/superpowers/specs/2026-09-11-architecture-design.md).
+
+| ID  | Feature                                                                              | Status  | Depends on |
+| --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
+| 7.1 | [Architecture ADRs](./phase-7-architecture/7.1-architecture-adrs.md)                 | specced | nothing    |
+| 7.2 | [Atomic demo reset](./phase-7-architecture/7.2-atomic-demo-reset.md)                 | specced | 0.5        |
+| 7.3 | [tenantId indexes](./phase-7-architecture/7.3-tenant-id-indexes.md)                  | specced | 7.2        |
+| 7.4 | [Split query modules](./phase-7-architecture/7.4-split-query-modules.md)             | specced | 7.2        |
+| 7.5 | [Client/server import boundary](./phase-7-architecture/7.5-client-server-boundary.md) | specced | 7.4        |
+
+Long pole: 7.1 → 7.2 → 7.3 → 7.4 → 7.5. Do not parallel. Do not add RLS, OAuth, or a mailer. Implement 7.1 only after this docs PR merges.
 
