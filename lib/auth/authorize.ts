@@ -24,6 +24,14 @@ export type PasswordVerifier = (
   passwordHash: string,
 ) => Promise<boolean>;
 
+/**
+ * bcrypt of a random secret that is not in this repo. Misses still run
+ * `verify` against this hash so wall-clock time does not advertise which
+ * emails exist. Do not hash a dummy inside `authorizeCredentials`.
+ */
+export const DUMMY_PASSWORD_HASH =
+  "$2b$10$DI5h9kwGKjLt1lzzwe50JOg9hCBmIUr1uw3NxgO5NtH168HiHhsJe";
+
 export async function authorizeCredentials(
   credentials: Record<string, unknown>,
   lookup: UserLookup,
@@ -39,12 +47,11 @@ export async function authorizeCredentials(
   }
 
   const user = await lookup.findByEmail(email);
-  if (!user) {
-    return null;
-  }
-
-  const matches = await verify(password, user.passwordHash);
-  if (!matches) {
+  const matches = await verify(
+    password,
+    user ? user.passwordHash : DUMMY_PASSWORD_HASH,
+  );
+  if (!user || !matches) {
     return null;
   }
 
