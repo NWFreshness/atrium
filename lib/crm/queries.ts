@@ -1,4 +1,5 @@
 import type { WriteOpts } from "../db/batch-transaction";
+import { assertText, MAX_LONG_TEXT, MAX_SHORT_TEXT } from "../input/text";
 import { STAGE_PROBABILITY } from "./constants";
 import {
   deleteActivityInDrizzle,
@@ -88,6 +89,14 @@ export type {
 } from "./queries-shared";
 export { createMemoryCrmRepository } from "./queries-memory";
 
+function short(value: unknown) {
+  return assertText(value, MAX_SHORT_TEXT);
+}
+
+function long(value: unknown) {
+  return assertText(value, MAX_LONG_TEXT);
+}
+
 export async function listOrganizations(
   tenantId: string,
   repo?: CrmRepository,
@@ -122,10 +131,10 @@ export async function createOrganization(
   const row: Organization = {
     id: newId(),
     tenantId: scoped,
-    name: input.name,
-    website: input.website ?? null,
-    industry: input.industry ?? null,
-    notes: input.notes ?? null,
+    name: short(input.name) as string,
+    website: short(input.website ?? null) ?? null,
+    industry: short(input.industry ?? null) ?? null,
+    notes: long(input.notes ?? null) ?? null,
     createdAt: now(),
   };
   if (repo) {
@@ -141,6 +150,10 @@ export async function updateOrganization(
   repo?: CrmRepository,
 ): Promise<Organization | null> {
   const scoped = requireTenantId(tenantId);
+  if (input.name !== undefined) short(input.name);
+  if (input.website !== undefined) short(input.website);
+  if (input.industry !== undefined) short(input.industry);
+  if (input.notes !== undefined) long(input.notes);
   if (repo) {
     return updateOrganizationInMemory(repo, scoped, id, input);
   }
@@ -193,10 +206,10 @@ export async function createContact(
   const row: Contact = {
     id: newId(),
     tenantId: scoped,
-    name: input.name,
-    email: input.email ?? null,
-    phone: input.phone ?? null,
-    jobTitle: input.jobTitle ?? null,
+    name: short(input.name) as string,
+    email: short(input.email ?? null) ?? null,
+    phone: short(input.phone ?? null) ?? null,
+    jobTitle: short(input.jobTitle ?? null) ?? null,
     organizationId: input.organizationId ?? null,
     status: input.status,
     createdAt: now(),
@@ -214,6 +227,10 @@ export async function updateContact(
   repo?: CrmRepository,
 ): Promise<Contact | null> {
   const scoped = requireTenantId(tenantId);
+  if (input.name !== undefined) short(input.name);
+  if (input.email !== undefined) short(input.email);
+  if (input.phone !== undefined) short(input.phone);
+  if (input.jobTitle !== undefined) short(input.jobTitle);
   if (repo) {
     return updateContactInMemory(repo, scoped, id, input);
   }
@@ -279,7 +296,7 @@ export async function createDeal(
   const row: Deal = {
     id: newId(),
     tenantId: scoped,
-    name: input.name,
+    name: short(input.name) as string,
     organizationId: input.organizationId ?? null,
     contactId: input.contactId ?? null,
     stage: input.stage,
@@ -306,6 +323,7 @@ export async function updateDeal(
   repo?: CrmRepository,
 ): Promise<Deal | null> {
   const scoped = requireTenantId(tenantId);
+  if (input.name !== undefined) short(input.name);
   if (repo) {
     return updateDealInMemory(repo, scoped, id, input);
   }
@@ -361,7 +379,7 @@ export async function createActivity(
     type: input.type,
     contactId: input.contactId ?? null,
     dealId: input.dealId ?? null,
-    description: input.description,
+    description: long(input.description) as string,
     occurredAt: input.occurredAt ?? null,
     dueDate: input.dueDate ?? null,
     done: input.done,
@@ -380,6 +398,7 @@ export async function updateActivity(
   repo?: CrmRepository,
 ): Promise<Activity | null> {
   const scoped = requireTenantId(tenantId);
+  if (input.description !== undefined) long(input.description);
   if (repo) {
     return updateActivityInMemory(repo, scoped, id, input);
   }

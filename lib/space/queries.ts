@@ -1,4 +1,5 @@
 import type { WriteOpts } from "../db/batch-transaction";
+import { assertText, MAX_BLOCK_TEXT, MAX_SHORT_TEXT } from "../input/text";
 import type { ViewKind } from "./constants";
 import {
   createBlockInMemory,
@@ -105,6 +106,20 @@ import {
 
 export { createMemorySpaceRepository } from "./queries-memory";
 
+function short(value: unknown) {
+  return assertText(value, MAX_SHORT_TEXT);
+}
+
+function assertBlockContent(content: unknown) {
+  if (!content || typeof content !== "object") {
+    return;
+  }
+  const text = (content as { text?: unknown }).text;
+  if (text !== undefined) {
+    assertText(text, MAX_BLOCK_TEXT);
+  }
+}
+
 export type {
   Block,
   CreateBlockInput,
@@ -181,7 +196,7 @@ export async function createPage(
     tenantId: scoped,
     parentId,
     type: input.type ?? "page",
-    title: input.title,
+    title: short(input.title) as string,
     icon: input.icon ?? null,
     position:
       input.position ??
@@ -201,6 +216,7 @@ export async function updatePage(
   repo?: SpaceRepository,
 ): Promise<Page | null> {
   const scoped = requireTenantId(tenantId);
+  if (input.title !== undefined) short(input.title);
   const updatedAt = now();
   return repo
     ? updatePageInMemory(repo, scoped, id, input, updatedAt)
@@ -252,6 +268,7 @@ export async function createBlock(
       "createBlock needs an explicit `position` when its writes are collected into a batch",
     );
   }
+  assertBlockContent(input.content);
   const row: Block = {
     id: newId(),
     tenantId: scoped,
@@ -274,6 +291,7 @@ export async function updateBlock(
   repo?: SpaceRepository,
 ): Promise<Block | null> {
   const scoped = requireTenantId(tenantId);
+  if (input.content !== undefined) assertBlockContent(input.content);
   return repo
     ? updateBlockInMemory(repo, scoped, id, input)
     : updateBlockInDrizzle(scoped, id, input);

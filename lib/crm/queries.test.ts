@@ -1102,3 +1102,23 @@ describe("a batched createDeal", () => {
     expect(batches).toHaveLength(0);
   });
 });
+
+describe("text ceilings", () => {
+  it("rejects a 501-character organization name in the memory repo", async () => {
+    const memory = repo();
+    await expect(
+      createOrganization(tenantA, { name: "a".repeat(501) }, memory),
+    ).rejects.toThrow("text too long");
+  });
+
+  it("treats % in a search as a literal in memory", async () => {
+    const memory = repo();
+    const percent = await createOrganization(
+      tenantA,
+      { name: "100% Real" },
+      memory,
+    );
+    await createOrganization(tenantA, { name: "Acme" }, memory);
+    expect(await listOrganizations(tenantA, memory, "%")).toEqual([percent]);
+  });
+});

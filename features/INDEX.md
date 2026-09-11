@@ -125,12 +125,12 @@ Long pole: 5.1 → 5.2 → 5.7. 5.3–5.6 may run in any order after 5.2 (disjoi
 
 Flag-gated credentials signup, `member` role with an empty personal tenant, logged-in change-password. Owner and demo unchanged. No mailer, OAuth, forgot-password, extra members. Design: [2026-09-11-accounts-design.md](../docs/superpowers/specs/2026-09-11-accounts-design.md).
 
-| ID  | Feature                                                                              | Status  | Depends on |
-| --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
-| 6.1 | [Member role + signUp helper](./phase-6-accounts/6.1-member-role-signup.md)          | completed | 0.5        |
-| 6.2 | [Signup page and auto sign-in](./phase-6-accounts/6.2-signup-page.md)                | completed | 6.1        |
-| 6.3 | [Change password and settings](./phase-6-accounts/6.3-change-password-settings.md)   | completed | 6.2        |
-| 6.4 | [Playwright smoke](./phase-6-accounts/6.4-playwright-smoke.md)                        | completed | 6.2, 6.3   |
+| ID  | Feature                                                                            | Status    | Depends on |
+| --- | ---------------------------------------------------------------------------------- | --------- | ---------- |
+| 6.1 | [Member role + signUp helper](./phase-6-accounts/6.1-member-role-signup.md)        | completed | 0.5        |
+| 6.2 | [Signup page and auto sign-in](./phase-6-accounts/6.2-signup-page.md)              | completed | 6.1        |
+| 6.3 | [Change password and settings](./phase-6-accounts/6.3-change-password-settings.md) | completed | 6.2        |
+| 6.4 | [Playwright smoke](./phase-6-accounts/6.4-playwright-smoke.md)                     | completed | 6.2, 6.3   |
 
 **Phase 6 is complete** — 6.1–6.4 shipped: flag-gated signup, the `member` role with its own empty tenant, change-password on `/settings`, and the Accounts Playwright smoke.
 
@@ -140,12 +140,12 @@ Long pole: 6.1 → 6.2 → 6.3 → 6.4. Do not parallel any two Accounts feature
 
 Harden the modular monolith already shipped: ADRs, atomic demo reset, `tenantId` indexes, split query modules, client/server import boundary. No new app, no RLS, no session revocation. Design: [2026-09-11-architecture-design.md](../docs/superpowers/specs/2026-09-11-architecture-design.md).
 
-| ID  | Feature                                                                              | Status  | Depends on |
-| --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
-| 7.1 | [Architecture ADRs](./phase-7-architecture/7.1-architecture-adrs.md)                 | completed | nothing    |
-| 7.2 | [Atomic demo reset](./phase-7-architecture/7.2-atomic-demo-reset.md)                 | completed | 0.5        |
-| 7.3 | [tenantId indexes](./phase-7-architecture/7.3-tenant-id-indexes.md)                  | completed | 7.2        |
-| 7.4 | [Split query modules](./phase-7-architecture/7.4-split-query-modules.md)             | completed | 7.2        |
+| ID  | Feature                                                                               | Status    | Depends on |
+| --- | ------------------------------------------------------------------------------------- | --------- | ---------- |
+| 7.1 | [Architecture ADRs](./phase-7-architecture/7.1-architecture-adrs.md)                  | completed | nothing    |
+| 7.2 | [Atomic demo reset](./phase-7-architecture/7.2-atomic-demo-reset.md)                  | completed | 0.5        |
+| 7.3 | [tenantId indexes](./phase-7-architecture/7.3-tenant-id-indexes.md)                   | completed | 7.2        |
+| 7.4 | [Split query modules](./phase-7-architecture/7.4-split-query-modules.md)              | completed | 7.2        |
 | 7.5 | [Client/server import boundary](./phase-7-architecture/7.5-client-server-boundary.md) | completed | 7.4        |
 
 **Phase 7 is complete** — 7.1–7.5 shipped: ADRs, atomic demo reset, `tenantId` indexes, query-module split, client/server import boundary.
@@ -156,11 +156,11 @@ Long pole: 7.1 → 7.2 → 7.3 → 7.4 → 7.5. Do not parallel. Do not add RLS,
 
 Close three claimed interfaces that are still shallow: case-insensitive email uniqueness in Postgres, password minimum in Unicode code points, one `PERSON_FIELDS` catalog. No new app, no RLS, no OAuth. Design: [2026-09-11-integrity-design.md](../docs/superpowers/specs/2026-09-11-integrity-design.md).
 
-| ID  | Feature                                                                              | Status  | Depends on |
-| --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
-| 8.1 | [Case-insensitive unique email](./phase-8-integrity/8.1-case-insensitive-email.md)   | completed | 6.1        |
-| 8.2 | [Shared password policy](./phase-8-integrity/8.2-password-policy.md)                 | completed | 6.3        |
-| 8.3 | [Client-safe person field catalog](./phase-8-integrity/8.3-person-field-catalog.md)  | completed | 7.5, 3.4   |
+| ID  | Feature                                                                             | Status    | Depends on |
+| --- | ----------------------------------------------------------------------------------- | --------- | ---------- |
+| 8.1 | [Case-insensitive unique email](./phase-8-integrity/8.1-case-insensitive-email.md)  | completed | 6.1        |
+| 8.2 | [Shared password policy](./phase-8-integrity/8.2-password-policy.md)                | completed | 6.3        |
+| 8.3 | [Client-safe person field catalog](./phase-8-integrity/8.3-person-field-catalog.md) | completed | 7.5, 3.4   |
 
 **Phase 8 is complete** — 8.1–8.3 shipped: the `lower(email)` unique index, the shared password policy in code points, and one client-safe `PERSON_FIELDS` catalog.
 
@@ -170,14 +170,15 @@ Long pole: 8.1 → 8.2 → 8.3, all shipped. Do not add RLS, OAuth, a mailer, or
 
 Close six AppSec holes: known HIGH in `drizzle-orm`, isolation headers, login timing oracle, auth throttle, bounded import, text ceilings + LIKE escape. No new app, no RLS, no session revocation. Design: [2026-09-11-security-design.md](../docs/superpowers/specs/2026-09-11-security-design.md).
 
-| ID  | Feature                                                                              | Status  | Depends on |
-| --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
-| 9.1 | [Patch drizzle-orm + CI SCA](./phase-9-security/9.1-drizzle-advisory-sca.md)         | completed | nothing    |
-| 9.2 | [Isolation headers](./phase-9-security/9.2-isolation-headers.md)                     | completed | nothing    |
-| 9.3 | [Dummy-hash login verify](./phase-9-security/9.3-login-dummy-hash.md)                | completed | nothing    |
-| 9.4 | [Auth attempt throttle](./phase-9-security/9.4-auth-throttle.md)                     | completed | 9.3        |
-| 9.5 | [Bounded Rolodex import](./phase-9-security/9.5-bounded-import.md)                    | completed | 8.3        |
-| 9.6 | [Text ceilings + LIKE escape](./phase-9-security/9.6-text-contracts.md)              | specced | nothing    |
+| ID  | Feature                                                                      | Status    | Depends on |
+| --- | ---------------------------------------------------------------------------- | --------- | ---------- |
+| 9.1 | [Patch drizzle-orm + CI SCA](./phase-9-security/9.1-drizzle-advisory-sca.md) | completed | nothing    |
+| 9.2 | [Isolation headers](./phase-9-security/9.2-isolation-headers.md)             | completed | nothing    |
+| 9.3 | [Dummy-hash login verify](./phase-9-security/9.3-login-dummy-hash.md)        | completed | nothing    |
+| 9.4 | [Auth attempt throttle](./phase-9-security/9.4-auth-throttle.md)             | completed | 9.3        |
+| 9.5 | [Bounded Rolodex import](./phase-9-security/9.5-bounded-import.md)           | completed | 8.3        |
+| 9.6 | [Text ceilings + LIKE escape](./phase-9-security/9.6-text-contracts.md)      | completed | nothing    |
 
-Phase 9 is sequential. Do not run two Security features in parallel. 9.3 and 9.4 both edit `authorize.ts`. Do not add RLS, OAuth, a mailer, MFA, a `script-src` CSP, or rename `middleware.ts`. Implement 9.1 only after this docs PR merges.
+**Phase 9 is complete** — 9.1–9.6 shipped: drizzle-orm patch + CI audit, isolation headers, dummy-hash login, auth throttle, bounded Rolodex import, text ceilings + LIKE escape.
 
+Phase 9 is sequential. Do not run two Security features in parallel. Do not add RLS, OAuth, a mailer, MFA, a `script-src` CSP, or rename `middleware.ts`.

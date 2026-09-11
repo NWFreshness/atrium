@@ -1,13 +1,4 @@
-import {
-  and,
-  desc,
-  eq,
-  getTableColumns,
-  ilike,
-  max,
-  or,
-  sql,
-} from "drizzle-orm";
+import { and, desc, eq, getTableColumns, max, or, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import type { WriteOpts } from "../db/batch-transaction";
 import { type DealStage } from "./constants";
@@ -28,6 +19,7 @@ import {
   organizationSearchTerm,
 } from "./queries-shared";
 import { activities, contacts, deals, organizations } from "./schema";
+import { escapeIlike } from "../input/text";
 
 function requireCrmDb() {
   if (!process.env.DATABASE_URL) {
@@ -45,16 +37,34 @@ function tenantRow(
   return and(eq(table.tenantId, tenantId), eq(table.id, id));
 }
 
+function containsPattern(term: string) {
+  return `%${escapeIlike(term)}%`;
+}
+
+/** ILIKE with ESCAPE '\' so user %, _, and \ are literals. */
+function ilikeContains(
+  column:
+    | typeof organizations.name
+    | typeof organizations.website
+    | typeof organizations.industry
+    | typeof contacts.name
+    | typeof contacts.email
+    | typeof contacts.jobTitle
+    | typeof deals.name,
+  term: string,
+) {
+  return sql`${column} ilike ${containsPattern(term)} escape '\\'`;
+}
+
 function organizationSearchSql(q?: string) {
   const term = organizationSearchTerm(q);
   if (!term) {
     return undefined;
   }
-  const pattern = `%${term}%`;
   return or(
-    ilike(organizations.name, pattern),
-    ilike(organizations.website, pattern),
-    ilike(organizations.industry, pattern),
+    ilikeContains(organizations.name, term),
+    ilikeContains(organizations.website, term),
+    ilikeContains(organizations.industry, term),
   );
 }
 
@@ -63,11 +73,10 @@ function contactSearchSql(q?: string) {
   if (!term) {
     return undefined;
   }
-  const pattern = `%${term}%`;
   return or(
-    ilike(contacts.name, pattern),
-    ilike(contacts.email, pattern),
-    ilike(contacts.jobTitle, pattern),
+    ilikeContains(contacts.name, term),
+    ilikeContains(contacts.email, term),
+    ilikeContains(contacts.jobTitle, term),
   );
 }
 
@@ -76,11 +85,10 @@ function dealSearchSql(q?: string) {
   if (!term) {
     return undefined;
   }
-  const pattern = `%${term}%`;
   return or(
-    ilike(deals.name, pattern),
-    ilike(organizations.name, pattern),
-    ilike(contacts.name, pattern),
+    ilikeContains(deals.name, term),
+    ilikeContains(organizations.name, term),
+    ilikeContains(contacts.name, term),
   );
 }
 
