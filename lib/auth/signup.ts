@@ -108,14 +108,18 @@ export async function signUp(
   const email = normalizeEmail(input.email);
   const password = assertPasswordStrength(input.password);
 
-  if (await deps.repo.findByEmail(email)) {
+  // Read the repo once: `createDefaultSignUpDeps` builds it lazily, so accessing
+  // `deps.repo` per statement would create a second Neon client mid-signup.
+  const repo = deps.repo;
+
+  if (await repo.findByEmail(email)) {
     throw new SignUpError("unavailable");
   }
 
   const hash = deps.hash ?? hashPassword;
   const passwordHash = await hash(password);
 
-  return deps.repo.createMember({ email, passwordHash });
+  return repo.createMember({ email, passwordHash });
 }
 
 export type MemorySignUpRepository = SignUpRepository & {

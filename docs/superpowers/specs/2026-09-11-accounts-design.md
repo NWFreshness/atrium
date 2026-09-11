@@ -29,6 +29,7 @@ Self-serve credentials accounts on the Auth.js stack that already exists. No new
 | --- | --- | --- |
 | Auth library | Keep Auth.js Credentials + JWT | Signup is one action; ripping 0.3 is not worth it |
 | Email proof | None this phase | No mailer; instant access after signup |
+| Email matching | Case-insensitive on both sides (signup's duplicate check and login's lookup); the address is stored as typed | One mailbox must not become two accounts, and the member must not be locked out by a case slip — there is no password reset this phase |
 | Openness | `AUTH_SIGNUP_ENABLED`; missing or not `true` is closed | Fail closed on a public Vercel deploy |
 | After signup | Auto sign-in to `/` | Password was just typed |
 | Password change | Logged-in `/settings` for every role | No mailer required |

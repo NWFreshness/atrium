@@ -67,9 +67,35 @@ describe("the login page advertises signup only when it is open", () => {
     expect(loginPage).toContain("Create an account");
   });
 
+  it("puts that link behind the flag, not just in the footer", () => {
+    // A regression that rendered the link unconditionally would still pass a
+    // plain `toContain` check, so assert the ternary that gates it.
+    expect(loginPage).toMatch(
+      /signupOpen\s*\?[\s\S]{0,200}href="\/signup"[\s\S]{0,200}Signups closed/,
+    );
+  });
+
   it("drops the retired no-signup copy", () => {
     expect(loginPage).not.toContain("no signup");
     expect(loginPage).not.toContain("Two accounts");
+  });
+});
+
+describe("the signup form cannot be reached when the flag is off", () => {
+  it("gates the form itself, not only the surrounding copy", () => {
+    expect(signupPage).toMatch(/open\s*\?[\s\S]{0,600}<SignUpForm \/>/);
+  });
+
+  it("replaces the submit button once the account exists", () => {
+    // Otherwise the member re-submits, hits `unavailable`, and sees a message
+    // that contradicts "account created".
+    expect(signupForm).toContain("state.accountCreated");
+    expect(signupForm).toContain('href="/login"');
+  });
+
+  it("checks the confirmation in the browser before the round trip", () => {
+    expect(signupForm).toContain("PASSWORDS_DO_NOT_MATCH");
+    expect(signupForm).toContain("event.preventDefault()");
   });
 });
 

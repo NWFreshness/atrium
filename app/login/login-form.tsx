@@ -1,11 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
-import { login } from "./actions";
+import { login, type LoginState } from "./actions";
 import styles from "../auth-stage.module.css";
 
+const INITIAL: LoginState = { error: null, email: "" };
+
 export function LoginForm() {
-  const [error, formAction, pending] = useActionState(login, null);
+  const [state, formAction, pending] = useActionState(login, INITIAL);
 
   return (
     <form action={formAction}>
@@ -16,6 +18,7 @@ export function LoginForm() {
           type="email"
           autoComplete="username"
           placeholder="you@atrium.local"
+          defaultValue={state.email}
           required
         />
       </label>
@@ -29,9 +32,9 @@ export function LoginForm() {
           required
         />
       </label>
-      {error ? (
+      {state.error ? (
         <p className={styles["auth-alert"]} role="alert">
-          {error}
+          {state.error}
         </p>
       ) : null}
       <button

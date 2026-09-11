@@ -19,6 +19,9 @@ export type SignUpState = {
   error: string | null;
   /** Kept so a rejected form does not make the member retype their address. */
   email: string;
+  /** The member exists; only the session failed. The form must stop offering to
+   * create the account again. */
+  accountCreated?: boolean;
 };
 
 function field(formData: FormData, name: string): string {
@@ -58,8 +61,13 @@ export async function createAccount(
   } catch (error) {
     if (error instanceof AuthError) {
       // The member was created; only the session failed. Saying "could not
-      // create account" here would invite a duplicate signup attempt.
-      return { error: SIGN_IN_FAILED_AFTER_SIGNUP, email };
+      // create account" here would invite a duplicate signup attempt, which
+      // would then fail as unavailable and contradict this message.
+      return {
+        error: SIGN_IN_FAILED_AFTER_SIGNUP,
+        email,
+        accountCreated: true,
+      };
     }
     // `signIn` signals success by throwing the redirect. Let it through.
     throw error;
