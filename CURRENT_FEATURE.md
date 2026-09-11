@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** 9.3 (dummy-hash login verify) is complete on this branch. Next implementable unit is 9.4 after this PR merges.
+**None in progress.** 9.4 (auth attempt throttle) is complete on this branch. Next implementable unit is 9.5 after this PR merges.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 9 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`. A `script-src` CSP stays out until a feature has to touch `middleware.ts`.
 
@@ -365,3 +365,9 @@ Verified: `env -u DATABASE_URL npm test` 666 passed (104 files, up from 661/103)
 Unknown emails still run `verify` against `DUMMY_PASSWORD_HASH` (a `$2b$10$` bcrypt modular crypt; plaintext never in the repo). Empty email/password still skip `verify`. A dummy hit cannot mint a session (`!user || !matches`). `lib/db/password.ts` unchanged.
 
 Verified: `env -u DATABASE_URL npm test` 668 passed (104 files, up from 666/104); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0. No Playwright. Next is 9.4 after this PR merges.
+
+### 9.4 Auth attempt throttle (completed)
+
+`auth_throttles` (no `tenantId`) plus memory/Drizzle stores. 5 failures / 15 min per email, 20 per IP. Login skips bcrypt when blocked; signup returns generic `unavailable` and does not insert. Auth.js `authorize(credentials, request)` is used; IP is the first `x-forwarded-for` hop. Migration `0007_jittery_retro_girl.sql`.
+
+Verified: `env -u DATABASE_URL npm test` 679 passed (105 files); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0. No Playwright. `db:migrate` is post-merge. Next is 9.5 after this PR merges.

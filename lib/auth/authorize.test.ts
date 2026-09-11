@@ -6,6 +6,8 @@ import {
   type CredentialUser,
   type PasswordVerifier,
 } from "./authorize";
+import { createMemoryThrottleStore } from "./throttle-memory";
+import { recordFailure } from "./throttle";
 
 const owner: CredentialUser = {
   id: "user-owner",
@@ -131,5 +133,62 @@ describe("authorizeCredentials", () => {
     );
 
     expect(result?.tenantId).toBe(owner.tenantId);
+  });
+
+  it("does not call verify when the email is throttled", async () => {
+    const store = createMemoryThrottleStore();
+    const now = new Date("2026-09-11T12:00:00.000Z");
+    const { verify, hashes } = recordingVerify(async () => true);
+    const attempt = { email: owner.email };
+    for (let i = 0; i < 5; i += 1) {
+      await recordFailure(store, attempt, () => now);
+    }
+
+    const result = await authorizeCredentials(
+      { email: owner.email, password: "any-password" },
+      {
+        async findByEmail() {
+          throw new Error("lookup must not run");
+        },
+      },
+      verify,
+      { store, now: () => now },
+    );
+
+    expect(result).toBeNull();
+    expect(hashes).toEqual([]);
+  });
+
+  it("blocks the sixth failed login in the window", async () => {
+    const store = createMemoryThrottleStore();
+    const now = new Date("2026-09-11T12:00:00.000Z");
+    const { verify } = recordingVerify(async () => false);
+    const lookup = {
+      async findByEmail() {
+        return { ...owner, passwordHash: "hash" };
+      },
+    };
+
+    for (let i = 0; i < 5; i += 1) {
+      expect(
+        await authorizeCredentials(
+          { email: owner.email, password: "wrong" },
+          lookup,
+          verify,
+          { store, now: () => now },
+        ),
+      ).toBeNull();
+    }
+
+    const { verify: blocked, hashes } = recordingVerify(async () => true);
+    expect(
+      await authorizeCredentials(
+        { email: owner.email, password: "wrong" },
+        lookup,
+        blocked,
+        { store, now: () => now },
+      ),
+    ).toBeNull();
+    expect(hashes).toEqual([]);
   });
 });

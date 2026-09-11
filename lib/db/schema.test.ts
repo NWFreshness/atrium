@@ -40,6 +40,7 @@ const PLATFORM_TABLES = [
   "accounts",
   "sessions",
   "verificationTokens",
+  "authThrottles",
 ] as const;
 
 /** The statements of a generated migration, comments stripped. */
@@ -190,6 +191,15 @@ describe("the tenantId index migration", () => {
   });
 });
 
+describe("auth_throttles", () => {
+  it("has no tenantId and uniques subject", () => {
+    const columns = getTableColumns(schemaBarrel.authThrottles);
+    expect("tenantId" in columns).toBe(false);
+    expect(columns.subject.isUnique).toBe(true);
+    expect(getTableConfig(schemaBarrel.authThrottles).indexes).toEqual([]);
+  });
+});
+
 describe("the lower(email) unique index", () => {
   const unique = getTableConfig(users).indexes.filter(
     (entry) => entry.config.unique,
@@ -233,6 +243,28 @@ describe("the lower(email) migration", () => {
   it("rewrites nothing else — no table, enum, or policy churn", () => {
     expect(source).not.toMatch(
       /DROP TABLE|DROP TYPE|ALTER TYPE|ALTER TABLE "users" ADD|CREATE POLICY|ROW LEVEL SECURITY|DELETE FROM|TRUNCATE/i,
+    );
+  });
+});
+
+describe("the auth_throttles migration", () => {
+  const { source, statements } = migrationStatements(
+    "0007_jittery_retro_girl.sql",
+  );
+
+  it("creates auth_throttles additively with IF NOT EXISTS", () => {
+    expect(statements).toHaveLength(1);
+    expect(statements[0]).toContain(
+      'CREATE TABLE IF NOT EXISTS "auth_throttles"',
+    );
+    expect(statements[0]).toContain(
+      'CONSTRAINT "auth_throttles_subject_unique" UNIQUE("subject")',
+    );
+  });
+
+  it("does not drop users or tenants or add RLS", () => {
+    expect(source).not.toMatch(
+      /DROP TABLE|DROP TYPE|ALTER TYPE|CREATE POLICY|ROW LEVEL SECURITY|DELETE FROM|TRUNCATE/i,
     );
   });
 });

@@ -122,6 +122,18 @@ export const importantDateTypeEnum = rolodex.importantDateTypeEnum;
 export const giftKindEnum = rolodex.giftKindEnum;
 export const connectionKindEnum = rolodex.connectionKindEnum;
 
+export const authThrottles = pgTable("auth_throttles", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  subject: text("subject").notNull().unique(),
+  failedCount: integer("failedCount").notNull(),
+  windowStartedAt: timestamp("windowStartedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).notNull(),
+});
+
 export const verificationTokens = pgTable(
   "verificationTokens",
   {
