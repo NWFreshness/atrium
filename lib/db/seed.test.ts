@@ -26,9 +26,10 @@ const seedEnv = {
 };
 
 describe("user roles", () => {
-  it("accepts only owner and demo", () => {
+  it("accepts owner, demo, and member", () => {
     expect(isUserRole("owner")).toBe(true);
     expect(isUserRole("demo")).toBe(true);
+    expect(isUserRole("member")).toBe(true);
     expect(isUserRole("admin")).toBe(false);
     expect(isUserRole("user")).toBe(false);
   });

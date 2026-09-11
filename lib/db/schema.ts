@@ -10,7 +10,7 @@ import * as crm from "../crm/schema";
 import * as rolodex from "../rolodex/schema";
 import * as space from "../space/schema";
 
-export const userRoles = ["owner", "demo"] as const;
+export const userRoles = ["owner", "demo", "member"] as const;
 export type UserRole = (typeof userRoles)[number];
 
 export const userRoleEnum = pgEnum("user_role", userRoles);

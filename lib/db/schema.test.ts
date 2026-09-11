@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  accounts,
-  sessions,
-  tenants,
-  userRoleEnum,
-  users,
-} from "./schema";
+import { accounts, sessions, tenants, userRoleEnum, users } from "./schema";
 
 describe("schema", () => {
   it("defines tenants, users, accounts, and sessions", () => {
@@ -15,8 +9,8 @@ describe("schema", () => {
     expect(sessions).toBeDefined();
   });
 
-  it("restricts user roles to owner and demo", () => {
-    expect(userRoleEnum.enumValues).toEqual(["owner", "demo"]);
+  it("restricts user roles to owner, demo, and member", () => {
+    expect(userRoleEnum.enumValues).toEqual(["owner", "demo", "member"]);
   });
 
   it("does not export crm, space, or rolodex tables", async () => {

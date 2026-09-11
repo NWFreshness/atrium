@@ -1,6 +1,8 @@
 # Current feature
 
-**None in progress.** Phase 6 Accounts specs (6.1–6.4) are written. Next implementable unit is 6.1 after the docs PR merges.
+**6.1 Member role and signUp helper** — [spec](./features/phase-6-accounts/6.1-member-role-signup.md) — status: completed, PR open.
+
+Phase 6 Accounts: 6.2–6.4 still specced. Do not start 6.2 until 6.1 merges.
 
 ---
 
@@ -218,4 +220,8 @@ Phase 5 closes with two gates, both built to bite. `e2e/workroom.spec.ts`: the l
 
 ### Phase 6 Accounts specs (written, not implemented)
 
-Four feature specs in `features/phase-6-accounts/` (6.1–6.4): member role + `signUp` helper, signup page + auto sign-in, change-password `/settings`, Playwright smoke. Design: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Parent design amended. Next implementable unit is 6.1 after this docs PR merges. No application code in this commit.
+Four feature specs in `features/phase-6-accounts/` (6.1–6.4): member role + `signUp` helper, signup page + auto sign-in, change-password `/settings`, Playwright smoke. Design: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Parent design amended. No application code in that commit.
+
+### 6.1 Member role and signUp helper (completed)
+
+Schema + helper for Phase 6. `lib/db/schema.ts` widens `userRoles` to `["owner","demo","member"]`; migration `drizzle/0004_heavy_earthquake.sql` is the single idempotent statement `ALTER TYPE "public"."user_role" ADD VALUE IF NOT EXISTS 'member';` (drizzle-kit generated the additive form unprompted). New `lib/auth/signup.ts`: `isSignupEnabled` (only the literal `"true"` opens), `normalizeEmail`, `assertPasswordStrength` (≥12 chars, ≤72 bytes), `signUp({email,password}, {env,repo,hash})` with typed `SignUpError` codes `closed | invalid_email | weak_password | password_too_long | unavailable`, plus memory and Drizzle repositories. Duplicate email is detected case-insensitively (`lower(email)`) because login is exact-match and this phase has no password reset — but the stored value stays verbatim. The real insert is `db.batch([insert tenant, insert user])`: neon-http has no `db.transaction()` (it throws), while `batch` runs both statements in one Neon transaction, so a failing member insert leaves no orphan tenant; the tenant id is generated in app code so both statements can be built up front. Two independent subagent reviews ran before commit: spec compliance PASS on all ten acceptance criteria; the quality review raised four should-fix items, all fixed — case-insensitive duplicate detection, `password_too_long` for the bcrypt 72-byte aliasing bug, lazy `createDefaultSignUpDeps()` so a closed signup without `DATABASE_URL` throws `closed` rather than the DB error (fail-closed), an anchored email regex, an honest rename of the memory "rollback" test, and new stub-`Database` tests for the 23505 → `unavailable` mapping (by code, by message, and an unrelated error rethrown). Known gaps, recorded in the spec: the `users_email_unique` index stays case-sensitive, so concurrent case-variant signups can still race the pre-check (a `lower(email)` unique index is the follow-up), and the batch path has never run against a real database — 6.2 is its first caller. No `/signup` route yet (criterion 10). Controller: `env -u DATABASE_URL npm test` 536 passed (91 files), `AUTH_SECRET=ci-build-placeholder npm run build` exit 0, route table unchanged. Spec PASS.
