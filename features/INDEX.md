@@ -8,19 +8,21 @@ Groove: [docs/superpowers/specs/2026-09-09-groove-design.md](../docs/superpowers
 Accounts: [docs/superpowers/specs/2026-09-11-accounts-design.md](../docs/superpowers/specs/2026-09-11-accounts-design.md)
 Architecture: [docs/superpowers/specs/2026-09-11-architecture-design.md](../docs/superpowers/specs/2026-09-11-architecture-design.md)
 Integrity: [docs/superpowers/specs/2026-09-11-integrity-design.md](../docs/superpowers/specs/2026-09-11-integrity-design.md)
+Security: [docs/superpowers/specs/2026-09-11-security-design.md](../docs/superpowers/specs/2026-09-11-security-design.md)
 In progress: [CURRENT_FEATURE.md](../CURRENT_FEATURE.md)
 
 Only one feature `in_progress`. Later phases get specs when that phase starts.
 
 ## Build order
 
-Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7 → 6.1 → 6.2 → 6.3 → 6.4 → 7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 8.1 → 8.2 → 8.3.
+Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7 → 6.1 → 6.2 → 6.3 → 6.4 → 7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 8.1 → 8.2 → 8.3 → 9.1 → 9.2 → 9.3 → 9.4 → 9.5 → 9.6.
 3.4 / 3.6 / 3.7 start after 3.3 (same person page — do not parallel). 3.8 after 3.7.
 Phase 3 is sequential. Phase 4 is sequential. Do not run two Groove features in parallel.
 Phase 5 is sequential through 5.2 and the QA gate 5.7; the per-app passes 5.3–5.6 may run in any order after 5.2 (disjoint CSS module sets), but must all land before 5.7.
 Phase 6 is sequential. Do not run two Accounts features in parallel.
 Phase 7 is sequential. Do not run two Architecture features in parallel. Do not add RLS, extract Groove, or unify the drag libraries.
 Phase 8 is sequential. Do not run two Integrity features in parallel. Do not add RLS, OAuth, a mailer, or rename `middleware.ts`.
+Phase 9 is sequential. Do not run two Security features in parallel. Do not add RLS, OAuth, a mailer, MFA, a `script-src` CSP, or rename `middleware.ts`.
 
 ### Phase 0 — Atrium platform
 
@@ -162,5 +164,20 @@ Close three claimed interfaces that are still shallow: case-insensitive email un
 
 **Phase 8 is complete** — 8.1–8.3 shipped: the `lower(email)` unique index, the shared password policy in code points, and one client-safe `PERSON_FIELDS` catalog.
 
-Long pole: 8.1 → 8.2 → 8.3, all shipped. Nothing is queued; a new phase starts as a docs PR (spec set plus a design amend), not as an implementation. Do not add RLS, OAuth, a mailer, or rename `middleware.ts` without a spec.
+Long pole: 8.1 → 8.2 → 8.3, all shipped. Do not add RLS, OAuth, a mailer, or rename `middleware.ts` without a spec.
+
+### Phase 9 — Security
+
+Close six AppSec holes: known HIGH in `drizzle-orm`, isolation headers, login timing oracle, auth throttle, bounded import, text ceilings + LIKE escape. No new app, no RLS, no session revocation. Design: [2026-09-11-security-design.md](../docs/superpowers/specs/2026-09-11-security-design.md).
+
+| ID  | Feature                                                                              | Status  | Depends on |
+| --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
+| 9.1 | [Patch drizzle-orm + CI SCA](./phase-9-security/9.1-drizzle-advisory-sca.md)         | specced | nothing    |
+| 9.2 | [Isolation headers](./phase-9-security/9.2-isolation-headers.md)                     | specced | nothing    |
+| 9.3 | [Dummy-hash login verify](./phase-9-security/9.3-login-dummy-hash.md)                | specced | nothing    |
+| 9.4 | [Auth attempt throttle](./phase-9-security/9.4-auth-throttle.md)                     | specced | 9.3        |
+| 9.5 | [Bounded Rolodex import](./phase-9-security/9.5-bounded-import.md)                    | specced | 8.3        |
+| 9.6 | [Text ceilings + LIKE escape](./phase-9-security/9.6-text-contracts.md)              | specced | nothing    |
+
+Phase 9 is sequential. Do not run two Security features in parallel. 9.3 and 9.4 both edit `authorize.ts`. Do not add RLS, OAuth, a mailer, MFA, a `script-src` CSP, or rename `middleware.ts`. Implement 9.1 only after this docs PR merges.
 

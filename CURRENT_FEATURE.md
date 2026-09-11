@@ -1,8 +1,8 @@
 # Current feature
 
-**None in progress.** Phase 8 Integrity is complete: 8.1 (lower(email) unique index), 8.2 (shared password policy in code points) and 8.3 (one client-safe `PERSON_FIELDS` catalog) are merged. Nothing is queued — the next unit of work starts as a phase spec set (a docs PR), not as an implementation.
+**None in progress.** Phase 9 Security specs are written (9.1–9.6), not implemented. Next implementable unit is 9.1 after this docs PR merges.
 
-Session decision, made in 6.3: **no revocation, by design.** Phase 8 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`.
+Session decision, made in 6.3: **no revocation, by design.** Phase 9 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`. A `script-src` CSP stays out until a feature has to touch `middleware.ts`.
 
 ---
 
@@ -343,3 +343,7 @@ Rolodex import has one `PERSON_FIELDS`. `lib/rolodex/person-fields.ts` holds the
 Four probes, each reversed: a local array back in the dialog fails the only-definition case, re-declaring it in `import.ts` fails the same case, dropping `required` fails the required case, and a value import inside the catalog fails both this feature's test and 7.5's `lib/client-boundary.test.ts` (which reports `lib/rolodex/person-fields.ts → ./queries`). That last one is the point: the gate that forced the duplicate catches the duplicate coming back.
 
 `env -u DATABASE_URL npm test` 661 passed (103 files, up from 657/102); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0; no new dependencies, no route, no migration, and the client-boundary gate was not widened. Limits: no Playwright (no route; the Rolodex e2e spec does not grow an import journey), and `required` is documentation — nothing read it before or reads it now, which is exactly why the dialog's drift went unnoticed until 7.5. Phase 8 is complete: 8.1 lower(email) uniqueness, 8.2 the password floor in code points, 8.3 one catalog. Nothing is queued.
+
+### Phase 9 specs (written, not implemented)
+
+Six feature specs in `features/phase-9-security/` (9.1–9.6): patch drizzle-orm + CI `npm audit --omit=dev --audit-level=high`, isolation headers, dummy-hash login verify, auth attempt throttle, bounded Rolodex import, text ceilings + LIKE escape. Design: `docs/superpowers/specs/2026-09-11-security-design.md`. Stay a modular monolith. No RLS, no session revocation, no OAuth, no mailer, no MFA, no `script-src` CSP, no `middleware.ts` rename. Next implementable unit is 9.1 after this docs PR merges.

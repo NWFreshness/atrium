@@ -151,7 +151,7 @@ Owner tenant: empty. No welcome records.
 
 Each of the four applications is a phase. Foundation is phase 0 because auth, tenancy, and the shell must exist first.
 
-Build order is 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8. One feature at a time. No parallel features that touch the same files.
+Build order is 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9. One feature at a time. No parallel features that touch the same files.
 
 ### Phase 0 — Atrium platform
 
@@ -221,6 +221,12 @@ Feature specs: `features/phase-7-architecture/` (7.1–7.5). Design: [2026-09-11
 Close three claimed interfaces that are still shallow: email uniqueness is case-insensitive in application code and byte-exact in Postgres; the password minimum counts UTF-16 units so six emoji pass as 12; Rolodex import keeps two `PERSON_FIELDS` lists that have already drifted. No new app, no RLS, no OAuth. Design: [2026-09-11-integrity-design.md](./2026-09-11-integrity-design.md).
 
 Feature specs: `features/phase-8-integrity/` (8.1–8.3). Board: `features/INDEX.md`.
+
+### Phase 9 — Security
+
+Close six AppSec holes the live tree still leaves shallow: a known HIGH in `drizzle-orm`, missing isolation headers, a login timing oracle, no auth throttle (Phase 6 residual), unbounded Rolodex import, unbounded stored text and raw LIKE metacharacters. No new app, no RLS, no session revocation, no `script-src` CSP. Design: [2026-09-11-security-design.md](./2026-09-11-security-design.md).
+
+Feature specs: `features/phase-9-security/` (9.1–9.6). Board: `features/INDEX.md`.
 
 ---
 
@@ -297,4 +303,4 @@ Do not add TanStack packages until the feature that uses them.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-Progress: `features/INDEX.md`. Phases 0–7 complete. Phase 8 Integrity specs 8.1–8.3 exist. Next implementable unit is 8.1, after the Phase 8 docs PR merges.
+Progress: `features/INDEX.md`. Phases 0–8 complete. Phase 9 Security specs 9.1–9.6 exist. Next implementable unit is 9.1, after the Phase 9 docs PR merges.
