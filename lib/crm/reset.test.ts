@@ -1,4 +1,11 @@
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it } from "vitest";
+import { createWriteBatch } from "../db/batch-transaction";
+import {
+  createRecordingDb,
+  statementShape,
+  statementSql,
+} from "../db/batch-test-helpers";
 import {
   createMemoryCrmRepository,
   createOrganization,
@@ -124,5 +131,49 @@ describe("registerCrmDemoResetter", () => {
 
     const orgs = await listOrganizations(demoTenant, committed);
     expect(orgs.some((org) => org.name === "Stale Acme")).toBe(true);
+  });
+});
+
+describe("resetCrm inside a reset batch", () => {
+  it("collects the demo tenant's deletes and its reseed as one batch", async () => {
+    const { db, batches } = createRecordingDb();
+    const batch = createWriteBatch(() => db);
+
+    await resetCrm(batch, demoTenant);
+
+    // Collected, not executed: nothing reaches the database until the batch
+    // the whole reset shares is flushed.
+    expect(batches).toHaveLength(0);
+
+    await batch.flush();
+
+    expect(batches).toHaveLength(1);
+    const statements = batches[0] ?? [];
+    expect(statements.map(statementShape)).toEqual([
+      "delete from activities",
+      "delete from deals",
+      "delete from contacts",
+      "delete from organizations",
+      ...Array(3).fill("insert into organizations"),
+      ...Array(4).fill("insert into contacts"),
+      ...Array(6).fill("insert into deals"),
+      ...Array(4).fill("insert into activities"),
+    ]);
+    expect(statements).toHaveLength(21);
+    for (const statement of statements) {
+      expect(statementSql(statement).params).toContain(demoTenant);
+    }
+  });
+
+  it("wipes with tenant-scoped deletes instead of listing rows and deleting them one by one", () => {
+    const source = readFileSync(new URL("./reset.ts", import.meta.url), {
+      encoding: "utf8",
+    });
+
+    expect(source).not.toMatch(
+      /list(Activities|Deals|Contacts|Organizations)\(/,
+    );
+    expect(source).not.toMatch(/delete(Activity|Deal|Contact|Organization)\(/);
+    expect(source).toContain("deleteTenantRows");
   });
 });

@@ -17,6 +17,7 @@ import {
   type DealStage,
 } from "./constants";
 import { activities, contacts, deals, organizations } from "./schema";
+import type { WriteOpts } from "../db/batch-transaction";
 
 export type Organization = InferSelectModel<typeof organizations>;
 export type Contact = InferSelectModel<typeof contacts>;
@@ -344,6 +345,7 @@ export async function createOrganization(
   tenantId: string,
   input: CreateOrganizationInput,
   repo?: CrmRepository,
+  opts?: WriteOpts,
 ): Promise<Organization> {
   const scoped = requireTenantId(tenantId);
   const row: Organization = {
@@ -359,6 +361,11 @@ export async function createOrganization(
     repo.organizations.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(organizations, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireCrmDb()
     .insert(organizations)
     .values(row)
@@ -485,6 +492,7 @@ export async function createContact(
   tenantId: string,
   input: CreateContactInput,
   repo?: CrmRepository,
+  opts?: WriteOpts,
 ): Promise<Contact> {
   const scoped = requireTenantId(tenantId);
   const row: Contact = {
@@ -502,6 +510,11 @@ export async function createContact(
     repo.contacts.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(contacts, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireCrmDb()
     .insert(contacts)
     .values(row)
@@ -650,13 +663,26 @@ export async function getDeal(
     .limit(1);
   return row ?? null;
 }
+/**
+ * A batched write cannot look a default up: the rows it is about to replace are
+ * still there (the wipe travels in the same batch) and there is no database
+ * handle to ask, so a caller collecting statements has to bring its own value.
+ * The guard is here, before the row is built, so no `max(...)` read is even
+ * reachable while a batch is open.
+ */
 
 export async function createDeal(
   tenantId: string,
   input: CreateDealInput,
   repo?: CrmRepository,
+  opts?: WriteOpts,
 ): Promise<Deal> {
   const scoped = requireTenantId(tenantId);
+  if (opts?.batch && input.boardOrder === undefined) {
+    throw new Error(
+      "createDeal needs an explicit `boardOrder` when its writes are collected into a batch",
+    );
+  }
   const row: Deal = {
     id: newId(),
     tenantId: scoped,
@@ -675,6 +701,11 @@ export async function createDeal(
     repo.deals.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(deals, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireCrmDb().insert(deals).values(row).returning();
   return inserted;
 }
@@ -815,6 +846,7 @@ export async function createActivity(
   tenantId: string,
   input: CreateActivityInput,
   repo?: CrmRepository,
+  opts?: WriteOpts,
 ): Promise<Activity> {
   const scoped = requireTenantId(tenantId);
   const row: Activity = {
@@ -833,6 +865,11 @@ export async function createActivity(
     repo.activities.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(activities, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireCrmDb()
     .insert(activities)
     .values(row)

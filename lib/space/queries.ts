@@ -9,6 +9,7 @@ import {
   rowValues,
   views,
 } from "./schema";
+import type { WriteOpts } from "../db/batch-transaction";
 
 export type Page = InferSelectModel<typeof pages>;
 export type Block = InferSelectModel<typeof blocks>;
@@ -304,12 +305,25 @@ export async function getPage(
   return row ?? null;
 }
 
+/**
+ * A batched write cannot look a default up: the rows it is about to replace are
+ * still there (the wipe travels in the same batch) and there is no database
+ * handle to ask, so a caller collecting statements has to bring its own value.
+ * The guard is here, before the row is built, so no `max(...)` read is even
+ * reachable while a batch is open.
+ */
 export async function createPage(
   tenantId: string,
   input: CreatePageInput,
   repo?: SpaceRepository,
+  opts?: WriteOpts,
 ): Promise<Page> {
   const scoped = requireTenantId(tenantId);
+  if (opts?.batch && input.position === undefined) {
+    throw new Error(
+      "createPage needs an explicit `position` when its writes are collected into a batch",
+    );
+  }
   const parentId = input.parentId ?? null;
   const createdAt = now();
   const row: Page = {
@@ -328,6 +342,11 @@ export async function createPage(
     repo.pages.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(pages, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireSpaceDb()
     .insert(pages)
     .values(row)
@@ -472,8 +491,14 @@ export async function createBlock(
   tenantId: string,
   input: CreateBlockInput,
   repo?: SpaceRepository,
+  opts?: WriteOpts,
 ): Promise<Block> {
   const scoped = requireTenantId(tenantId);
+  if (opts?.batch && input.position === undefined) {
+    throw new Error(
+      "createBlock needs an explicit `position` when its writes are collected into a batch",
+    );
+  }
   const row: Block = {
     id: newId(),
     tenantId: scoped,
@@ -503,6 +528,11 @@ export async function createBlock(
     repo.blocks.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(blocks, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireSpaceDb()
     .insert(blocks)
     .values(row)
@@ -666,8 +696,14 @@ export async function createProperty(
   tenantId: string,
   input: CreatePropertyInput,
   repo?: SpaceRepository,
+  opts?: WriteOpts,
 ): Promise<Property> {
   const scoped = requireTenantId(tenantId);
+  if (opts?.batch && input.position === undefined) {
+    throw new Error(
+      "createProperty needs an explicit `position` when its writes are collected into a batch",
+    );
+  }
   const row: Property = {
     id: newId(),
     tenantId: scoped,
@@ -701,6 +737,11 @@ export async function createProperty(
     repo.properties.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(properties, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireSpaceDb()
     .insert(properties)
     .values(row)
@@ -818,8 +859,14 @@ export async function createPropertyOption(
   tenantId: string,
   input: CreatePropertyOptionInput,
   repo?: SpaceRepository,
+  opts?: WriteOpts,
 ): Promise<PropertyOption> {
   const scoped = requireTenantId(tenantId);
+  if (opts?.batch && input.position === undefined) {
+    throw new Error(
+      "createPropertyOption needs an explicit `position` when its writes are collected into a batch",
+    );
+  }
   const row: PropertyOption = {
     id: newId(),
     tenantId: scoped,
@@ -853,6 +900,11 @@ export async function createPropertyOption(
     repo.propertyOptions.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(propertyOptions, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireSpaceDb()
     .insert(propertyOptions)
     .values(row)
@@ -976,6 +1028,7 @@ export async function createRowValue(
   tenantId: string,
   input: CreateRowValueInput,
   repo?: SpaceRepository,
+  opts?: WriteOpts,
 ): Promise<RowValue> {
   const scoped = requireTenantId(tenantId);
   const row: RowValue = {
@@ -988,6 +1041,11 @@ export async function createRowValue(
     repo.rowValues.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(rowValues, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireSpaceDb()
     .insert(rowValues)
     .values(row)
@@ -1127,6 +1185,7 @@ export async function createView(
   tenantId: string,
   input: CreateViewInput,
   repo?: SpaceRepository,
+  opts?: WriteOpts,
 ): Promise<View> {
   const scoped = requireTenantId(tenantId);
   const row: View = {
@@ -1139,6 +1198,11 @@ export async function createView(
     repo.views.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(views, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireSpaceDb()
     .insert(views)
     .values(row)

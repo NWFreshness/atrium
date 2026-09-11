@@ -33,6 +33,8 @@ import {
   deals,
   organizations,
 } from "./schema";
+import { createWriteBatch } from "../db/batch-transaction";
+import { createRecordingDb } from "../db/batch-test-helpers";
 
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
@@ -861,7 +863,12 @@ describe("activities CRUD", () => {
     );
     const dealEmail = await createActivity(
       tenantA,
-      { type: "email", dealId: deal.id, description: "Deal email", done: false },
+      {
+        type: "email",
+        dealId: deal.id,
+        description: "Deal email",
+        done: false,
+      },
       memory,
     );
     await createActivity(
@@ -875,9 +882,9 @@ describe("activities CRUD", () => {
       memory,
     );
 
-    expect(await listActivities(tenantA, memory, { contactId: ada.id })).toEqual(
-      [adaNote],
-    );
+    expect(
+      await listActivities(tenantA, memory, { contactId: ada.id }),
+    ).toEqual([adaNote]);
     expect(await listActivities(tenantA, memory, { dealId: deal.id })).toEqual([
       dealEmail,
     ]);
@@ -1074,5 +1081,24 @@ describe("delete organization", () => {
       id: deal.id,
       organizationId: null,
     });
+  });
+});
+
+describe("a batched createDeal", () => {
+  const tenant = "tenant-batch-board-order";
+
+  it("refuses a deal whose board order the database would have to answer", async () => {
+    const { db, batches } = createRecordingDb();
+    const batch = createWriteBatch(() => db);
+
+    await expect(
+      createDeal(
+        tenant,
+        { name: "No board order", stage: "New", value: 1000 },
+        undefined,
+        { batch },
+      ),
+    ).rejects.toThrow(/explicit `boardOrder`/);
+    expect(batches).toHaveLength(0);
   });
 });

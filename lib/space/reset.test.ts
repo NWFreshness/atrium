@@ -1,4 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { createWriteBatch } from "../db/batch-transaction";
+import {
+  createRecordingDb,
+  statementShape,
+  statementSql,
+} from "../db/batch-test-helpers";
 import {
   clearDemoResetters,
   registerDemoResetter,
@@ -126,5 +132,38 @@ describe("registerSpaceDemoResetter", () => {
 
     const pages = await listPages(demoTenant, committed);
     expect(pages.some((page) => page.title === "Stale Scratch")).toBe(true);
+  });
+});
+
+describe("resetSpace inside a reset batch", () => {
+  it("collects the deletes in FK order, then the whole reseed, as one batch", async () => {
+    const { db, batches } = createRecordingDb();
+    const batch = createWriteBatch(() => db);
+
+    await resetSpace(batch, demoTenant);
+
+    expect(batches).toHaveLength(0);
+
+    await batch.flush();
+
+    expect(batches).toHaveLength(1);
+    const statements = batches[0] ?? [];
+    expect(statements.slice(0, 6).map(statementShape)).toEqual([
+      "delete from views",
+      "delete from rowValues",
+      "delete from propertyOptions",
+      "delete from properties",
+      "delete from blocks",
+      "delete from pages",
+    ]);
+    const reseed = statements.slice(6);
+    // The demo tree is a few hundred rows, all of them inserts after the wipe.
+    expect(reseed.length).toBeGreaterThan(100);
+    expect(
+      reseed.every((row) => statementShape(row).startsWith("insert into")),
+    ).toBe(true);
+    for (const statement of statements) {
+      expect(statementSql(statement).params).toContain(demoTenant);
+    }
   });
 });

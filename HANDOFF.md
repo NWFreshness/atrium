@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 7 Architecture is in progress: 7.1 (ADRs) is done.** Do not push to `main`. Do not merge unless asked. Next implementable unit is 7.2, the atomic demo reset.
+**Stop. Phase 7 Architecture is in progress: 7.1 (ADRs) and 7.2 (atomic demo reset) are done.** Do not push to `main`. Do not merge unless asked. Next implementable unit is 7.3, the `tenantId` indexes.
 
 ## Where we are (2026-09-11)
 
-Phases 0–6 are complete. Phase 7 Architecture: 7.1 shipped `docs/adr/` — six accepted ADRs with reversal triggers plus a one-page C4 (docs-only, no code). 7.2 (atomic demo reset), 7.3 (`tenantId` indexes), 7.4 (split query modules) and 7.5 (client/server import boundary) are specced and waiting.
+Phases 0–6 are complete. Phase 7 Architecture: 7.1 shipped `docs/adr/` (six accepted ADRs plus a C4, docs-only) and 7.2 made Reset demo one Neon `db.batch` — 717 statements collected by `lib/db/batch-transaction.ts`, verified live against the dev branch. 7.3 (`tenantId` indexes), 7.4 (split query modules) and 7.5 (client/server import boundary) are specced and waiting.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -23,7 +23,7 @@ Open decisions carried forward: the `users_email_unique` index is still case-sen
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-7-architecture/7.2-atomic-demo-reset.md` — the next feature to implement
+6. `features/phase-7-architecture/7.3-tenant-id-indexes.md` — the next feature to implement
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Then implement `features/phase-7-architecture/7.2-atomic-demo-reset.md`.
+Then implement `features/phase-7-architecture/7.3-tenant-id-indexes.md`.

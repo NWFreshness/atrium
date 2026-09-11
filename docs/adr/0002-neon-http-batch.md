@@ -68,9 +68,10 @@ to each statement. `db.transaction()` is forbidden on this stack.
 - **−** Row-level security is out of reach, because it needs a `SET LOCAL` that
   survives between statements (ADR-0006).
 - **−** A `db.transaction()` call is a runtime error, not a compile error.
-- **−** Known deviation: today's `resetDemo` runs its wipes through a no-op
-  `defaultRunInTransaction` (`await work(undefined)`), so a mid-reset failure can
-  leave a half-wiped demo tenant. 7.2 replaces it with a real batch.
+- **−** Known deviation, closed by 7.2: `resetDemo` used to run its wipes through
+  a no-op `defaultRunInTransaction` (`await work(undefined)`), so a mid-reset
+  failure could leave a half-wiped demo tenant. The production runner now collects
+  every wipe and reseed statement and sends them as one `db.batch`.
 
 ## Reversal trigger
 
