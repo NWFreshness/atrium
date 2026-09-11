@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** 8.2 (shared password policy) is implemented on `feat/8.2-password-policy` and awaiting merge. Next implementable unit is 8.3 (client-safe `PERSON_FIELDS`), from `main` after that PR merges — the last feature of Phase 8.
+**None in progress.** Phase 8 Integrity is complete: 8.1 (lower(email) unique index), 8.2 (shared password policy in code points) and 8.3 (one client-safe `PERSON_FIELDS` catalog) are merged. Nothing is queued — the next unit of work starts as a phase spec set (a docs PR), not as an implementation.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 8 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`.
 
@@ -335,3 +335,11 @@ The floor moved from UTF-16 units to Unicode code points, behind one module. `li
 The hole 6.3 named is closed and gated: `"😀".repeat(6)` is twelve UTF-16 units and six code points, and reverting the floor to `value.length` failed exactly three tests (policy, signup, change-password), reversed to green. Criterion 4 is a source check, not a promise: neither surface may contain `.length <`, neither may define the two constants, and the policy may not import or construct `SignUpError`/`ChangePasswordError`. Copy is unchanged — nothing user-facing says "code points", and no form carries `minLength`.
 
 `env -u DATABASE_URL npm test` 657 passed (102 files, up from 646/101); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0; no new dependencies, no route, no migration. Limits: no Playwright (the feature adds no route, and 6.4's journeys use ASCII ≥12 passwords, so they prove nothing about the emoji floor); grapheme clusters stay out by decision — a family emoji counts as several code points.
+
+### 8.3 Client-safe person field catalog (completed) — Phase 8 closed
+
+Rolodex import has one `PERSON_FIELDS`. `lib/rolodex/person-fields.ts` holds the `PersonField` type, the eight entries as `as const satisfies readonly PersonField[]` and `required: true` on `name` as the parser always had it; the module carries no value imports at all, which is why the dialog can read it without pulling Papa, `vcf` or `queries.ts` into its chunk. `lib/rolodex/import.ts` imports the catalog and keeps the parse behaviour (`HEADER_SYNONYMS`, Papa, `vcf`, the query writes); no re-export was added, because nothing anywhere imported `PERSON_FIELDS` from it. The dialog's local copy — the one that had already drifted by dropping `required: true` — is gone.
+
+Four probes, each reversed: a local array back in the dialog fails the only-definition case, re-declaring it in `import.ts` fails the same case, dropping `required` fails the required case, and a value import inside the catalog fails both this feature's test and 7.5's `lib/client-boundary.test.ts` (which reports `lib/rolodex/person-fields.ts → ./queries`). That last one is the point: the gate that forced the duplicate catches the duplicate coming back.
+
+`env -u DATABASE_URL npm test` 661 passed (103 files, up from 657/102); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0; no new dependencies, no route, no migration, and the client-boundary gate was not widened. Limits: no Playwright (no route; the Rolodex e2e spec does not grow an import journey), and `required` is documentation — nothing read it before or reads it now, which is exactly why the dialog's drift went unnoticed until 7.5. Phase 8 is complete: 8.1 lower(email) uniqueness, 8.2 the password floor in code points, 8.3 one catalog. Nothing is queued.
