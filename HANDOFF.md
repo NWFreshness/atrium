@@ -2,19 +2,19 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 7 Architecture is complete: 7.1 (ADRs), 7.2 (atomic demo reset), 7.3 (`tenantId` indexes), 7.4 (query-module split) and 7.5 (client/server import boundary) are done.** Do not push to `main`. Do not merge unless asked. Nothing is specced after 7.5: the next unit is a docs PR writing the next phase's specs.
+**Stop. Nothing is in progress.** Phase 8 Integrity is specced, not implemented: 8.1 (case-insensitive unique email), 8.2 (password policy in code points), 8.3 (shared `PERSON_FIELDS`). Do not implement 8.1 until this docs PR is merged. Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-11)
 
-Phases 0–6 are complete. Phase 7 Architecture is complete: 7.1 shipped `docs/adr/` (six accepted ADRs plus a C4, docs-only), 7.2 made Reset demo one Neon `db.batch` — 717 statements collected by `lib/db/batch-transaction.ts`, verified live against the dev branch — 7.3 added a B-tree index on `tenantId` for all nineteen tenant-scoped tables (migration `drizzle/0005_uneven_prodigy.sql`), 7.4 split each app's query module into `queries.ts` (barrel) + `queries-shared.ts` + `queries-memory.ts` + `queries-drizzle.ts`, and 7.5 added `lib/client-boundary.test.ts`, which walks the value-import graph from every file under `components/` and fails if any of them reaches `lib/db`, a query module, a schema, a seed, a reset, `drizzle-orm` or `@neondatabase/serverless` — directly or through a helper three modules away. Nothing is specced yet for the next phase; that docs PR is the next unit.
+Phases 0–7 are complete. Phase 8 Integrity is specced: 8.1 replaces `users.email` column unique with a unique index on `lower(email)`, 8.2 moves the password floor to Unicode code points behind one policy module, 8.3 gives Rolodex import a single client-safe `PERSON_FIELDS` catalog. Nothing is implemented yet; that starts at 8.1 from `main` after this docs PR merges.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
-Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phase 7). Architecture: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Decisions: `docs/adr/` (ADR-0001 … ADR-0006 + a C4 context/container view; the design doc wins if an ADR and it disagree). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
+Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phase 8). Architecture: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Integrity: `docs/superpowers/specs/2026-09-11-integrity-design.md`. Decisions: `docs/adr/` (ADR-0001 … ADR-0006 + a C4 context/container view; the design doc wins if an ADR and it disagree). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
 
-Open decisions carried forward: the `users_email_unique` index is still case-sensitive (a `lower(email)` unique index would close the concurrent case-variant signup race). Session revocation was decided in 6.3: passwords can be changed, but existing JWTs stay valid — no revocation list, no `passwordChangedAt` claim, by spec. Phase 7 does not reopen that. RLS is deferred: neon-http cannot persist `SET LOCAL`. Other pre-existing items are listed in the 6.3 shipped notes (UTF-16 password length counting; the Rolodex client chunk that carries Drizzle — 7.5).
+Open decisions carried forward: Session revocation was decided in 6.3: passwords can be changed, but existing JWTs stay valid — no revocation list, no `passwordChangedAt` claim, by spec. RLS is deferred: neon-http cannot persist `SET LOCAL`. The case-sensitive `users_email_unique` index and the UTF-16 password floor are specced as 8.1 and 8.2; do not implement them on this docs branch. Next 16's `middleware.ts` → `proxy` rename stays out until a feature has to touch that file.
 
 ## Read order
 
@@ -23,7 +23,7 @@ Open decisions carried forward: the `users_email_unique` index is still case-sen
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Nothing is specced after 7.5 — the next unit is a docs PR writing the next phase's specs (the shape 7.1–7.5 arrived in, as `#64`)
+6. `features/phase-8-integrity/8.1-case-insensitive-email.md` — next implementable unit after this docs PR merges. Do not start 8.1 on the docs branch.
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Phase 7 is complete. The next unit is a docs PR speccing the next phase — one spec per feature, in `features/<phase>/`, an `INDEX.md` row each, and no implementation until it merges.
+Phase 8 Integrity is specced. After this docs PR merges: `git checkout main && git pull`, branch `feat/8.1-case-insensitive-email`, implement only 8.1.
