@@ -129,6 +129,27 @@
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   box-shadow: var(--shadow-panel);
+  padding: 1.25rem;
+}
+
+/* A readable measure for a single-column form, inside the full-width <main>. */
+.atrium-narrow {
+  max-width: 34rem;
+}
+
+/* ---------- Alerts ---------- */
+.atrium-alert {
+  margin-top: 1rem;
+  padding: 9px 12px;
+  border-left: 3px solid var(--bad);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.atrium-alert-ok {
+  border-left-color: var(--good);
 }
 
 .atrium-label {

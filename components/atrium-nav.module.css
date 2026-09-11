@@ -118,6 +118,9 @@
   font-size: 12.5px;
   color: var(--ink-dim);
   white-space: nowrap;
+  /* It is a <Link> now (6.3) and globals.css has no anchor reset, so the email
+     would sit permanently underlined; the hover rule below is the affordance. */
+  text-decoration: none;
 }
 
 .atrium-nav-avatar {
@@ -136,6 +139,17 @@
 .atrium-nav-email {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* The identity chip is the way into /settings (6.3), so it has to read as
+   clickable without turning into a link-colored word. */
+.atrium-nav-identity:hover {
+  color: var(--ink);
+}
+
+.atrium-nav-identity:hover .atrium-nav-email {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .atrium-nav-btn-label {

@@ -123,7 +123,7 @@ Flag-gated credentials signup, `member` role with an empty personal tenant, logg
 | --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
 | 6.1 | [Member role + signUp helper](./phase-6-accounts/6.1-member-role-signup.md)          | completed | 0.5        |
 | 6.2 | [Signup page and auto sign-in](./phase-6-accounts/6.2-signup-page.md)                | completed | 6.1        |
-| 6.3 | [Change password and settings](./phase-6-accounts/6.3-change-password-settings.md)   | specced | 6.2        |
+| 6.3 | [Change password and settings](./phase-6-accounts/6.3-change-password-settings.md)   | completed | 6.2        |
 | 6.4 | [Playwright smoke](./phase-6-accounts/6.4-playwright-smoke.md)                        | specced | 6.2, 6.3   |
 
 Long pole: 6.1 → 6.2 → 6.3 → 6.4. Do not parallel any two Accounts features. Do not add OAuth or a mailer.
