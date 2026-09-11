@@ -1,4 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { createWriteBatch } from "../db/batch-transaction";
+import {
+  createRecordingDb,
+  statementShape,
+  statementSql,
+} from "../db/batch-test-helpers";
 import {
   clearDemoResetters,
   registerDemoResetter,
@@ -143,5 +149,39 @@ describe("registerRolodexDemoResetter", () => {
 
     const people = await listPeople(demoTenant, committed);
     expect(people.some((person) => person.name === "Stale Scratch")).toBe(true);
+  });
+});
+
+describe("resetRolodex inside a reset batch", () => {
+  it("collects the deletes in FK order, then the whole reseed, as one batch", async () => {
+    const { db, batches } = createRecordingDb();
+    const batch = createWriteBatch(() => db);
+
+    await resetRolodex(batch, demoTenant);
+
+    expect(batches).toHaveLength(0);
+
+    await batch.flush();
+
+    expect(batches).toHaveLength(1);
+    const statements = batches[0] ?? [];
+    expect(statements.slice(0, 8).map(statementShape)).toEqual([
+      "delete from connections",
+      "delete from gifts",
+      "delete from reminders",
+      "delete from news",
+      "delete from facts",
+      "delete from importantDates",
+      "delete from interactions",
+      "delete from people",
+    ]);
+    const reseed = statements.slice(8);
+    expect(reseed.length).toBeGreaterThan(30);
+    expect(
+      reseed.every((row) => statementShape(row).startsWith("insert into")),
+    ).toBe(true);
+    for (const statement of statements) {
+      expect(statementSql(statement).params).toContain(demoTenant);
+    }
   });
 });

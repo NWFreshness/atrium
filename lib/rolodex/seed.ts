@@ -12,6 +12,7 @@ import {
   listPeople,
   type RolodexRepository,
 } from "./queries";
+import type { WriteOpts } from "../db/batch-transaction";
 
 const DEMO_PEOPLE: {
   name: string;
@@ -258,10 +259,16 @@ function monthOffset(
 export async function seedRolodex(
   tenantId: string,
   repo?: RolodexRepository,
+  opts?: WriteOpts,
 ): Promise<void> {
-  const existing = await listPeople(tenantId, repo);
-  if (existing.length > 0) {
-    return;
+  // A reset collects the wipe and this reseed into one batch, so the
+  // rows are still there to be found: the idempotence check only applies
+  // to a standalone seed (`npm run db:seed`), which runs immediately.
+  if (!opts?.batch) {
+    const existing = await listPeople(tenantId, repo);
+    if (existing.length > 0) {
+      return;
+    }
   }
 
   const today = todayISO();
@@ -279,6 +286,7 @@ export async function seedRolodex(
           tags: person.tags,
         },
         repo,
+        opts,
       ),
     );
   }
@@ -296,11 +304,13 @@ export async function seedRolodex(
       notes: "Caught up after the move.",
     },
     repo,
+    opts,
   );
   await createInteraction(
     tenantId,
     { personId: sam.id, type: "met", date: addDaysISO(today, -20) },
     repo,
+    opts,
   );
 
   const next1 = monthOffset(today, 1);
@@ -316,6 +326,7 @@ export async function seedRolodex(
       year: 1994,
     },
     repo,
+    opts,
   );
   await createImportantDate(
     tenantId,
@@ -327,6 +338,7 @@ export async function seedRolodex(
       year: 1990,
     },
     repo,
+    opts,
   );
   await createImportantDate(
     tenantId,
@@ -338,17 +350,20 @@ export async function seedRolodex(
       year: 2018,
     },
     repo,
+    opts,
   );
   await createImportantDate(
     tenantId,
     { personId: sam.id, type: "birthday", month: 2, day: 29, year: 1988 },
     repo,
+    opts,
   );
 
   await createFact(
     tenantId,
     { personId: maya.id, text: "Allergic to shellfish" },
     repo,
+    opts,
   );
   await createNews(
     tenantId,
@@ -358,6 +373,7 @@ export async function seedRolodex(
       date: addDaysISO(today, -40),
     },
     repo,
+    opts,
   );
   await createReminder(
     tenantId,
@@ -367,6 +383,7 @@ export async function seedRolodex(
       dueDate: addDaysISO(today, 5),
     },
     repo,
+    opts,
   );
   await createGift(
     tenantId,
@@ -378,6 +395,7 @@ export async function seedRolodex(
       date: today,
     },
     repo,
+    opts,
   );
   await createConnection(
     tenantId,
@@ -389,5 +407,6 @@ export async function seedRolodex(
       inverseLabel: "partner",
     },
     repo,
+    opts,
   );
 }

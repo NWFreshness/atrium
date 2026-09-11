@@ -7,8 +7,12 @@ import {
   createRowValue,
   createView,
   listPages,
+  type CreatePageInput,
+  type CreatePropertyInput,
+  type CreatePropertyOptionInput,
   type SpaceRepository,
 } from "./queries";
+import type { WriteOpts } from "../db/batch-transaction";
 
 type PageTreeNode = {
   title: string;
@@ -55,12 +59,47 @@ export function buildDemoTree(pages: SeedPage[]): PageTreeNode[] {
   return roots;
 }
 
+type PageIdsByTitle = Map<string, string>;
+
+/**
+ * Positions are the seed's own ordering, so the seed assigns them instead of
+ * asking the database for `max(position)` once per row. That keeps a reseed
+ * deterministic, drops a few hundred round trips from a reset, and is the only
+ * thing that works for a batched reset: while statements are still being
+ * collected, the rows they will insert are not visible to any query.
+ */
+type SeedPositions = Map<string, number>;
+
+function nextSeedPosition(positions: SeedPositions, key: string): number {
+  const position = positions.get(key) ?? 0;
+  positions.set(key, position + 1);
+  return position;
+}
+
+function nextPagePosition(
+  positions: SeedPositions,
+  parentId: string | null,
+): number {
+  return nextSeedPosition(positions, `page:${parentId ?? "root"}`);
+}
+
+/**
+ * Creates the tree and returns the id of every page it made, keyed by title.
+ *
+ * A batched reset cannot read the pages back while it is still collecting
+ * statements, so the ids travel with the tree instead of coming from a query —
+ * and the database page that hangs off "Travel" can find its parent either way.
+ */
 async function seedTree(
   tenantId: string,
   parentId: string | null,
   specs: PageTreeNode[],
+  positions: SeedPositions,
   repo?: SpaceRepository,
-): Promise<void> {
+  opts?: WriteOpts,
+): Promise<PageIdsByTitle> {
+  const ids: PageIdsByTitle = new Map();
+
   for (const spec of specs) {
     const page = await createPage(
       tenantId,
@@ -69,151 +108,211 @@ async function seedTree(
         icon: spec.icon,
         parentId,
         type: "page",
+        position: nextPagePosition(positions, parentId),
       },
       repo,
+      opts,
     );
+    ids.set(spec.title, page.id);
     for (const blockSpec of spec.blocks ?? []) {
       await createBlock(
         tenantId,
-        { pageId: page.id, type: blockSpec.type, content: blockSpec.content },
+        {
+          pageId: page.id,
+          type: blockSpec.type,
+          content: blockSpec.content,
+          position: nextSeedPosition(positions, `block:${page.id}`),
+        },
         repo,
+        opts,
       );
     }
     if (spec.children?.length) {
-      await seedTree(tenantId, page.id, spec.children, repo);
+      for (const [title, id] of await seedTree(
+        tenantId,
+        page.id,
+        spec.children,
+        positions,
+        repo,
+        opts,
+      )) {
+        ids.set(title, id);
+      }
     }
   }
+
+  return ids;
 }
 
 export async function seedSpace(
   tenantId: string,
   repo?: SpaceRepository,
+  opts?: WriteOpts,
 ): Promise<void> {
-  const existing = await listPages(tenantId, repo);
-  if (existing.length > 0) {
-    return;
+  // A reset collects the wipe and this reseed into one batch, so the rows are
+  // still there to be found: the idempotence check only applies to a
+  // standalone seed (`npm run db:seed`), which runs immediately.
+  if (!opts?.batch) {
+    const existing = await listPages(tenantId, repo);
+    if (existing.length > 0) {
+      return;
+    }
   }
-  await seedTree(tenantId, null, buildDemoTree(DEMO_PAGES), repo);
-  const pages = await listPages(tenantId, repo);
-  await seedDemoDatabases(tenantId, pages, repo);
+  const positions: SeedPositions = new Map();
+  const pageIds = await seedTree(
+    tenantId,
+    null,
+    buildDemoTree(DEMO_PAGES),
+    positions,
+    repo,
+    opts,
+  );
+  await seedDemoDatabases(tenantId, pageIds, positions, repo, opts);
 }
 
 async function seedDemoDatabases(
   tenantId: string,
-  pages: Awaited<ReturnType<typeof listPages>>,
+  pageIds: PageIdsByTitle,
+  positions: SeedPositions,
   repo?: SpaceRepository,
+  opts?: WriteOpts,
 ): Promise<void> {
-  const travel = pages.find((page) => page.title === "Travel");
-  const trip = await createPage(
-    tenantId,
-    {
-      title: "Trip Planner",
-      icon: "🧭",
-      type: "database",
-      parentId: travel?.id ?? null,
-    },
-    repo,
-  );
-  const status = await createProperty(
-    tenantId,
-    { databaseId: trip.id, name: "Status", type: "select" },
-    repo,
-  );
-  const booked = await createPropertyOption(
-    tenantId,
-    { propertyId: status.id, name: "Booked", color: "green" },
-    repo,
-  );
-  const planning = await createPropertyOption(
-    tenantId,
-    { propertyId: status.id, name: "Planning", color: "blue" },
-    repo,
-  );
-  const dreaming = await createPropertyOption(
-    tenantId,
-    { propertyId: status.id, name: "Dreaming", color: "gray" },
-    repo,
-  );
-  const done = await createPropertyOption(
-    tenantId,
-    { propertyId: status.id, name: "Done", color: "purple" },
-    repo,
-  );
-  const region = await createProperty(
-    tenantId,
-    { databaseId: trip.id, name: "Region", type: "select" },
-    repo,
-  );
-  const asia = await createPropertyOption(
-    tenantId,
-    { propertyId: region.id, name: "Asia", color: "pink" },
-    repo,
-  );
-  const europe = await createPropertyOption(
-    tenantId,
-    { propertyId: region.id, name: "Europe", color: "teal" },
-    repo,
-  );
-  const americas = await createPropertyOption(
-    tenantId,
-    { propertyId: region.id, name: "Americas", color: "orange" },
-    repo,
-  );
-  const vibes = await createProperty(
-    tenantId,
-    { databaseId: trip.id, name: "Vibes", type: "multi_select" },
-    repo,
-  );
-  const food = await createPropertyOption(
-    tenantId,
-    { propertyId: vibes.id, name: "Food", color: "amber" },
-    repo,
-  );
-  const hiking = await createPropertyOption(
-    tenantId,
-    { propertyId: vibes.id, name: "Hiking", color: "green" },
-    repo,
-  );
-  const culture = await createPropertyOption(
-    tenantId,
-    { propertyId: vibes.id, name: "Culture", color: "purple" },
-    repo,
-  );
-  const budget = await createProperty(
-    tenantId,
-    { databaseId: trip.id, name: "Budget", type: "number" },
-    repo,
-  );
-  const depart = await createProperty(
-    tenantId,
-    { databaseId: trip.id, name: "Depart", type: "date" },
-    repo,
-  );
-  const flights = await createProperty(
-    tenantId,
-    { databaseId: trip.id, name: "Flights booked", type: "checkbox" },
-    repo,
-  );
-  const guide = await createProperty(
-    tenantId,
-    { databaseId: trip.id, name: "Guide", type: "url" },
-    repo,
-  );
+  // Wrappers, not a second way to write: they add the position the seed would
+  // otherwise have to read out of the database, and nothing else.
+  const addPage = (input: CreatePageInput) =>
+    createPage(
+      tenantId,
+      {
+        ...input,
+        position: nextPagePosition(positions, input.parentId ?? null),
+      },
+      repo,
+      opts,
+    );
+  const addProperty = (input: CreatePropertyInput) =>
+    createProperty(
+      tenantId,
+      {
+        ...input,
+        position: nextSeedPosition(positions, `property:${input.databaseId}`),
+      },
+      repo,
+      opts,
+    );
+  const addOption = (input: CreatePropertyOptionInput) =>
+    createPropertyOption(
+      tenantId,
+      {
+        ...input,
+        position: nextSeedPosition(positions, `option:${input.propertyId}`),
+      },
+      repo,
+      opts,
+    );
+
+  const trip = await addPage({
+    title: "Trip Planner",
+    icon: "🧭",
+    type: "database",
+    parentId: pageIds.get("Travel") ?? null,
+  });
+  const status = await addProperty({
+    databaseId: trip.id,
+    name: "Status",
+    type: "select",
+  });
+  const booked = await addOption({
+    propertyId: status.id,
+    name: "Booked",
+    color: "green",
+  });
+  const planning = await addOption({
+    propertyId: status.id,
+    name: "Planning",
+    color: "blue",
+  });
+  const dreaming = await addOption({
+    propertyId: status.id,
+    name: "Dreaming",
+    color: "gray",
+  });
+  const done = await addOption({
+    propertyId: status.id,
+    name: "Done",
+    color: "purple",
+  });
+  const region = await addProperty({
+    databaseId: trip.id,
+    name: "Region",
+    type: "select",
+  });
+  const asia = await addOption({
+    propertyId: region.id,
+    name: "Asia",
+    color: "pink",
+  });
+  const europe = await addOption({
+    propertyId: region.id,
+    name: "Europe",
+    color: "teal",
+  });
+  const americas = await addOption({
+    propertyId: region.id,
+    name: "Americas",
+    color: "orange",
+  });
+  const vibes = await addProperty({
+    databaseId: trip.id,
+    name: "Vibes",
+    type: "multi_select",
+  });
+  const food = await addOption({
+    propertyId: vibes.id,
+    name: "Food",
+    color: "amber",
+  });
+  const hiking = await addOption({
+    propertyId: vibes.id,
+    name: "Hiking",
+    color: "green",
+  });
+  const culture = await addOption({
+    propertyId: vibes.id,
+    name: "Culture",
+    color: "purple",
+  });
+  const budget = await addProperty({
+    databaseId: trip.id,
+    name: "Budget",
+    type: "number",
+  });
+  const depart = await addProperty({
+    databaseId: trip.id,
+    name: "Depart",
+    type: "date",
+  });
+  const flights = await addProperty({
+    databaseId: trip.id,
+    name: "Flights booked",
+    type: "checkbox",
+  });
+  const guide = await addProperty({
+    databaseId: trip.id,
+    name: "Guide",
+    type: "url",
+  });
 
   async function tripRow(
     title: string,
     values: Record<string, unknown>,
   ): Promise<void> {
-    const row = await createPage(
-      tenantId,
-      { title, type: "row", parentId: trip.id },
-      repo,
-    );
+    const row = await addPage({ title, type: "row", parentId: trip.id });
     for (const [propertyId, value] of Object.entries(values)) {
       await createRowValue(
         tenantId,
         { rowId: row.id, propertyId, value },
         repo,
+        opts,
       );
     }
   }
@@ -266,6 +365,7 @@ async function seedDemoDatabases(
       config: { groupPropertyId: status.id },
     },
     repo,
+    opts,
   );
   await createView(
     tenantId,
@@ -275,6 +375,7 @@ async function seedDemoDatabases(
       config: { sort: { propertyId: budget.id, direction: "desc" } },
     },
     repo,
+    opts,
   );
   await createView(
     tenantId,
@@ -288,23 +389,24 @@ async function seedDemoDatabases(
       },
     },
     repo,
+    opts,
   );
 
-  const reading = await createPage(
-    tenantId,
-    { title: "Reading List", icon: "📚", type: "database" },
-    repo,
-  );
-  const author = await createProperty(
-    tenantId,
-    { databaseId: reading.id, name: "Author", type: "text" },
-    repo,
-  );
-  const readStatus = await createProperty(
-    tenantId,
-    { databaseId: reading.id, name: "Status", type: "select" },
-    repo,
-  );
+  const reading = await addPage({
+    title: "Reading List",
+    icon: "📚",
+    type: "database",
+  });
+  const author = await addProperty({
+    databaseId: reading.id,
+    name: "Author",
+    type: "text",
+  });
+  const readStatus = await addProperty({
+    databaseId: reading.id,
+    name: "Status",
+    type: "select",
+  });
   const readStatusIds = new Map<string, string>();
   for (const [name, color] of [
     ["Finished", "green"],
@@ -312,23 +414,19 @@ async function seedDemoDatabases(
     ["Queued", "amber"],
     ["Shelved", "gray"],
   ] as const) {
-    const option = await createPropertyOption(
-      tenantId,
-      { propertyId: readStatus.id, name, color },
-      repo,
-    );
+    const option = await addOption({ propertyId: readStatus.id, name, color });
     readStatusIds.set(name, option.id);
   }
-  const rating = await createProperty(
-    tenantId,
-    { databaseId: reading.id, name: "Rating", type: "number" },
-    repo,
-  );
-  const pageCount = await createProperty(
-    tenantId,
-    { databaseId: reading.id, name: "Pages", type: "number" },
-    repo,
-  );
+  const rating = await addProperty({
+    databaseId: reading.id,
+    name: "Rating",
+    type: "number",
+  });
+  const pageCount = await addProperty({
+    databaseId: reading.id,
+    name: "Pages",
+    type: "number",
+  });
   const readingProperties: Record<string, string> = {
     Author: author.id,
     Status: readStatus.id,
@@ -337,11 +435,11 @@ async function seedDemoDatabases(
   };
 
   for (const book of READING_LIST_ROWS) {
-    const row = await createPage(
-      tenantId,
-      { title: book.title, type: "row", parentId: reading.id },
-      repo,
-    );
+    const row = await addPage({
+      title: book.title,
+      type: "row",
+      parentId: reading.id,
+    });
     for (const [name, value] of Object.entries(book.values)) {
       const propertyId = readingProperties[name];
       if (!propertyId) {
@@ -358,6 +456,7 @@ async function seedDemoDatabases(
               : value,
         },
         repo,
+        opts,
       );
     }
   }

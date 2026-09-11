@@ -52,6 +52,8 @@ import {
   viewKindEnum,
   views,
 } from "./schema";
+import { createWriteBatch } from "../db/batch-transaction";
+import { createRecordingDb, statementSql } from "../db/batch-test-helpers";
 
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
@@ -443,5 +445,35 @@ describe("tenant isolation", () => {
     expect(await getView(tenantB, pageB.id, "board", memory)).toMatchObject({
       kind: "board",
     });
+  });
+});
+
+describe("a batched createPage", () => {
+  const tenant = "tenant-batch-position";
+
+  it("refuses a row whose position the database would have to answer", async () => {
+    const { db, batches } = createRecordingDb();
+    const batch = createWriteBatch(() => db);
+
+    await expect(
+      createPage(tenant, { title: "No position" }, undefined, { batch }),
+    ).rejects.toThrow(/explicit `position`/);
+    expect(batches).toHaveLength(0);
+  });
+
+  it("collects the insert when the caller brings a position", async () => {
+    const { db } = createRecordingDb();
+    const batch = createWriteBatch(() => db);
+
+    const page = await createPage(
+      tenant,
+      { title: "Planted", position: 7 },
+      undefined,
+      { batch },
+    );
+
+    expect(page.position).toBe(7);
+    expect(batch.statements).toHaveLength(1);
+    expect(statementSql(batch.statements[0]!).params).toContain(7);
   });
 });

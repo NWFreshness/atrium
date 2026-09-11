@@ -19,6 +19,7 @@ import {
   people,
   reminders,
 } from "./schema";
+import type { WriteOpts } from "../db/batch-transaction";
 
 export type Person = InferSelectModel<typeof people>;
 export type Interaction = InferSelectModel<typeof interactions>;
@@ -347,6 +348,7 @@ export async function createPerson(
   tenantId: string,
   input: CreatePersonInput,
   repo?: RolodexRepository,
+  opts?: WriteOpts,
 ): Promise<Person> {
   const scoped = requireTenantId(tenantId);
   const row = personRow(scoped, input);
@@ -354,6 +356,11 @@ export async function createPerson(
     repo.people.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(people, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireRolodexDb()
     .insert(people)
     .values(row)
@@ -535,6 +542,7 @@ export async function createInteraction(
   tenantId: string,
   input: CreateInteractionInput,
   repo?: RolodexRepository,
+  opts?: WriteOpts,
 ): Promise<Interaction> {
   const scoped = requireTenantId(tenantId);
   const row: Interaction = {
@@ -550,6 +558,11 @@ export async function createInteraction(
     repo.interactions.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(interactions, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireRolodexDb()
     .insert(interactions)
     .values(row)
@@ -575,6 +588,7 @@ export async function createImportantDate(
   tenantId: string,
   input: CreateImportantDateInput,
   repo?: RolodexRepository,
+  opts?: WriteOpts,
 ): Promise<ImportantDate> {
   const scoped = requireTenantId(tenantId);
   const row: ImportantDate = {
@@ -592,6 +606,11 @@ export async function createImportantDate(
     repo.importantDates.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(importantDates, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireRolodexDb()
     .insert(importantDates)
     .values(row)
@@ -685,6 +704,7 @@ export async function createFact(
   tenantId: string,
   input: CreateFactInput,
   repo?: RolodexRepository,
+  opts?: WriteOpts,
 ): Promise<Fact> {
   const scoped = requireTenantId(tenantId);
   const row: Fact = {
@@ -698,6 +718,11 @@ export async function createFact(
     repo.facts.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(facts, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireRolodexDb()
     .insert(facts)
     .values(row)
@@ -717,6 +742,7 @@ export async function createNews(
   tenantId: string,
   input: CreateNewsInput,
   repo?: RolodexRepository,
+  opts?: WriteOpts,
 ): Promise<NewsItem> {
   const scoped = requireTenantId(tenantId);
   const row: NewsItem = {
@@ -731,6 +757,11 @@ export async function createNews(
     repo.news.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(news, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireRolodexDb()
     .insert(news)
     .values(row)
@@ -750,6 +781,7 @@ export async function createReminder(
   tenantId: string,
   input: CreateReminderInput,
   repo?: RolodexRepository,
+  opts?: WriteOpts,
 ): Promise<Reminder> {
   const scoped = requireTenantId(tenantId);
   const row: Reminder = {
@@ -766,6 +798,11 @@ export async function createReminder(
     repo.reminders.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(reminders, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireRolodexDb()
     .insert(reminders)
     .values(row)
@@ -832,6 +869,7 @@ export async function createGift(
   tenantId: string,
   input: CreateGiftInput,
   repo?: RolodexRepository,
+  opts?: WriteOpts,
 ): Promise<Gift> {
   const scoped = requireTenantId(tenantId);
   const row: Gift = {
@@ -848,6 +886,11 @@ export async function createGift(
     repo.gifts.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(gifts, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireRolodexDb()
     .insert(gifts)
     .values(row)
@@ -917,6 +960,7 @@ export async function createConnection(
   tenantId: string,
   input: CreateConnectionInput,
   repo?: RolodexRepository,
+  opts?: WriteOpts,
 ): Promise<Connection> {
   const scoped = requireTenantId(tenantId);
   const row: Connection = {
@@ -935,6 +979,11 @@ export async function createConnection(
     repo.connections.push(row);
     return clone(row);
   }
+  if (opts?.batch) {
+    opts.batch.insert(connections, row);
+    return clone(row);
+  }
+
   const [inserted] = await requireRolodexDb()
     .insert(connections)
     .values(row)

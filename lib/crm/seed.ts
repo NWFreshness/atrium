@@ -7,14 +7,21 @@ import {
   listOrganizations,
   type CrmRepository,
 } from "./queries";
+import type { WriteOpts } from "../db/batch-transaction";
 
 export async function seedCrm(
   tenantId: string,
   repo?: CrmRepository,
+  opts?: WriteOpts,
 ): Promise<void> {
-  const existing = await listOrganizations(tenantId, repo);
-  if (existing.length > 0) {
-    return;
+  // A reset collects the wipe and this reseed into one batch, so the
+  // rows are still there to be found: the idempotence check only applies
+  // to a standalone seed (`npm run db:seed`), which runs immediately.
+  if (!opts?.batch) {
+    const existing = await listOrganizations(tenantId, repo);
+    if (existing.length > 0) {
+      return;
+    }
   }
 
   const northwind = await createOrganization(
@@ -25,6 +32,7 @@ export async function seedCrm(
       industry: "Logistics",
     },
     repo,
+    opts,
   );
   const bluepeak = await createOrganization(
     tenantId,
@@ -34,6 +42,7 @@ export async function seedCrm(
       industry: "Software",
     },
     repo,
+    opts,
   );
   const harbor = await createOrganization(
     tenantId,
@@ -43,6 +52,7 @@ export async function seedCrm(
       industry: "Professional services",
     },
     repo,
+    opts,
   );
 
   const ana = await createContact(
@@ -55,6 +65,7 @@ export async function seedCrm(
       status: "customer",
     },
     repo,
+    opts,
   );
   const marcus = await createContact(
     tenantId,
@@ -66,6 +77,7 @@ export async function seedCrm(
       status: "qualified",
     },
     repo,
+    opts,
   );
   const priya = await createContact(
     tenantId,
@@ -77,6 +89,7 @@ export async function seedCrm(
       status: "lead",
     },
     repo,
+    opts,
   );
   const jordan = await createContact(
     tenantId,
@@ -88,6 +101,7 @@ export async function seedCrm(
       status: "qualified",
     },
     repo,
+    opts,
   );
 
   async function deal(input: {
@@ -105,6 +119,7 @@ export async function seedCrm(
         probability: STAGE_PROBABILITY[input.stage],
       },
       repo,
+      opts,
     );
   }
 
@@ -168,6 +183,7 @@ export async function seedCrm(
       done: true,
     },
     repo,
+    opts,
   );
   await createActivity(
     tenantId,
@@ -180,6 +196,7 @@ export async function seedCrm(
       done: true,
     },
     repo,
+    opts,
   );
   await createActivity(
     tenantId,
@@ -192,6 +209,7 @@ export async function seedCrm(
       done: true,
     },
     repo,
+    opts,
   );
   await createActivity(
     tenantId,
@@ -203,5 +221,6 @@ export async function seedCrm(
       done: false,
     },
     repo,
+    opts,
   );
 }

@@ -1,4 +1,8 @@
-import { eq } from "drizzle-orm";
+import {
+  createWriteBatch,
+  isWriteBatch,
+  type WriteBatch,
+} from "../db/batch-transaction";
 import { getDb } from "../db";
 import { registerDemoResetter } from "../tenancy/reset-demo";
 import { type SpaceRepository } from "./queries";
@@ -38,31 +42,22 @@ function wipeTenant<T extends { tenantId: string }>(
   }
 }
 
-async function deleteTenantRows(
+/**
+ * The demo tenant's wipe and reseed as tenant-scoped statements: views point at
+ * pages and rows point at properties, so children are deleted first and the
+ * pages go back in before the rows that hang off them.
+ */
+async function collectSpaceReset(
+  batch: WriteBatch,
   tenantId: string,
-  repo?: SpaceRepository,
 ): Promise<void> {
-  if (repo) {
-    wipeTenant(repo.views, tenantId);
-    wipeTenant(repo.rowValues, tenantId);
-    wipeTenant(repo.propertyOptions, tenantId);
-    wipeTenant(repo.properties, tenantId);
-    wipeTenant(repo.blocks, tenantId);
-    wipeTenant(repo.pages, tenantId);
-    return;
-  }
-  if (!process.env.DATABASE_URL) {
-    throw new Error("Space store required");
-  }
-  const db = getDb();
-  await db.delete(views).where(eq(views.tenantId, tenantId));
-  await db.delete(rowValues).where(eq(rowValues.tenantId, tenantId));
-  await db
-    .delete(propertyOptions)
-    .where(eq(propertyOptions.tenantId, tenantId));
-  await db.delete(properties).where(eq(properties.tenantId, tenantId));
-  await db.delete(blocks).where(eq(blocks.tenantId, tenantId));
-  await db.delete(pages).where(eq(pages.tenantId, tenantId));
+  batch.deleteTenantRows(views, tenantId);
+  batch.deleteTenantRows(rowValues, tenantId);
+  batch.deleteTenantRows(propertyOptions, tenantId);
+  batch.deleteTenantRows(properties, tenantId);
+  batch.deleteTenantRows(blocks, tenantId);
+  batch.deleteTenantRows(pages, tenantId);
+  await seedSpace(tenantId, undefined, { batch });
 }
 
 export async function resetSpace(
@@ -70,8 +65,31 @@ export async function resetSpace(
   tenantId: string,
   repo?: SpaceRepository,
 ): Promise<void> {
+  // An explicitly bound store is a test's memory repository: it wins, and the
+  // reset never needs a database. Production resetters are registered without
+  // one, so they fall through to the batch.
   const store = isSpaceRepository(tx) ? tx : repo;
-  await deleteTenantRows(tenantId, store);
+
+  if (!store) {
+    if (isWriteBatch(tx)) {
+      await collectSpaceReset(tx, tenantId);
+      return;
+    }
+    if (!process.env.DATABASE_URL) {
+      throw new Error("Space store required");
+    }
+    const batch = createWriteBatch(getDb);
+    await collectSpaceReset(batch, tenantId);
+    await batch.flush();
+    return;
+  }
+
+  wipeTenant(store.views, tenantId);
+  wipeTenant(store.rowValues, tenantId);
+  wipeTenant(store.propertyOptions, tenantId);
+  wipeTenant(store.properties, tenantId);
+  wipeTenant(store.blocks, tenantId);
+  wipeTenant(store.pages, tenantId);
   await seedSpace(tenantId, store);
 }
 
