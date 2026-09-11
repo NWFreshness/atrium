@@ -1,11 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
-import { login } from "./actions";
+import { createAccount, type SignUpState } from "./actions";
 import styles from "../auth-stage.module.css";
 
-export function LoginForm() {
-  const [error, formAction, pending] = useActionState(login, null);
+const INITIAL: SignUpState = { error: null, email: "" };
+
+export function SignUpForm() {
+  const [state, formAction, pending] = useActionState(createAccount, INITIAL);
 
   return (
     <form action={formAction}>
@@ -16,6 +18,7 @@ export function LoginForm() {
           type="email"
           autoComplete="username"
           placeholder="you@atrium.local"
+          defaultValue={state.email}
           required
         />
       </label>
@@ -24,14 +27,24 @@ export function LoginForm() {
         <input
           name="password"
           type="password"
-          autoComplete="current-password"
-          placeholder="••••••••"
+          autoComplete="new-password"
+          placeholder="At least 12 characters"
           required
         />
       </label>
-      {error ? (
+      <label className="atrium-field">
+        <span>Confirm password</span>
+        <input
+          name="confirmPassword"
+          type="password"
+          autoComplete="new-password"
+          placeholder="Repeat the password"
+          required
+        />
+      </label>
+      {state.error ? (
         <p className={styles["auth-alert"]} role="alert">
-          {error}
+          {state.error}
         </p>
       ) : null}
       <button
@@ -39,7 +52,7 @@ export function LoginForm() {
         className={`atrium-btn atrium-btn-primary ${styles["auth-submit"]}`}
         disabled={pending}
       >
-        Sign in
+        Create account
       </button>
     </form>
   );
