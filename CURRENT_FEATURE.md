@@ -1,8 +1,10 @@
 # Current feature
 
-**6.4 Accounts Playwright smoke** — [spec](./features/phase-6-accounts/6.4-playwright-smoke.md) — the last Accounts unit, and the one that marks Phase 6 complete in this file and `INDEX.md`. 6.3 shipped change-password on `/settings` (see the log).
+**None in progress.** Phase 6 Accounts is complete — 6.1, 6.2, 6.3, and 6.4 are shipped: flag-gated signup, the `member` role with its own empty tenant, change-password on `/settings`, and the Accounts Playwright smoke.
 
-Session decision, made in 6.3: **no revocation, by design.** The spec (§4) says a successful change keeps the current session JWT valid, so 6.3 adds no `passwordChangedAt` / token-version claim and no session table. Other devices stay signed in until their 30-day cookie expires; "sign out everywhere" remains out of scope for Phase 6.
+No phase has specs yet, so the next unit is a **docs PR**, not code: write the next phase's spec set and move `features/INDEX.md`, `HANDOFF.md`, and this file with it, then implement `N.1` only after that PR merges.
+
+Session decision, made in 6.3: **no revocation, by design.** A successful change keeps the current session JWT valid, so there is no `passwordChangedAt` / token-version claim and no session table. Other devices stay signed in until their 30-day cookie expires; "sign out everywhere" remains out of scope for Phase 6.
 
 ---
 
@@ -221,6 +223,18 @@ Phase 5 closes with two gates, both built to bite. `e2e/workroom.spec.ts`: the l
 ### Phase 6 Accounts specs (written, not implemented)
 
 Four feature specs in `features/phase-6-accounts/` (6.1–6.4): member role + `signUp` helper, signup page + auto sign-in, change-password `/settings`, Playwright smoke. Design: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Parent design amended. No application code in that commit.
+
+### 6.4 Accounts Playwright smoke (completed)
+
+`e2e/accounts.spec.ts`, 6 tests, plus the flag contract documented in `playwright.config.ts` and `.env.example`. Two runs, because one Next process cannot flip `AUTH_SIGNUP_ENABLED` mid-suite: with the flag **off**, 4 passed / 2 skipped (the open-signup journeys skip, the closed state is asserted — `/login` has no `Create an account` link and reads `Signups closed`, `/signup` serves the closed heading with no form and no password field); with the flag **on**, the full suite is **37 passed / 1 skipped in 1.4 m**, and the skipped one is the closed test.
+
+The journeys prove what unit tests cannot: signup writes a real member and tenant through the Drizzle `db.batch` path and lands on `/` with that member's address as the identity chip, no Reset demo, and no demo seed orgs listed in `/crm/organizations`; change-password runs end to end — wrong current → `Could not update password.`, correct → `Password updated.` with the session still on `/settings`, repeating the current password → `Choose a password different from your current one.`, logout, the old password gets the generic login error, and the new one reaches `/`. That final login is a bcrypt comparison against the hash 6.3's Drizzle repository wrote, so 6.3's write path is no longer covered only by a hand walk. Each journey signs up its own member on a fresh `Date.now()` address so a retry cannot land on an already-rotated password (the reason the dev DB grows by two `e2e.accounts.` members per run). Navigations get a 20 s timeout (the loaded dev DB exceeds the default 5 s), server-action assertions use the same 20 s, and each journey raises the test cap to 120 s.
+
+Deliberate: the flag is **not** forced in `playwright.config.ts` (setting it in `webServer.env` would not work — the spec reads the *runner's* env to pick its half, so the closed test would then hit an open server), so the open journeys need `AUTH_SIGNUP_ENABLED=true` in the runner's environment, documented in the config and `.env.example` along with the `reuseExistingServer` caveat. **CI runs both halves:** `.github/workflows/ci.yml` gained a second Playwright step (`AUTH_SIGNUP_ENABLED=true npx playwright test e2e/accounts.spec.ts`) under the same secrets gate — without it both journeys would skip in every CI run and a signup regression would ship green. The `e2e` job is still inert until the repo has Actions secrets. `npm run db:migrate` was applied to the dev branch before the runs; `npm test` 602 passed (98 files); `npm run build` exit 0 and it typechecks `e2e/`.
+
+The change-password journey also covers 6.3's `unchanged` code (repeat the current password → `Choose a password different from your current one.`) and asserts the session survives a successful change (still on `/settings`, identity chip still visible) rather than inferring that from the banner alone.
+
+Writing that journey found a defect in already-merged 6.3 code: `app/(authenticated)/settings/change-password-form.tsx` had a `//` comment sitting among its JSX children, which React renders as a text node — so `/settings` displayed the comment verbatim above the success banner. Fixed to `{/* … */}` and guarded by an e2e assertion that the page contains no `//` text. The journey's helper was also made honest: React 19's post-action reset could land on top of Playwright's fills, and because the fields are `required` the browser then blocked the submit with no request at all, making a real failure look like a no-op. The helper now waits for the reset and asserts each value stuck before clicking.
 
 ### 6.3 Change password and settings (completed)
 
