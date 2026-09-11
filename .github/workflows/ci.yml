@@ -14,6 +14,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # --omit=dev is deliberate: drizzle-kit's nested esbuild (moderate,
+      # GHSA-67mh-4wv8-2f99) is a devDependency and is not in the Vercel
+      # runtime. Do not "fix" it by downgrading drizzle-kit to 0.18.
+      # Production HIGH/CRITICAL must not be waived the same way.
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm test
       - run: npm run build
         env:

@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** Phase 9 Security specs are written (9.1–9.6), not implemented. Next implementable unit is 9.1 after this docs PR merges.
+**None in progress.** 9.1 (drizzle-orm 0.45.2 + CI production HIGH audit) is complete on this branch. Next implementable unit is 9.2 after this PR merges.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 9 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`. A `script-src` CSP stays out until a feature has to touch `middleware.ts`.
 
@@ -347,3 +347,9 @@ Four probes, each reversed: a local array back in the dialog fails the only-defi
 ### Phase 9 specs (written, not implemented)
 
 Six feature specs in `features/phase-9-security/` (9.1–9.6): patch drizzle-orm + CI `npm audit --omit=dev --audit-level=high`, isolation headers, dummy-hash login verify, auth attempt throttle, bounded Rolodex import, text ceilings + LIKE escape. Design: `docs/superpowers/specs/2026-09-11-security-design.md`. Stay a modular monolith. No RLS, no session revocation, no OAuth, no mailer, no MFA, no `script-src` CSP, no `middleware.ts` rename. Next implementable unit is 9.1 after this docs PR merges.
+
+### 9.1 Patch drizzle-orm + CI SCA (completed)
+
+`drizzle-orm` is `^0.45.2` (lockfile `0.45.2`, was `0.44.7`). CI job `ci` runs `npm audit --omit=dev --audit-level=high` after `npm ci` and before `npm test`; the step comment waives drizzle-kit's nested esbuild (dev-only) and forbids waiving production HIGH the same way. `e2e` does not audit. No query-module edits; `sql.identifier(` is still absent under `app/` `lib/` `components/`.
+
+Verified: `npm ls drizzle-orm --omit=dev` → `drizzle-orm@0.45.2`; `npm audit --omit=dev --audit-level=high` exit 0 (`found 0 vulnerabilities`); `env -u DATABASE_URL npm test` 661 passed (103 files); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0. No Playwright. Next is 9.2 after this PR merges.
