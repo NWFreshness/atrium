@@ -21,6 +21,13 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      AUTH_OWNER_EMAIL: ${{ secrets.AUTH_OWNER_EMAIL }}
+      AUTH_OWNER_PASSWORD: ${{ secrets.AUTH_OWNER_PASSWORD }}
+      AUTH_DEMO_EMAIL: ${{ secrets.AUTH_DEMO_EMAIL }}
+      AUTH_DEMO_PASSWORD: ${{ secrets.AUTH_DEMO_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,11 +37,6 @@ jobs:
       - run: npm ci
       - name: Detect e2e secrets
         id: e2e
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          AUTH_OWNER_EMAIL: ${{ secrets.AUTH_OWNER_EMAIL }}
-          AUTH_OWNER_PASSWORD: ${{ secrets.AUTH_OWNER_PASSWORD }}
         run: |
           if [ -n "$DATABASE_URL" ] && [ -n "$AUTH_SECRET" ] && [ -n "$AUTH_OWNER_EMAIL" ] && [ -n "$AUTH_OWNER_PASSWORD" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
@@ -47,13 +49,6 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run Playwright
         if: steps.e2e.outputs.ready == 'true'
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          AUTH_OWNER_EMAIL: ${{ secrets.AUTH_OWNER_EMAIL }}
-          AUTH_OWNER_PASSWORD: ${{ secrets.AUTH_OWNER_PASSWORD }}
-          AUTH_DEMO_EMAIL: ${{ secrets.AUTH_DEMO_EMAIL }}
-          AUTH_DEMO_PASSWORD: ${{ secrets.AUTH_DEMO_PASSWORD }}
         run: npx playwright test
       # One Next process cannot flip AUTH_SIGNUP_ENABLED mid-suite, so the signup
       # journeys in e2e/accounts.spec.ts cannot run in the step above (they skip, and
@@ -62,11 +57,5 @@ jobs:
       - name: Run Playwright (open signup)
         if: steps.e2e.outputs.ready == 'true'
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          AUTH_OWNER_EMAIL: ${{ secrets.AUTH_OWNER_EMAIL }}
-          AUTH_OWNER_PASSWORD: ${{ secrets.AUTH_OWNER_PASSWORD }}
-          AUTH_DEMO_EMAIL: ${{ secrets.AUTH_DEMO_EMAIL }}
-          AUTH_DEMO_PASSWORD: ${{ secrets.AUTH_DEMO_PASSWORD }}
           AUTH_SIGNUP_ENABLED: "true"
         run: npx playwright test e2e/accounts.spec.ts

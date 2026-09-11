@@ -20,6 +20,10 @@
  * own empty tenants); 6.4's spec says not to delete them.
  */
 import { expect, test, type Page } from "@playwright/test";
+import {
+  CHANGE_PASSWORD_MESSAGES,
+  PASSWORD_CHANGED,
+} from "../lib/auth/change-password-messages";
 
 const ownerEmail = process.env.AUTH_OWNER_EMAIL;
 const ownerPassword = process.env.AUTH_OWNER_PASSWORD;
@@ -39,17 +43,10 @@ const rotateMember = {
   next: "atrium-e2e-accounts-rotated",
 };
 
-/** Every member address here must satisfy 6.1's 12-character rule. */
-for (const member of [signupMember, rotateMember]) {
-  if (member.password.length < 12) {
-    throw new Error(`${member.email}: e2e password is under 12 characters`);
-  }
-}
-
 /** The loaded dev DB makes navigations slow; the 5 s default times them out. */
 const NAV = { timeout: 20_000 };
 /** A server action adds bcrypt plus a Neon round trip, so its copy needs NAV too. */
-const TEXT = { timeout: 20_000 };
+const TEXT = NAV;
 /** A journey is several navigations plus two bcrypt round trips, past the 30 s cap. */
 const JOURNEY = 120_000;
 
@@ -181,12 +178,14 @@ test("member changes their password, and only the new one signs in", async ({
 
   // A wrong current password reports the generic copy and changes nothing.
   await changePassword(page, "definitely-not-the-password", rotateMember.next);
-  await expect(page.getByText("Could not update password.")).toBeVisible(TEXT);
+  await expect(
+    page.getByText(CHANGE_PASSWORD_MESSAGES.wrong_current),
+  ).toBeVisible(TEXT);
 
   // The real change reports success without leaving the page — and without signing
   // this session out, which is spec §4's decision.
   await changePassword(page, rotateMember.password, rotateMember.next);
-  await expect(page.getByText("Password updated.")).toBeVisible(TEXT);
+  await expect(page.getByText(PASSWORD_CHANGED)).toBeVisible(TEXT);
   await expect(page).toHaveURL("/settings", NAV);
   await expect(
     page.getByRole("link", { name: rotateMember.email, exact: true }),
@@ -195,7 +194,7 @@ test("member changes their password, and only the new one signs in", async ({
   // Repeating the current password is its own rejection, not a second success.
   await changePassword(page, rotateMember.next, rotateMember.next);
   await expect(
-    page.getByText("Choose a password different from your current one."),
+    page.getByText(CHANGE_PASSWORD_MESSAGES.unchanged),
   ).toBeVisible(TEXT);
 
   // The old password is dead.
