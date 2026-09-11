@@ -29,7 +29,7 @@ Self-serve credentials accounts on the Auth.js stack that already exists. No new
 | --- | --- | --- |
 | Auth library | Keep Auth.js Credentials + JWT | Signup is one action; ripping 0.3 is not worth it |
 | Email proof | None this phase | No mailer; instant access after signup |
-| Email matching | Case-insensitive on both sides (signup's duplicate check and login's lookup); the address is stored as typed | One mailbox must not become two accounts, and the member must not be locked out by a case slip — there is no password reset this phase |
+| Email matching | Case-insensitive on both sides (signup's duplicate check and login's lookup); the address is stored as typed | One mailbox must not become two accounts, and the member must not be locked out by a case slip — there is no password reset this phase. Phase 8.1 makes the unique index match (`lower(email)`), which closes the concurrent case-variant race this phase left |
 | Openness | `AUTH_SIGNUP_ENABLED`; missing or not `true` is closed | Fail closed on a public Vercel deploy |
 | After signup | Auto sign-in to `/` | Password was just typed |
 | Password change | Logged-in `/settings` for every role | No mailer required |
@@ -37,7 +37,7 @@ Self-serve credentials accounts on the Auth.js stack that already exists. No new
 | Delete account | Out | Can wait |
 | OAuth | Out | Account linking + provider apps + Playwright are their own feature; `accounts` table already exists |
 | Extra members on a tenant | Out | Still one user per tenant |
-| Password rule | At least 12 characters. No complexity theatre | Measurable; bcrypt stays |
+| Password rule | At least 12 characters. No complexity theatre | Measurable; bcrypt stays. Phase 8.2 changes the floor from UTF-16 units to Unicode code points; the 72-byte ceiling is unchanged |
 | Duplicate email | Generic “Could not create account” | Same spirit as login: do not advertise which emails exist |
 | Tenant name for a member | The new user’s email (unique, like `users.email`) | `tenants.name` is already unique; “Owner” / “Demo” stay reserved by seed |
 | Settings chrome | Identity-chip email links to `/settings`; not a fifth app tab | Preserves Home/CRM/Space/Rolodex/Groove `exact: true` smokes |

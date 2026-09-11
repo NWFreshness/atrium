@@ -151,7 +151,7 @@ Owner tenant: empty. No welcome records.
 
 Each of the four applications is a phase. Foundation is phase 0 because auth, tenancy, and the shell must exist first.
 
-Build order is 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7. One feature at a time. No parallel features that touch the same files.
+Build order is 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8. One feature at a time. No parallel features that touch the same files.
 
 ### Phase 0 — Atrium platform
 
@@ -215,6 +215,12 @@ Feature specs: `features/phase-6-accounts/` (6.1–6.4). Design: [2026-09-11-acc
 Harden the structure Phases 0–6 already chose. No new product. ADRs in `docs/adr/`, demo reset as one Neon `db.batch`, `tenantId` indexes, split query modules, a client/server import fitness function. Stay one Next.js deployable on one Neon database. No RLS (neon-http cannot hold `SET LOCAL`), no session revocation (6.3), no extracting Groove, no unifying drag libraries, no TanStack Query.
 
 Feature specs: `features/phase-7-architecture/` (7.1–7.5). Design: [2026-09-11-architecture-design.md](./2026-09-11-architecture-design.md). Board: `features/INDEX.md`.
+
+### Phase 8 — Integrity
+
+Close three claimed interfaces that are still shallow: email uniqueness is case-insensitive in application code and byte-exact in Postgres; the password minimum counts UTF-16 units so six emoji pass as 12; Rolodex import keeps two `PERSON_FIELDS` lists that have already drifted. No new app, no RLS, no OAuth. Design: [2026-09-11-integrity-design.md](./2026-09-11-integrity-design.md).
+
+Feature specs: `features/phase-8-integrity/` (8.1–8.3). Board: `features/INDEX.md`.
 
 ---
 
@@ -291,4 +297,4 @@ Do not add TanStack packages until the feature that uses them.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-Progress: `features/INDEX.md`. Phases 0–6 complete. Phase 7 Architecture specs 7.1–7.5 exist. Next implementable unit is 7.1, after the Phase 7 docs PR merges.
+Progress: `features/INDEX.md`. Phases 0–7 complete. Phase 8 Integrity specs 8.1–8.3 exist. Next implementable unit is 8.1, after the Phase 8 docs PR merges.

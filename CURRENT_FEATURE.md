@@ -1,8 +1,8 @@
 # Current feature
 
-**None in progress. Phase 7 Architecture is complete** — 7.1 (ADRs), 7.2 (atomic demo reset), 7.3 (`tenantId` indexes), 7.4 (query-module split) and 7.5 (client/server import boundary) are all done. Nothing is specced after 7.5: the next unit is a docs PR writing the next phase's specs, one spec per feature, as 7.1–7.5 arrived in `#64`.
+**None in progress.** Phase 8 Integrity is specced, not implemented — 8.1 (case-insensitive unique email), 8.2 (password policy), 8.3 (shared `PERSON_FIELDS`). Next implementable unit is 8.1 after this docs PR merges.
 
-Session decision, made in 6.3: **no revocation, by design.** Phase 7 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`.
+Session decision, made in 6.3: **no revocation, by design.** Phase 8 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`.
 
 ---
 
@@ -315,3 +315,7 @@ Verified as an equivalence, not just a green suite. The gate was **red on main**
 The adversarial review **broke the first implementation three ways**, all fixed and covered by probes: it required a terminating semicolon (a semicolon-free file produced zero imports), it missed a statement following a `;` on the same line, and it stripped comments with position-blind regexes — so `const OPEN = "/*"; const CLOSE = "*/";` deleted the import between them. Fixing that introduced a bug only a probe caught: a regex detector that tested the last character instead of the last non-space character, which silenced the walk again. Two findings are deliberate rather than fixed — `queries-shared.ts` stays forbidden to components (the spec's own regex is that broad, and a runtime Drizzle import inside it would be caught transitively anyway), and unresolvable relative or `@/` specifiers fail loudly while bare specifiers are trusted, recorded as a limit since the repo has one alias (`@/*`) and no `imports` field. A real inaccuracy the review found in the fix's first comment — that `circle-stats.ts` had no edge to the database layer "at all, not even a type edge" — is corrected: it now takes the type from the barrel like the other 18 consumers.
 
 One negative result is recorded rather than dressed up: a bundle-level probe of `.next/static` looking for `tenantId is required` found it in no client chunk, before or after the fix, so it demonstrates nothing — the production bundler appears to tree-shake the unused sibling export, and route chunks are hash-named. The source-grep is the fitness function, as the spec intended, and no bundle-size change is claimed.
+
+### Phase 8 Integrity specs (written, not implemented)
+
+Three feature specs in `features/phase-8-integrity/` (8.1–8.3): case-insensitive unique email index, shared password policy (12 Unicode code points / 72 UTF-8 bytes), client-safe `PERSON_FIELDS` catalog. Design: `docs/superpowers/specs/2026-09-11-integrity-design.md`. Stay a modular monolith. No RLS, no session revocation, no OAuth, no mailer, no `middleware.ts` rename. Next implementable unit is 8.1 after this docs PR merges.
