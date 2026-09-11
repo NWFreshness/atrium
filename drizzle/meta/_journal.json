@@ -43,6 +43,13 @@
       "when": 1789157920486,
       "tag": "0005_uneven_prodigy",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789161590450,
+      "tag": "0006_sleepy_preak",
+      "breakpoints": true
     }
   ]
 }

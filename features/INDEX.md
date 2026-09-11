@@ -156,7 +156,7 @@ Close three claimed interfaces that are still shallow: case-insensitive email un
 
 | ID  | Feature                                                                              | Status  | Depends on |
 | --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
-| 8.1 | [Case-insensitive unique email](./phase-8-integrity/8.1-case-insensitive-email.md)   | specced | 6.1        |
+| 8.1 | [Case-insensitive unique email](./phase-8-integrity/8.1-case-insensitive-email.md)   | completed | 6.1        |
 | 8.2 | [Shared password policy](./phase-8-integrity/8.2-password-policy.md)                 | specced | 6.3        |
 | 8.3 | [Client-safe person field catalog](./phase-8-integrity/8.3-person-field-catalog.md)  | specced | 7.5, 3.4   |
 

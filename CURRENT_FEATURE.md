@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** Phase 8 Integrity is specced, not implemented — 8.1 (case-insensitive unique email), 8.2 (password policy), 8.3 (shared `PERSON_FIELDS`). Next implementable unit is 8.1 after this docs PR merges.
+**None in progress.** 8.1 (case-insensitive unique email) is implemented on `feat/8.1-case-insensitive-email` and awaiting merge. Next implementable unit is 8.2 (password policy) from `main` after that PR merges; 8.3 (`PERSON_FIELDS`) follows.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 8 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`.
 
@@ -319,3 +319,11 @@ One negative result is recorded rather than dressed up: a bundle-level probe of 
 ### Phase 8 Integrity specs (written, not implemented)
 
 Three feature specs in `features/phase-8-integrity/` (8.1–8.3): case-insensitive unique email index, shared password policy (12 Unicode code points / 72 UTF-8 bytes), client-safe `PERSON_FIELDS` catalog. Design: `docs/superpowers/specs/2026-09-11-integrity-design.md`. Stay a modular monolith. No RLS, no session revocation, no OAuth, no mailer, no `middleware.ts` rename. Next implementable unit is 8.1 after this docs PR merges.
+
+### 8.1 Case-insensitive unique email (completed)
+
+`users.email` no longer carries `.unique()`; the table declares `uniqueIndex("users_email_lower_idx").on(sql\`lower(${table.email})\`)` next to `users_tenantId_idx`. `drizzle/0006_sleepy_preak.sql` is the generated pair — `ALTER TABLE "users" DROP CONSTRAINT IF EXISTS "users_email_unique";` and `CREATE UNIQUE INDEX IF NOT EXISTS "users_email_lower_idx" ON "users" USING btree (lower("email"));` — hand-made idempotent with the name-not-definition caveat documented in the file (0004/0005 precedent). `npm run db:generate` reports no drift and the 0006 snapshot adds exactly one unique expression index: no column, enum, FK or `tenants_name_unique` change.
+
+**The spec's file list did not name `lib/db/seed.ts`, and it had to change.** `upsertUserByEmail` was `onConflictDoUpdate({ target: users.email })`, and Postgres cannot infer an expression index from a column-name conflict specification — with the byte-exact unique dropped, that statement raises 42P10 and `npm run db:seed` would have failed silently relative to CI, which never runs it. It now looks the row up on `lower(email)` (matching the index and `lib/auth/users.ts`) and updates it by id, else inserts with an untargeted `on conflict do nothing`; the stored address keeps its casing. The memory repository compares case-insensitively too, because that is the database's behaviour. `lib/auth/signup.ts`'s stale doc comment (it claimed login was exact-match *and* the unique index case-sensitive) now describes the index as the race backstop, and `lib/auth/signup.test.ts`'s duplicate-key message names the live index.
+
+Verified on real PostgreSQL 16, not only in unit tests: a throwaway local cluster took all seven migrations in order, the new upsert's own SQL (captured from the repository with a recording `Database`) inserted once and updated a case-variant in place with one row left and the casing preserved, a case-variant insert was refused by `users_email_lower_idx`, and the old `on conflict ("email")` upsert reproduced the 42P10 failure. Both halves of criterion 3 were proven by injection and reversed. Controller: `env -u DATABASE_URL npm test` 646 passed (101 files), `AUTH_SECRET=ci-build-placeholder npm run build` exit 0, no new dependencies. Limits: unit tests cannot observe a concurrent race (the schema test plus the 23505 mapping are the gate, and `e2e/accounts.spec.ts` covers only the sequential duplicate), and the Neon dev branch is not migrated yet — `npm run db:migrate` then `npm run db:seed` on the dev URL is the post-merge step.

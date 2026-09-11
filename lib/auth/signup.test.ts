@@ -282,7 +282,7 @@ describe("createDrizzleSignUpRepository", () => {
     const repo = createDrizzleSignUpRepository(
       stubDb(async () => {
         throw neonError(
-          'duplicate key value violates unique constraint "users_email_unique"',
+          'duplicate key value violates unique constraint "users_email_lower_idx"',
         );
       }),
     );

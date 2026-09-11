@@ -192,9 +192,12 @@ function isUniqueViolation(error: unknown): boolean {
  * every statement in one transaction, so the tenant and the member are all or
  * nothing.
  *
- * The email lookup is case-insensitive on purpose: the `users_email_unique`
- * index is not, and login is exact-match, so a case-variant duplicate would be
- * a second account nobody can merge or delete.
+ * The email lookup is case-insensitive on purpose: `users_email_lower_idx`
+ * uniques `lower(email)`, login compares the same way, and there is no password
+ * reset — so a case-variant duplicate would be a second account nobody can merge
+ * or delete. This pre-check is the friendly path, not the guarantee: two
+ * concurrent signups both pass it, and the unique index turns the loser into the
+ * same generic `unavailable` below.
  */
 export function createDrizzleSignUpRepository(db: Database): SignUpRepository {
   return {
