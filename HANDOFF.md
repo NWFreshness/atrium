@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Nothing is in progress.** 8.1 (case-insensitive unique email) is implemented on `feat/8.1-case-insensitive-email` and awaiting merge; Phase 8 continues with 8.2 (password policy in code points) then 8.3 (shared `PERSON_FIELDS`). Implement 8.2 from `main` after 8.1 merges. Do not push to `main`. Do not merge unless asked.
+**Stop. Nothing is in progress.** 8.2 (shared password policy, 12 code points) is implemented on `feat/8.2-password-policy` and awaiting merge; the last unit of Phase 8 is 8.3 (client-safe `PERSON_FIELDS`), implemented from `main` after 8.2 merges. Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-11)
 
-Phases 0–7 are complete. 8.1 shipped the `lower(email)` unique index (`users_email_lower_idx`) in place of `users.email`'s byte-exact unique, plus the seed change that followed from it. Phase 8 continues: 8.2 moves the password floor to Unicode code points behind one policy module, 8.3 gives Rolodex import a single client-safe `PERSON_FIELDS` catalog. Start 8.2 from `main` once 8.1 merges.
+Phases 0–7 are complete. 8.1 shipped the `lower(email)` unique index (`users_email_lower_idx`), its migration applied on the dev branch, plus the seed change that followed from it. 8.2 moved the password floor to 12 Unicode code points behind `lib/auth/password-policy.ts`, which both signup and change-password now call. Phase 8's last unit is 8.3: one client-safe `PERSON_FIELDS` catalog for Rolodex import.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -23,7 +23,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-8-integrity/8.2-password-policy.md` — next implementable unit, from `main` after 8.1 merges. 8.3 (`8.3-person-field-catalog.md`) follows; do not run two features at once.
+6. `features/phase-8-integrity/8.3-person-field-catalog.md` — the last unit of Phase 8, from `main` after 8.2 merges. Do not run two features at once.
 
 ## How we ship
 
@@ -38,7 +38,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 
 `.env` is gitignored. Do not commit it. Do not paste connection strings or passwords into chat or tickets.
 
-- **Dev:** local `.env` points at a Neon **dev** branch. If pages 500 on missing tables, run `npm run db:migrate` then `npm run db:seed` against the dev URL. Dummy local users live only on that branch. Migrations `0005_uneven_prodigy.sql` (19 `tenantId` indexes) and `0006_sleepy_preak.sql` (8.1's `lower(email)` unique index) are not applied yet — run `npm run db:migrate` then `npm run db:seed` after 8.1 merges. If the dev branch already holds two rows that collide on `lower(email)`, the index create will fail: that is the invariant asserting itself.
+- **Dev:** local `.env` points at a Neon **dev** branch. If pages 500 on missing tables, run `npm run db:migrate` then `npm run db:seed` against the dev URL. Dummy local users live only on that branch. The dev branch is current — `0005` and `0006` were applied after 8.1 merged (`npm run db:migrate` → all seven migrations, `npm run db:seed` exit 0; `users_email_lower_idx` verified present, `users_email_unique` gone). Prod still needs the same `npm run db:migrate` on deploy.
 - **Prod:** production `DATABASE_URL` belongs in Vercel only. Git `drizzle/` is the schema source of truth. Apply the same `npm run db:migrate` against prod when deploying; do not copy data from dev. Seed prod with the real owner email/password via env, not the dummy local pair.
 - Unit tests must pass **without** `DATABASE_URL`.
 - CI job `ci`: `npm ci`, `npm test`, `npm run build` (dummy `AUTH_SECRET` for build). Job `e2e`: Playwright, skips unless GitHub secrets `DATABASE_URL`, `AUTH_SECRET`, `AUTH_OWNER_EMAIL`, `AUTH_OWNER_PASSWORD` exist.
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-8.1 is implemented and awaiting merge. After it merges: `git checkout main && git pull`, branch `feat/8.2-password-policy`, implement only 8.2.
+8.2 is implemented and awaiting merge. After it merges: `git checkout main && git pull`, branch `feat/8.3-person-field-catalog`, implement only 8.3 — and close Phase 8 in that PR (INDEX, the CURRENT_FEATURE pointer, and this file).

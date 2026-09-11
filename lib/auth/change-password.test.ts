@@ -158,6 +158,33 @@ describe("changePassword", () => {
     expect(repo.users[0].passwordHash).toBe(before);
   });
 
+  it("counts the floor in code points after the current password is proved", async () => {
+    const repo = await seededRepo();
+    const before = repo.users[0].passwordHash;
+
+    // Twelve UTF-16 units, six visible characters: this passed before 8.2.
+    expect("\u{1F600}".repeat(6)).toHaveLength(12);
+    expect(
+      await codeOf(() =>
+        changePassword(
+          USER_ID,
+          { current: CURRENT, next: "\u{1F600}".repeat(6) },
+          { repo },
+        ),
+      ),
+    ).toBe("weak_password");
+    expect(repo.users[0].passwordHash).toBe(before);
+
+    await changePassword(
+      USER_ID,
+      { current: CURRENT, next: "\u{1F600}".repeat(12) },
+      { repo },
+    );
+    expect(
+      await verifyPassword("\u{1F600}".repeat(12), repo.users[0].passwordHash),
+    ).toBe(true);
+  });
+
   it("rejects a new password over the 72-byte bcrypt limit", async () => {
     const repo = await seededRepo();
     const before = repo.users[0].passwordHash;

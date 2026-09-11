@@ -137,6 +137,29 @@ describe("signUp", () => {
     expect(member.role).toBe("member");
   });
 
+  it("counts the minimum in code points, so six emoji do not clear it", async () => {
+    const { create, repo } = harness();
+
+    // Twelve UTF-16 units, six visible characters: this passed before 8.2.
+    expect("\u{1F600}".repeat(6)).toHaveLength(12);
+    expect(
+      await codeOf(() =>
+        create({
+          email: "emoji@atrium.local",
+          password: "\u{1F600}".repeat(6),
+        }),
+      ),
+    ).toBe("weak_password");
+    expect(repo.users).toEqual([]);
+
+    // Twelve code points and 48 bytes clears both bounds.
+    const member = await create({
+      email: "emoji@atrium.local",
+      password: "\u{1F600}".repeat(12),
+    });
+    expect(member.role).toBe("member");
+  });
+
   it("rejects a password past the bcrypt byte limit instead of silently truncating", async () => {
     const { create, repo } = harness();
 
