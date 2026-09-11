@@ -29,6 +29,13 @@
       "when": 1788971158336,
       "tag": "0003_dapper_shinobi_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789144647349,
+      "tag": "0004_heavy_earthquake",
+      "breakpoints": true
     }
   ]
 }

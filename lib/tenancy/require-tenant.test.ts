@@ -74,7 +74,23 @@ describe("requireTenant", () => {
     });
   });
 
-  it("throws when the session role is not owner or demo", async () => {
+  it("returns member role from the session", async () => {
+    const result = await requireTenant(async () => ({
+      user: {
+        id: "user-member",
+        tenantId: "tenant-member",
+        role: "member" as const,
+      },
+    }));
+
+    expect(result).toEqual({
+      userId: "user-member",
+      tenantId: "tenant-member",
+      role: "member",
+    });
+  });
+
+  it("throws when the session role is not a known role", async () => {
     await expect(
       requireTenant(async () => ({
         user: {
