@@ -36,6 +36,13 @@
       "when": 1789144647349,
       "tag": "0004_heavy_earthquake",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789157920486,
+      "tag": "0005_uneven_prodigy",
+      "breakpoints": true
     }
   ]
 }

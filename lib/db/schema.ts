@@ -1,4 +1,5 @@
 import {
+  index,
   integer,
   pgEnum,
   pgTable,
@@ -25,23 +26,27 @@ export const tenants = pgTable("tenants", {
     .notNull(),
 });
 
-export const users = pgTable("users", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  name: text("name"),
-  email: text("email").notNull().unique(),
-  emailVerified: timestamp("emailVerified", { mode: "date" }),
-  image: text("image"),
-  passwordHash: text("passwordHash").notNull(),
-  tenantId: text("tenantId")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "restrict" }),
-  role: userRoleEnum("role").notNull(),
-  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const users = pgTable(
+  "users",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: text("name"),
+    email: text("email").notNull().unique(),
+    emailVerified: timestamp("emailVerified", { mode: "date" }),
+    image: text("image"),
+    passwordHash: text("passwordHash").notNull(),
+    tenantId: text("tenantId")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    role: userRoleEnum("role").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("users_tenantId_idx").on(table.tenantId)],
+);
 
 export const accounts = pgTable(
   "accounts",
