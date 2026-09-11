@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** Phase 7 Architecture is specced — 7.1 (ADRs), 7.2 (atomic demo reset), 7.3 (`tenantId` indexes), 7.4 (split query modules), 7.5 (client/server import boundary). Next implementable unit is **7.1**, only after this docs PR merges. Branch `feat/7.1-architecture-adrs` from current `main`. Do not start 7.1 on the docs branch.
+**None in progress.** Phase 7 Architecture: 7.1 (ADRs) is done — six accepted records in `docs/adr/` plus a C4 (see the log). Next implementable unit is **7.2**, the atomic demo reset. Branch `feat/7.2-…` from current `main`.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 7 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`.
 
@@ -259,3 +259,13 @@ Schema + helper for Phase 6. `lib/db/schema.ts` widens `userRoles` to `["owner",
 ### Phase 7 Architecture specs (written, not implemented)
 
 Five feature specs in `features/phase-7-architecture/` (7.1–7.5): ADRs, atomic demo reset, tenantId indexes, split query modules, client/server import boundary. Design: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Stay a modular monolith. No RLS, no session revocation, no extracting Groove, no unifying drag libraries, no TanStack Query. Next implementable unit is 7.1 after this docs PR merges.
+
+### 7.1 Architecture ADRs (completed)
+
+Docs only: `docs/adr/` with six accepted records plus an index that carries the C4 context and container views. ADR-0001 keeps the modular monolith (one deployable, one Neon database, four module folders, quantum = app + shared DB); 0002 keeps `drizzle-orm/neon-http` and `db.batch` because `db.transaction()` throws on that driver; 0003 records the 6.3 session decision (JWT, no revocation, 30-day cookies survive a password change); 0004 keeps Groove off the database; 0005 records signup failing closed with `force-dynamic` pages; 0006 keeps tenancy application-enforced and defers RLS for the `SET LOCAL` constraint. Each has an `## Options considered (benefits / costs)` section with real benefits for the rejected options and a `## Reversal trigger` naming the event that reopens it — 75–79 lines each. No code, no route, no dependency.
+
+Verified: `env -u DATABASE_URL npm test` 602 passed (98 files); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0 with the route table unchanged. Spec PASS on all six criteria. The docs checks were run by hand because nothing automated reads `docs/adr/` — recorded as the feature's deliberate limit, with a `tests/adr.test.ts` (in the shape of `tests/workroom-namespace.test.ts`) named as the follow-up if the records start drifting.
+
+Two review subagents ran before the commit. Quality raised three should-fix items, all fixed: the README's precedence line contradicted its own authority sentence; the container view claimed Browser JavaScript carries no Drizzle while the design records the live `/rolodex/circles` → `move-person.ts` → `queries.ts` leak (now a "must not", naming 7.5 and admitting today's leak); and ADR-0003 attributed the `sessions` table to revocation when the parent design keeps it for OAuth. Nine nitpicks were fixed too: the level-2 arrowheads pointed opposite their labels; the flag check is the action's first *guard*, not its first statement; `lib/space/queries.ts` is 1217 lines, not ≤1200; ADR-0004's "first app added after the pattern" and its unverifiable reference-implementation claim (re-checked against that repository's tree); ADR-0001's unmeasurable trigger; Web Audio annotated as in-process rather than silently absent from the C4.
+
+Spec compliance flagged `HANDOFF.md` as a scope violation; not accepted, with the reasoning in the spec's shipped notes (6.2, 6.3 and 6.4 each updated HANDOFF in their own PR, and a stale stop-line is the failure the skill warns about). 7.2–7.5 stay `specced`; the phase is not marked complete.

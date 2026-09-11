@@ -2,17 +2,17 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 7 Architecture is specced (7.1–7.5). Nothing is in progress.** Do not push to `main`. Do not merge unless asked. Do not implement 7.1 until this docs PR is merged. Then branch `feat/7.1-architecture-adrs` from current `main`.
+**Stop. Phase 7 Architecture is in progress: 7.1 (ADRs) is done.** Do not push to `main`. Do not merge unless asked. Next implementable unit is 7.2, the atomic demo reset.
 
 ## Where we are (2026-09-11)
 
-Phases 0–6 are complete. Phase 7 Architecture specs are written: 7.1 (ADRs), 7.2 (atomic demo reset), 7.3 (`tenantId` indexes), 7.4 (split query modules), 7.5 (client/server import boundary). No code for 7.x until 7.1 starts after merge.
+Phases 0–6 are complete. Phase 7 Architecture: 7.1 shipped `docs/adr/` — six accepted ADRs with reversal triggers plus a one-page C4 (docs-only, no code). 7.2 (atomic demo reset), 7.3 (`tenantId` indexes), 7.4 (split query modules) and 7.5 (client/server import boundary) are specced and waiting.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
-Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phase 7). Architecture: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
+Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phase 7). Architecture: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Decisions: `docs/adr/` (ADR-0001 … ADR-0006 + a C4 context/container view; the design doc wins if an ADR and it disagree). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
 
 Open decisions carried forward: the `users_email_unique` index is still case-sensitive (a `lower(email)` unique index would close the concurrent case-variant signup race). Session revocation was decided in 6.3: passwords can be changed, but existing JWTs stay valid — no revocation list, no `passwordChangedAt` claim, by spec. Phase 7 does not reopen that. RLS is deferred: neon-http cannot persist `SET LOCAL`. Other pre-existing items are listed in the 6.3 shipped notes (UTF-16 password length counting; the Rolodex client chunk that carries Drizzle — 7.5).
 
@@ -23,7 +23,7 @@ Open decisions carried forward: the `users_email_unique` index is still case-sen
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Phase 7 design + `features/phase-7-architecture/7.1-architecture-adrs.md`. Next implementable unit is 7.1 after this docs PR merges.
+6. `features/phase-7-architecture/7.2-atomic-demo-reset.md` — the next feature to implement
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Then implement 7.1 from `main` after the Phase 7 docs PR merges. Do not start 7.1 on the docs branch.
+Then implement `features/phase-7-architecture/7.2-atomic-demo-reset.md`.
