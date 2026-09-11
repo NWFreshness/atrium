@@ -1,4 +1,5 @@
 import type { WriteOpts } from "../db/batch-transaction";
+import { assertText, MAX_LONG_TEXT, MAX_SHORT_TEXT } from "../input/text";
 import {
   insertConnection,
   insertFact,
@@ -107,6 +108,38 @@ export type {
 };
 export { createMemoryRolodexRepository } from "./queries-memory";
 
+function short(value: unknown) {
+  return assertText(value, MAX_SHORT_TEXT);
+}
+
+function long(value: unknown) {
+  return assertText(value, MAX_LONG_TEXT);
+}
+
+function assertPersonText(input: {
+  name?: string;
+  email?: string | null;
+  phone?: string | null;
+  jobTitle?: string | null;
+  company?: string | null;
+  city?: string | null;
+  timezone?: string | null;
+  howMet?: string | null;
+  metWhere?: string | null;
+  notes?: string | null;
+}) {
+  if (input.name !== undefined) short(input.name);
+  if (input.email !== undefined) short(input.email);
+  if (input.phone !== undefined) short(input.phone);
+  if (input.jobTitle !== undefined) short(input.jobTitle);
+  if (input.company !== undefined) short(input.company);
+  if (input.city !== undefined) short(input.city);
+  if (input.timezone !== undefined) short(input.timezone);
+  if (input.howMet !== undefined) short(input.howMet);
+  if (input.metWhere !== undefined) short(input.metWhere);
+  if (input.notes !== undefined) long(input.notes);
+}
+
 export async function listPeople(
   tenantId: string,
   repo?: RolodexRepository,
@@ -136,6 +169,7 @@ export async function createPerson(
   opts?: WriteOpts,
 ): Promise<Person> {
   const scoped = requireTenantId(tenantId);
+  assertPersonText(input);
   const row = personRow(scoped, input);
   if (repo) {
     return createPersonInMemory(repo, row);
@@ -150,6 +184,7 @@ export async function updatePerson(
   repo?: RolodexRepository,
 ): Promise<Person | null> {
   const scoped = requireTenantId(tenantId);
+  assertPersonText(input);
   return repo
     ? updatePersonInMemory(repo, scoped, id, input)
     : updatePersonInDrizzle(scoped, id, input);

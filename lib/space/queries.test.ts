@@ -477,3 +477,21 @@ describe("a batched createPage", () => {
     expect(statementSql(batch.statements[0]!).params).toContain(7);
   });
 });
+
+describe("text ceilings", () => {
+  it("rejects a 20001-character block in the memory repo", async () => {
+    const memory = repo();
+    const page = await createPage(tenantA, { title: "Home" }, memory);
+    await expect(
+      createBlock(
+        tenantA,
+        {
+          pageId: page.id,
+          type: "paragraph",
+          content: { text: "a".repeat(20_001) },
+        },
+        memory,
+      ),
+    ).rejects.toThrow("text too long");
+  });
+});

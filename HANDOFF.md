@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Nothing is in progress.** 9.5 is complete on this branch (awaiting merge). Do not start 9.6 until 9.5 has a `mergedAt`. Do not push to `main`. Do not merge unless asked.
+**Stop. Nothing is in progress.** Phase 9 is complete on this branch (awaiting merge). Do not start a new phase until a docs PR lands. Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-11)
 
-Phases 0–8 and 9.1–9.4 are complete. `auth_throttles` is live on the Neon **dev** branch (8 migrations). 9.5 bounds Rolodex import. Next is 9.6 after this PR merges. Design: `docs/superpowers/specs/2026-09-11-security-design.md`.
+Phases 0–9 are complete. 9.6 is on `feat/9.6-text-contracts`. Design: `docs/superpowers/specs/2026-09-11-security-design.md`.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -23,7 +23,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. After 9.5 merges: `features/phase-9-security/9.6-text-contracts.md`. Do not start 9.6 on this branch.
+6. After 9.6 merges: nothing is queued. A new phase starts as a docs PR.
 
 ## How we ship
 
