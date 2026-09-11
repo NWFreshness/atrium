@@ -3,6 +3,14 @@ import { getDb, type Database } from "../db";
 import { hashPassword } from "../db/password";
 import { tenants, users, type UserRole } from "../db/schema";
 import { checkPasswordStrength } from "./password-policy";
+import {
+  assertNotThrottled,
+  clearFailures,
+  recordFailure,
+  type ThrottleClock,
+  type ThrottleStore,
+} from "./throttle";
+import { createLazyDrizzleThrottleStore } from "./throttle-drizzle";
 
 // One definition, in the policy module. Re-exported here so existing imports of
 // these names from `./signup` keep working without a second source of truth.
@@ -93,6 +101,11 @@ export type SignUpDeps = {
   env: Record<string, string | undefined>;
   repo: SignUpRepository;
   hash?: (plaintext: string) => Promise<string>;
+  throttle?: {
+    store: ThrottleStore;
+    now?: ThrottleClock;
+    ip?: string;
+  };
 };
 
 export async function signUp(
@@ -109,15 +122,41 @@ export async function signUp(
   // Read the repo once: `createDefaultSignUpDeps` builds it lazily, so accessing
   // `deps.repo` per statement would create a second Neon client mid-signup.
   const repo = deps.repo;
+  const attempt = { email, ip: deps.throttle?.ip };
+
+  if (deps.throttle) {
+    const gate = await assertNotThrottled(
+      deps.throttle.store,
+      attempt,
+      deps.throttle.now,
+    );
+    if (!gate.ok) {
+      throw new SignUpError("unavailable");
+    }
+  }
 
   if (await repo.findByEmail(email)) {
+    if (deps.throttle) {
+      await recordFailure(deps.throttle.store, attempt, deps.throttle.now);
+    }
     throw new SignUpError("unavailable");
   }
 
   const hash = deps.hash ?? hashPassword;
   const passwordHash = await hash(password);
 
-  return repo.createMember({ email, passwordHash });
+  try {
+    const member = await repo.createMember({ email, passwordHash });
+    if (deps.throttle) {
+      await clearFailures(deps.throttle.store, attempt);
+    }
+    return member;
+  } catch (error) {
+    if (deps.throttle) {
+      await recordFailure(deps.throttle.store, attempt, deps.throttle.now);
+    }
+    throw error;
+  }
 }
 
 export type MemorySignUpRepository = SignUpRepository & {
@@ -253,6 +292,9 @@ export function createDefaultSignUpDeps(): SignUpDeps {
     env: process.env,
     get repo() {
       return createDrizzleSignUpRepository(getDb());
+    },
+    get throttle() {
+      return { store: createLazyDrizzleThrottleStore() };
     },
   };
 }

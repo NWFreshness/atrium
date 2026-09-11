@@ -9,6 +9,8 @@ import {
   isSignupEnabled,
   signUp,
 } from "./signup";
+import { createMemoryThrottleStore } from "./throttle-memory";
+import { recordFailure } from "./throttle";
 
 const OPEN = { AUTH_SIGNUP_ENABLED: "true" };
 
@@ -238,6 +240,40 @@ describe("signUp", () => {
     expect(
       await codeOf(() => create({ email: "taken", password: "short" })),
     ).toBe("closed");
+  });
+
+  it("throws unavailable for a throttled email and does not insert", async () => {
+    const store = createMemoryThrottleStore();
+    const now = new Date("2026-09-11T12:00:00.000Z");
+    const repo = createMemorySignUpRepository();
+    const attempt = { email: "flood@atrium.local" };
+    for (let i = 0; i < 5; i += 1) {
+      await recordFailure(store, attempt, () => now);
+    }
+
+    const error = await errorOf(() =>
+      signUp(
+        { email: "flood@atrium.local", password: "long-enough-pass" },
+        { env: OPEN, repo, throttle: { store, now: () => now } },
+      ),
+    );
+
+    expect(error.code).toBe("unavailable");
+    expect(repo.users).toHaveLength(0);
+  });
+
+  it("still reports closed before consulting the throttle", async () => {
+    const store = createMemoryThrottleStore();
+    const repo = createMemorySignUpRepository();
+    expect(
+      await codeOf(() =>
+        signUp(
+          { email: "flood@atrium.local", password: "long-enough-pass" },
+          { env: {}, repo, throttle: { store } },
+        ),
+      ),
+    ).toBe("closed");
+    expect(repo.users).toHaveLength(0);
   });
 });
 

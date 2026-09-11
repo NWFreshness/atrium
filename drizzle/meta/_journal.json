@@ -50,6 +50,13 @@
       "when": 1789161590450,
       "tag": "0006_sleepy_preak",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789165873940,
+      "tag": "0007_jittery_retro_girl",
+      "breakpoints": true
     }
   ]
 }
