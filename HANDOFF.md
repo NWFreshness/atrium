@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 5 Workroom is complete (through 5.7). Phase 6 Accounts is in progress: 6.1 and 6.2 are done.** Do not push to `main`. Do not merge unless asked. Next implementable unit is 6.3.
+**Stop. Phase 5 Workroom is complete (through 5.7). Phase 6 Accounts is in progress: 6.1, 6.2, and 6.3 are done.** Do not push to `main`. Do not merge unless asked. Next implementable unit is 6.4, the Accounts Playwright smoke — and it is the unit that marks Phase 6 complete.
 
 ## Where we are (2026-09-11)
 
-Phases 0–5 are complete. Phase 6 Accounts: 6.1 (member role + `signUp` helper) and 6.2 (`/signup` + auto sign-in) are merged. 6.3 (`changePassword` + `/settings`) and 6.4 (Playwright smoke) are specced and waiting.
+Phases 0–5 are complete. Phase 6 Accounts: 6.1 (member role + `signUp` helper), 6.2 (`/signup` + auto sign-in), and 6.3 (change password on `/settings`) are merged. 6.4 (Playwright smoke) is specced and waiting, and closes the phase.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -14,7 +14,7 @@ Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
 Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phase 6). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
 
-Open decisions carried forward: the `users_email_unique` index is still case-sensitive (a `lower(email)` unique index would close the concurrent case-variant signup race), and sessions are stateless JWTs with no revocation list — so 6.3 must decide whether changing a password signs other devices out.
+Open decisions carried forward: the `users_email_unique` index is still case-sensitive (a `lower(email)` unique index would close the concurrent case-variant signup race). Session revocation was decided in 6.3: passwords can be changed, but existing JWTs stay valid — no revocation list, no `passwordChangedAt` claim, by spec. Other pre-existing items are listed in the 6.3 shipped notes (UTF-16 password length counting; the Rolodex client chunk that carries Drizzle).
 
 ## Read order
 
@@ -23,7 +23,7 @@ Open decisions carried forward: the `users_email_unique` index is still case-sen
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-6-accounts/6.3-change-password-settings.md` — the next feature to implement
+6. `features/phase-6-accounts/6.4-playwright-smoke.md` — the next feature to implement
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Then implement `features/phase-6-accounts/6.3-change-password-settings.md`.
+Then implement `features/phase-6-accounts/6.4-playwright-smoke.md`.

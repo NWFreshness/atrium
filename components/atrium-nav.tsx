@@ -100,12 +100,12 @@ export function AtriumNav({
       </div>
       <div className={styles["atrium-nav-end"]}>
         {email ? (
-          <span className={styles["atrium-nav-identity"]}>
+          <Link href="/settings" className={styles["atrium-nav-identity"]}>
             <span className={styles["atrium-nav-avatar"]} aria-hidden="true">
               {initialOf(email)}
             </span>
             <span className={styles["atrium-nav-email"]}>{email}</span>
-          </span>
+          </Link>
         ) : role ? (
           <span className={styles["atrium-nav-identity"]}>{role}</span>
         ) : null}

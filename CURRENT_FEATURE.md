@@ -1,8 +1,8 @@
 # Current feature
 
-**None in progress.** Phase 6 Accounts: 6.1 and 6.2 completed, 6.3–6.4 still specced. Next implementable unit is **6.3 change password on `/settings`** — [spec](./features/phase-6-accounts/6.3-change-password-settings.md) — after 6.2 merges.
+**6.4 Accounts Playwright smoke** — [spec](./features/phase-6-accounts/6.4-playwright-smoke.md) — the last Accounts unit, and the one that marks Phase 6 complete in this file and `INDEX.md`. 6.3 shipped change-password on `/settings` (see the log).
 
-Decide this in 6.3: sessions are stateless JWTs with a 30-day life and no revocation list, so changing a password will **not** sign other devices out unless 6.3 adds a token-version / `passwordChangedAt` claim checked in the `jwt` callback, or moves to a session table.
+Session decision, made in 6.3: **no revocation, by design.** The spec (§4) says a successful change keeps the current session JWT valid, so 6.3 adds no `passwordChangedAt` / token-version claim and no session table. Other devices stay signed in until their 30-day cookie expires; "sign out everywhere" remains out of scope for Phase 6.
 
 ---
 
@@ -221,6 +221,18 @@ Phase 5 closes with two gates, both built to bite. `e2e/workroom.spec.ts`: the l
 ### Phase 6 Accounts specs (written, not implemented)
 
 Four feature specs in `features/phase-6-accounts/` (6.1–6.4): member role + `signUp` helper, signup page + auto sign-in, change-password `/settings`, Playwright smoke. Design: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Parent design amended. No application code in that commit.
+
+### 6.3 Change password and settings (completed)
+
+Change a password from `/settings`, no mailer. `lib/auth/change-password.ts`: `changePassword(userId, { current, next }, deps)` with typed codes `wrong_current | weak_password | password_too_long | unchanged | unavailable`, a memory repo, a Drizzle repo, and a lazy `createDefaultChangePasswordDeps` (same shape as `createDefaultSignUpDeps`). A missing user raises the *same* `wrong_current` as a bad password, so the caller learns nothing about the account; the current password is verified before the new one is judged, so a weak `next` is never reported to someone who failed identity. `/settings` is a page in the `(authenticated)` group — the gate is the middleware matcher plus `PUBLIC_AUTH_PATHS` in `auth.config.ts` — whose action takes the user id from `requireTenant(() => auth())` and never from the form. The identity chip in `atrium-nav` became a `Link` to `/settings` (accessible name is the email) rather than a sixth app tab, and Reset demo is still `role === "demo"` only.
+
+Copy lives in a pure `lib/auth/change-password-messages.ts` for the reason `signup-messages.ts` exists: the domain module imports Drizzle and the client form must not reach that graph, so its only import is `import type`. Confirm-mismatch is blocked in the browser (a server-side mismatch would otherwise make the user retype three password fields) while the action re-compares it.
+
+Verified live against the Neon dev branch as a fresh member, not just unit tests: unauthenticated `/settings` → `307 /login?callbackUrl=/settings`; wrong current password → the generic `Could not update password.`; mismatch → `Passwords do not match.` with the dev-server log showing exactly two `changePasswordAction` requests for the session (wrong attempt + successful change), so the mismatch never round-tripped; valid change → `Password updated.` with the session intact; then the new password logs in and the old one gets the generic login error. DB read-back: `$2b$10$…`, 60 chars, neither plaintext. That walk is **the first real execution of the Drizzle `updatePasswordHash` path** — the memory-repo tests plus the stub-`Database` unit tests are not the proof, the live write is. 602 unit tests (98 files) and `npm run build` exit 0 with `/settings` as `ƒ (Dynamic)`; `npx playwright test e2e/login.spec.ts e2e/workroom.spec.ts` → 9 passed, including 5.7's link-walk.
+
+Two review subagents ran before the commit — spec compliance PASS on all 8 criteria, quality review one blocking plus three should-fix, all fixed. The blocking one was mine and worth naming: `mismatch` (local state) and `state.changed` (the last server return) are independent, so after a successful change a mismatched resubmit rendered the green `Password updated.` beside the red mismatch alert — a success banner for a write that never happened. The success block is now gated on `!mismatch && !state.error`. Also fixed: the bundle-boundary test now asserts the messages module's imports are type-only (it previously guarded only the form, so dropping `type` would have shipped Drizzle to the browser while the test stayed green), the gate test asserts the real `PUBLIC_AUTH_PATHS` constant and the matcher instead of scanning a file for a string, and the identity chip got `text-decoration: none` (it had rendered permanently underlined — `globals.css` has no anchor reset). Found but deliberately not fixed here: `components/rolodex/circles-board.tsx` pulls `drizzle-orm` + `@neondatabase/serverless` into `/rolodex/circles`'s client chunk via `lib/rolodex/move-person.ts` → `queries.ts` — pre-existing, Rolodex's follow-up, same rule the Accounts test now enforces.
+
+Known gaps recorded in the spec: no session revocation by design (spec §4), so other devices keep their 30-day JWT until it expires; the UTF-16 length count inherited from 6.1 lets 6 astral characters pass as ≥12; the `unavailable` branch (0-row update) is reachable only in the read-then-write race.
 
 ### 6.2 Signup page and auto sign-in (completed)
 
