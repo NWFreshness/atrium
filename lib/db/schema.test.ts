@@ -1,5 +1,5 @@
-import { getTableColumns } from "drizzle-orm";
-import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
+import { getTableColumns, type SQL } from "drizzle-orm";
+import { getTableConfig, PgDialect, type PgTable } from "drizzle-orm/pg-core";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { accounts, sessions, tenants, userRoleEnum, users } from "./schema";
@@ -41,6 +41,36 @@ const PLATFORM_TABLES = [
   "sessions",
   "verificationTokens",
 ] as const;
+
+/** The statements of a generated migration, comments stripped. */
+function migrationStatements(fileName: string): {
+  source: string;
+  statements: string[];
+} {
+  const source = readFileSync(
+    new URL(`../../drizzle/${fileName}`, import.meta.url),
+    "utf8",
+  );
+
+  return {
+    source,
+    statements: source
+      .split("--> statement-breakpoint")
+      .map((statement) =>
+        statement
+          .split("\n")
+          .filter((line) => !line.trim().startsWith("--"))
+          .join("\n")
+          .trim(),
+      )
+      .filter(Boolean),
+  };
+}
+
+/** The SQL an expression index is built from — `lower("email")`. */
+function render(expression: unknown): string {
+  return new PgDialect().sqlToQuery(expression as SQL).sql;
+}
 
 function tableNamed(name: string): PgTable {
   const table = (schemaBarrel as Record<string, unknown>)[name];
@@ -128,20 +158,9 @@ describe("tenantId indexes", () => {
 });
 
 describe("the tenantId index migration", () => {
-  const migration = readFileSync(
-    new URL("../../drizzle/0005_uneven_prodigy.sql", import.meta.url),
-    "utf8",
+  const { source: migration, statements } = migrationStatements(
+    "0005_uneven_prodigy.sql",
   );
-  const statements = migration
-    .split("--> statement-breakpoint")
-    .map((statement) =>
-      statement
-        .split("\n")
-        .filter((line) => !line.trim().startsWith("--"))
-        .join("\n")
-        .trim(),
-    )
-    .filter(Boolean);
 
   it("names every index after the table it serves, on tenantId, as a plain btree", () => {
     for (const statement of statements) {
@@ -168,5 +187,52 @@ describe("the tenantId index migration", () => {
       .map((statement) => /ON "(\w+)"/.exec(statement)?.[1])
       .sort();
     expect(tables).toEqual([...TENANT_SCOPED_TABLES].sort());
+  });
+});
+
+describe("the lower(email) unique index", () => {
+  const unique = getTableConfig(users).indexes.filter(
+    (entry) => entry.config.unique,
+  );
+
+  it("uniques users.email case-insensitively, on the lower(email) expression", () => {
+    expect(unique.map((entry) => entry.config.name)).toEqual([
+      "users_email_lower_idx",
+    ]);
+
+    const index = unique[0]!;
+    expect(index.config.method).toBe("btree");
+    // An expression index carries `SQL` chunks rather than columns, so print
+    // what it would render as instead of comparing object identity.
+    expect(
+      index.config.columns.map((column) =>
+        "name" in column ? column.name : render(column),
+      ),
+    ).toEqual(['lower("users"."email")']);
+  });
+
+  it("no longer declares the byte-exact unique on users.email", () => {
+    // A column-level `.unique()` is what drizzle-kit turns into the
+    // `users_email_unique` constraint, and it never reaches
+    // `getTableConfig().uniqueConstraints` — the column flag is the observable.
+    expect(getTableColumns(users).email.isUnique).toBe(false);
+    expect(getTableConfig(users).uniqueConstraints).toHaveLength(0);
+  });
+});
+
+describe("the lower(email) migration", () => {
+  const { source, statements } = migrationStatements("0006_sleepy_preak.sql");
+
+  it("drops the byte-exact unique and creates the lower(email) unique", () => {
+    expect(statements).toEqual([
+      'ALTER TABLE "users" DROP CONSTRAINT IF EXISTS "users_email_unique";',
+      'CREATE UNIQUE INDEX IF NOT EXISTS "users_email_lower_idx" ON "users" USING btree (lower("email"));',
+    ]);
+  });
+
+  it("rewrites nothing else — no table, enum, or policy churn", () => {
+    expect(source).not.toMatch(
+      /DROP TABLE|DROP TYPE|ALTER TYPE|ALTER TABLE "users" ADD|CREATE POLICY|ROW LEVEL SECURITY|DELETE FROM|TRUNCATE/i,
+    );
   });
 });

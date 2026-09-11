@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   index,
   integer,
@@ -6,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import * as crm from "../crm/schema";
 import * as rolodex from "../rolodex/schema";
@@ -33,7 +35,7 @@ export const users = pgTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     name: text("name"),
-    email: text("email").notNull().unique(),
+    email: text("email").notNull(),
     emailVerified: timestamp("emailVerified", { mode: "date" }),
     image: text("image"),
     passwordHash: text("passwordHash").notNull(),
@@ -45,7 +47,14 @@ export const users = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [index("users_tenantId_idx").on(table.tenantId)],
+  (table) => [
+    index("users_tenantId_idx").on(table.tenantId),
+    // Uniqueness is on `lower(email)`, not the raw column: signup and login
+    // already treat `Tyler@x` and `tyler@x` as one mailbox, so the index has to
+    // agree or the application pre-check is the only thing standing between two
+    // case-variant members and two accounts nobody can merge.
+    uniqueIndex("users_email_lower_idx").on(sql`lower(${table.email})`),
+  ],
 );
 
 export const accounts = pgTable(

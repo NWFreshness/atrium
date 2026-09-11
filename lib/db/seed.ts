@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { CrmRepository } from "../crm/queries";
 import { seedCrm } from "../crm/seed";
 import type { RolodexRepository } from "../rolodex/queries";
@@ -102,7 +102,12 @@ export function createMemorySeedRepository(): SeedRepository & {
       return { id: tenant.id };
     },
     async upsertUserByEmail(input) {
-      const existing = users.find((user) => user.email === input.email);
+      // Case-insensitive, like the `users_email_lower_idx` unique index and the
+      // login/signup lookups: editing `AUTH_OWNER_EMAIL`'s casing must update the
+      // existing account, not insert a second one.
+      const existing = users.find(
+        (user) => user.email.toLowerCase() === input.email.toLowerCase(),
+      );
       if (existing) {
         existing.passwordHash = input.passwordHash;
         existing.tenantId = input.tenantId;
@@ -161,6 +166,31 @@ export function createDrizzleSeedRepository(db: Database): SeedRepository {
       return { id: retried[0].id };
     },
     async upsertUserByEmail(input) {
+      // `users.email` is unique on `lower(email)`, and Postgres cannot infer an
+      // expression index from `on conflict ("email")` — that specification
+      // raises 42P10 against this schema. Look the row up on the same expression
+      // the index and the login path use, then update it by id.
+      const existing = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(sql`lower(${users.email}) = ${input.email.toLowerCase()}`)
+        .limit(1);
+
+      if (existing[0]) {
+        await db
+          .update(users)
+          .set({
+            passwordHash: input.passwordHash,
+            tenantId: input.tenantId,
+            role: input.role,
+          })
+          .where(eq(users.id, existing[0].id));
+        return;
+      }
+
+      // Untargeted: any conflict here is the lower(email) index refusing a
+      // case-variant the lookup above should have found, and doing nothing is
+      // the honest outcome — the insert must not clobber the address's casing.
       await db
         .insert(users)
         .values({
@@ -169,14 +199,7 @@ export function createDrizzleSeedRepository(db: Database): SeedRepository {
           tenantId: input.tenantId,
           role: input.role,
         })
-        .onConflictDoUpdate({
-          target: users.email,
-          set: {
-            passwordHash: input.passwordHash,
-            tenantId: input.tenantId,
-            role: input.role,
-          },
-        });
+        .onConflictDoNothing();
     },
     async listTenants() {
       return db.select({ id: tenants.id, name: tenants.name }).from(tenants);
