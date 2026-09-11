@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** 9.2 (isolation headers) is complete on this branch. Next implementable unit is 9.3 after this PR merges.
+**None in progress.** 9.3 (dummy-hash login verify) is complete on this branch. Next implementable unit is 9.4 after this PR merges.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 9 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`. A `script-src` CSP stays out until a feature has to touch `middleware.ts`.
 
@@ -359,3 +359,9 @@ Verified: `npm ls drizzle-orm --omit=dev` → `drizzle-orm@0.45.2`; `npm audit -
 `SECURITY_HEADERS` lives in `next.config.ts` and `headers()` maps it to `{ key, value }` on `/:path*`. Six headers: nosniff, referrer policy, `X-Frame-Options: DENY`, CSP without `script-src` (frame-ancestors / base-uri / form-action / object-src only), Permissions-Policy, HSTS. `allowedDevOrigins` is unchanged. `middleware.ts` was not touched (`git diff --exit-code origin/main -- middleware.ts`). `next.config.test.ts` is the gate (5 cases).
 
 Verified: `env -u DATABASE_URL npm test` 666 passed (104 files, up from 661/103); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0. No Playwright. Next is 9.3 after this PR merges.
+
+### 9.3 Dummy-hash login verify (completed)
+
+Unknown emails still run `verify` against `DUMMY_PASSWORD_HASH` (a `$2b$10$` bcrypt modular crypt; plaintext never in the repo). Empty email/password still skip `verify`. A dummy hit cannot mint a session (`!user || !matches`). `lib/db/password.ts` unchanged.
+
+Verified: `env -u DATABASE_URL npm test` 668 passed (104 files, up from 666/104); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0. No Playwright. Next is 9.4 after this PR merges.
