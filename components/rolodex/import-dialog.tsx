@@ -8,18 +8,8 @@ import {
   previewMappedCsvAction,
   type ImportPreviewRow,
 } from "@/lib/rolodex/import-actions";
+import { PERSON_FIELDS } from "@/lib/rolodex/person-fields";
 import styles from "./people.module.css";
-
-const PERSON_FIELDS = [
-  { key: "name", label: "Name" },
-  { key: "email", label: "Email" },
-  { key: "phone", label: "Phone" },
-  { key: "jobTitle", label: "Job title" },
-  { key: "company", label: "Company" },
-  { key: "city", label: "City" },
-  { key: "birthday", label: "Birthday" },
-  { key: "notes", label: "Notes" },
-] as const;
 
 export function ImportPeopleButton() {
   const [open, setOpen] = useState(false);

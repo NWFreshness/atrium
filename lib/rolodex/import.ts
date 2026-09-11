@@ -1,5 +1,6 @@
 import Papa from "papaparse";
 import VCARD from "vcf";
+import { PERSON_FIELDS } from "./person-fields";
 import {
   createImportantDate,
   createPerson,
@@ -27,17 +28,6 @@ export type ImportParseResult = {
   people: ParsedPerson[];
   suggestedMapping: Record<string, string> | null;
 };
-
-export const PERSON_FIELDS = [
-  { key: "name", label: "Name", required: true },
-  { key: "email", label: "Email" },
-  { key: "phone", label: "Phone" },
-  { key: "jobTitle", label: "Job title" },
-  { key: "company", label: "Company" },
-  { key: "city", label: "City" },
-  { key: "birthday", label: "Birthday" },
-  { key: "notes", label: "Notes" },
-] as const;
 
 const FIELD_KEYS = PERSON_FIELDS.map((field) => field.key);
 

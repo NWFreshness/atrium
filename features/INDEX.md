@@ -158,7 +158,9 @@ Close three claimed interfaces that are still shallow: case-insensitive email un
 | --- | ------------------------------------------------------------------------------------ | ------- | ---------- |
 | 8.1 | [Case-insensitive unique email](./phase-8-integrity/8.1-case-insensitive-email.md)   | completed | 6.1        |
 | 8.2 | [Shared password policy](./phase-8-integrity/8.2-password-policy.md)                 | completed | 6.3        |
-| 8.3 | [Client-safe person field catalog](./phase-8-integrity/8.3-person-field-catalog.md)  | specced | 7.5, 3.4   |
+| 8.3 | [Client-safe person field catalog](./phase-8-integrity/8.3-person-field-catalog.md)  | completed | 7.5, 3.4   |
 
-Long pole: 8.1 → 8.2 → 8.3. Phase 8 is sequential. Do not run two Integrity features in parallel. Do not add RLS, OAuth, a mailer, or rename `middleware.ts`. Implement 8.1 only after this docs PR merges.
+**Phase 8 is complete** — 8.1–8.3 shipped: the `lower(email)` unique index, the shared password policy in code points, and one client-safe `PERSON_FIELDS` catalog.
+
+Long pole: 8.1 → 8.2 → 8.3, all shipped. Nothing is queued; a new phase starts as a docs PR (spec set plus a design amend), not as an implementation. Do not add RLS, OAuth, a mailer, or rename `middleware.ts` without a spec.
 
