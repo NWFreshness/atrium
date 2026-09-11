@@ -67,10 +67,11 @@ export function ChangePasswordForm() {
           {mismatch ? PASSWORDS_DO_NOT_MATCH : state.error}
         </p>
       ) : null}
-      // `mismatch` and `state` are independent: a blocked submit never runs the
-      // action, so `state.changed` still holds the previous change's success.
-      // Both guards keep a stale "Password updated." off the screen while the
-      // mismatch alert is up.
+      {/* `mismatch` and `state` are independent: a blocked submit never runs the
+          action, so `state.changed` still holds the previous change's success.
+          Both guards keep a stale "Password updated." off the screen while the
+          mismatch alert is up. Not a `//` line — inside JSX children that is text
+          on the page, not a comment. */}
       {state.changed && !mismatch && !state.error ? (
         <p className="atrium-alert atrium-alert-ok" role="status">
           {PASSWORD_CHANGED}

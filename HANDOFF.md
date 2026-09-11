@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 5 Workroom is complete (through 5.7). Phase 6 Accounts is in progress: 6.1, 6.2, and 6.3 are done.** Do not push to `main`. Do not merge unless asked. Next implementable unit is 6.4, the Accounts Playwright smoke — and it is the unit that marks Phase 6 complete.
+**Stop. Phase 6 Accounts is complete (6.1–6.4 shipped).** Every phase specced so far is done, and nothing is in progress. Do not push to `main`. Do not merge unless asked. The next unit of work is a docs PR: write the next phase's spec set and move `features/INDEX.md`, `HANDOFF.md`, and `CURRENT_FEATURE.md` with it — do not start implementing a feature that has no spec.
 
 ## Where we are (2026-09-11)
 
-Phases 0–5 are complete. Phase 6 Accounts: 6.1 (member role + `signUp` helper), 6.2 (`/signup` + auto sign-in), and 6.3 (change password on `/settings`) are merged. 6.4 (Playwright smoke) is specced and waiting, and closes the phase.
+Phases 0–6 are complete. Phase 6 Accounts: 6.1 (member role + `signUp` helper), 6.2 (`/signup` + auto sign-in), 6.3 (change password on `/settings`), and 6.4 (the Accounts Playwright smoke) are all shipped.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -23,7 +23,7 @@ Open decisions carried forward: the `users_email_unique` index is still case-sen
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. `features/phase-6-accounts/6.4-playwright-smoke.md` — the next feature to implement
+6. No feature spec is queued — Phases 0–6 are complete. The next unit is the next phase's spec set (a docs PR), not code.
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Then implement `features/phase-6-accounts/6.4-playwright-smoke.md`.
+Then write the next phase's specs. Phases 0–6 are complete and nothing is in progress, so the first thing to build is a spec set (docs PR), not a feature.
