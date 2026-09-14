@@ -7,6 +7,17 @@ const MIN_HZ = 30;
 const MAX_HZ = 18000;
 const GRID = [100, 1000, 10000];
 
+/**
+ * Canvas paints cannot resolve `var(--inst-*)`, so the desk's moss is read from the
+ * scope's computed style. Groove never re-skins at runtime (it stays instrument-dark
+ * under both themes), so this resolves once per effect. The fallback is the same PNW
+ * value the instrument block ships.
+ */
+function traceColour(canvas: HTMLCanvasElement): string {
+  const moss = getComputedStyle(canvas).getPropertyValue("--inst-moss").trim();
+  return moss || "#a3b19b";
+}
+
 interface ScopeProps {
   analyser: AnalyserNode | null;
   /** read fresh every frame so the curve tracks the sweep, not React state */
@@ -23,6 +34,9 @@ export function Scope({ analyser, getFilter }: ScopeProps) {
     const ctx2d = canvas.getContext("2d");
     if (!ctx2d) return;
     const bins = analyser ? new Uint8Array(analyser.frequencyBinCount) : null;
+    // the desk's instrument values, in the PNW family (10.6): grid lines are the
+    // lichen-cast line, the spectrum is rain/slate, the filter trace is moss.
+    const trace = traceColour(canvas);
     let raf = 0;
 
     const draw = () => {
@@ -39,7 +53,7 @@ export function Scope({ analyser, getFilter }: ScopeProps) {
       const xOf = (f: number) =>
         (Math.log(f / MIN_HZ) / Math.log(MAX_HZ / MIN_HZ)) * w;
 
-      ctx2d.strokeStyle = "rgba(120,132,150,0.16)";
+      ctx2d.strokeStyle = "rgba(163, 177, 155, 0.16)";
       ctx2d.lineWidth = 1;
       for (const f of GRID) {
         const x = Math.round(xOf(f)) + 0.5;
@@ -65,9 +79,9 @@ export function Scope({ analyser, getFilter }: ScopeProps) {
         }
         ctx2d.lineTo(w, h);
         ctx2d.closePath();
-        ctx2d.fillStyle = "rgba(46,166,223,0.28)";
+        ctx2d.fillStyle = "rgba(139, 159, 194, 0.28)";
         ctx2d.fill();
-        ctx2d.strokeStyle = "rgba(80,196,255,0.75)";
+        ctx2d.strokeStyle = "rgba(139, 159, 194, 0.75)";
         ctx2d.lineWidth = 1.2;
         ctx2d.stroke();
       }
@@ -82,9 +96,14 @@ export function Scope({ analyser, getFilter }: ScopeProps) {
         if (x === 0) ctx2d.moveTo(x, y);
         else ctx2d.lineTo(x, y);
       }
-      ctx2d.strokeStyle = "#ecad0a";
+      ctx2d.strokeStyle = trace;
       ctx2d.lineWidth = 1.8;
-      ctx2d.shadowColor = "rgba(236,173,10,0.55)";
+      // The halo is translucent on purpose: `trace` is now an opaque PNW hex,
+      // and painting the shadow at full opacity made the glow hotter than the
+      // espresso-era build this replaced. Expand the hex to 8 digits (~55%).
+      ctx2d.shadowColor = /^#[0-9a-fA-F]{6}$/.test(trace)
+        ? `${trace}8c`
+        : trace;
       ctx2d.shadowBlur = 7;
       ctx2d.stroke();
       ctx2d.shadowBlur = 0;

@@ -120,10 +120,10 @@ test("Groove stays instrument-dark on a paper page", async ({ page }) => {
       color: style.color,
     };
   });
-  // Groove declares its own instrument tokens and never re-skins for paper.
-  expect(chassis.panel).toBe("#1a1510");
-  expect(chassis.ink).toBe("#f4ecdc");
-  expect(chassis.color).toBe("rgb(244, 236, 220)");
+  // Groove declares its own PNW instrument tokens and never re-skins for paper.
+  expect(chassis.panel).toBe("#23282a");
+  expect(chassis.ink).toBe("#eef1f2");
+  expect(chassis.color).toBe("rgb(238, 241, 242)");
 });
 
 const TOP_NAV = [
