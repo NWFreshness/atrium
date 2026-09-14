@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** 10.1 is implemented on `feat/10.1-pnw-tokens` (PR not merged). Next implementable unit is **10.2**, after 10.1 merges. Do not start 10.2 on this branch.
+**None in progress.** 10.2 is implemented on `feat/10.2-pnw-chrome` (PR not merged). Next implementable unit is **10.3–10.6** in any order after 10.2 merges (10.6 only needs 10.1). Do not start them on this branch.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 9 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`. A `script-src` CSP stays out until a feature has to touch `middleware.ts`.
 
@@ -405,3 +405,7 @@ Board work: the parent design amended (Phase 10 section, Stack line, a Non-goals
 ### 10.1 PNW tokens, type stack, and theme scaffold (completed)
 
 Basalt/mist token block, Outfit + Archivo + Geist Mono via `next/font`, type-scale tokens, grain + 46s clearing-sky (reduced-motion stops the drift). Chart literals moved to lichen / cedar-lifted / rain / timber / golden. `--violet` retired. `app/pnw-tokens.test.ts` locks the role table, the usage-rule comments, and the contrast claims that the table actually supports. Dark `--slate` vs `--bg-2` stays 4.33:1 as measured — not lifted. Controller: `env -u DATABASE_URL npm test` 709 passed; `AUTH_SECRET=ci-build-placeholder npm run build` exit 0. Playwright suite blocked on empty `AUTH_OWNER_*` / `AUTH_DEMO_*` in `.env`; Chromium `/login` walk confirmed dark `rgb(37, 40, 42)`, light `rgb(238, 241, 242)`, Outfit headings, Archivo 16px body, zero console errors. Spec compliance FAIL on AC4-as-written (slate); quality CHANGES REQUESTED on the reduced-motion gate (fixed: tests now require `body::after { animation: none }`). Next is 10.2 after this PR merges.
+
+### 10.2 Shared chrome, launcher, and login (completed)
+
+Outfit wordmark, 7px golden diamond, active-only underline (hover no longer paints a second highlight). Shared `atrium-` layer restyled in place (`app/workroom.css` path unchanged): primary button `#dfa84a` / charcoal `#25282a`, 2px `--brass` `:focus-visible` on fields, `--clay-ink` alerts. Launcher cards `--clay-ink` / `--moss` / `--slate` / `--brass`. Controller: `env -u DATABASE_URL npm test` 724 passed (109 files); build exit 0. Chromium `/login` primary `rgb(223, 168, 74)` on `rgb(37, 40, 42)`. Playwright still needs owner/demo creds. Next after merge: 10.3–10.6.
