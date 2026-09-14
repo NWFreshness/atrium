@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 import "./workroom.css";
@@ -38,7 +39,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
       </head>
-      <body>{children}</body>
+      {/* Vercel Web Analytics: a client component that renders null and injects
+          the insights script. Mounted in the root layout so the login screen is
+          measured too, and mounted nowhere else (one pageview per navigation). */}
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Nothing is in progress.** Phase 9 is complete on this branch (awaiting merge). Do not start a new phase until a docs PR lands. Do not push to `main`. Do not merge unless asked.
+**Stop. Nothing is in progress.** Phases 0–9 are complete and merged (9.6 closed Phase 9 as PR #80). Do not start a new phase until a docs PR lands. Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-11)
 
-Phases 0–9 are complete. 9.6 is on `feat/9.6-text-contracts`. Design: `docs/superpowers/specs/2026-09-11-security-design.md`.
+Phases 0–9 are complete and merged. Vercel Web Analytics landed after Phase 9 as a root-level change — one dependency and one mount in `app/layout.tsx` — with no phase spec and no INDEX row. Design: `docs/superpowers/specs/2026-09-11-security-design.md`.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -23,7 +23,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. After 9.6 merges: nothing is queued. A new phase starts as a docs PR.
+6. Nothing is queued. A new phase starts as a docs PR.
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Phase 8 is complete and the Neon **dev** branch carries migrations `0000`–`0007` (`auth_throttles` live). 9.5 is complete on this branch. After it merges: `git checkout main && git pull`, branch `feat/9.6-text-contracts`, and implement 9.6 only.
+Phase 9 is complete and merged; the Neon **dev** branch carries migrations `0000`–`0007` (`auth_throttles` live). Nothing is queued, so the next step is a docs PR for a new phase — not `N.1`.
