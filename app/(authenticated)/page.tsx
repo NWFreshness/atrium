@@ -13,7 +13,7 @@ const apps = [
     label: "CRM",
     blurb:
       "Organizations, contacts, deals, and a drag-and-drop pipeline for the work you're chasing.",
-    glow: "rgba(205, 114, 88, 0.12)",
+    accent: "var(--clay-ink)",
     Icon: CrmIcon,
   },
   {
@@ -21,7 +21,7 @@ const apps = [
     label: "Space",
     blurb:
       "Pages, blocks, and databases — a quiet place to keep everything you read and decide.",
-    glow: "rgba(139, 159, 194, 0.12)",
+    accent: "var(--moss)",
     Icon: SpaceIcon,
   },
   {
@@ -29,7 +29,7 @@ const apps = [
     label: "Rolodex",
     blurb:
       "People, circles, and cadences — so no one you care about slips away.",
-    glow: "rgba(143, 174, 131, 0.12)",
+    accent: "var(--slate)",
     Icon: RolodexIcon,
   },
   {
@@ -37,7 +37,7 @@ const apps = [
     label: "Groove",
     blurb:
       "A four-unit groovebox that lives in your browser. Web Audio, no database, all play.",
-    glow: "rgba(223, 163, 60, 0.16)",
+    accent: "var(--brass)",
     Icon: GrooveIcon,
   },
 ] as const;
@@ -56,7 +56,7 @@ export default function Home() {
             style={
               {
                 "--i": i + 1,
-                "--app-glow": app.glow,
+                "--app-accent": app.accent,
               } as CSSProperties
             }
           >

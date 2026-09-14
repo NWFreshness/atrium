@@ -21,8 +21,8 @@
   font-weight: 700;
   font-size: min(46vh, 46vw, 560px);
   line-height: 1;
-  color: var(--brass);
-  opacity: 0.045;
+  color: var(--ink);
+  opacity: 0.04;
   user-select: none;
   pointer-events: none;
 }
@@ -34,7 +34,7 @@
   background: var(--bg-1);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-panel), var(--glow-brass);
+  box-shadow: var(--shadow-panel);
 }
 
 .auth-brandrow {
@@ -45,9 +45,10 @@
 
 .auth-card h1 {
   font-family: var(--font-display);
-  font-size: 40px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-size: var(--text-display);
+  font-weight: var(--text-display-weight);
+  letter-spacing: var(--text-display-tracking);
+  line-height: var(--text-display-leading);
   margin: 0;
 }
 
@@ -77,11 +78,11 @@
 .auth-alert {
   margin-top: 1rem;
   padding: 9px 12px;
-  border-left: 3px solid var(--clay);
+  border-left: 3px solid var(--clay-ink);
   border-radius: var(--r-sm);
   background: var(--bg-2);
   font-size: 12.5px;
-  color: var(--ink);
+  color: var(--clay-ink);
 }
 
 .auth-foot {
@@ -99,10 +100,11 @@
 }
 
 .auth-foot a {
-  color: var(--brass);
+  color: var(--ink-dim);
   text-decoration: none;
 }
 
 .auth-foot a:hover {
+  color: var(--ink);
   text-decoration: underline;
 }

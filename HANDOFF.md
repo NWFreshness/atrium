@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. 10.1 is implemented** on `feat/10.1-pnw-tokens` (PR not merged). Do not start 10.2 until 10.1 merges. Do not push to `main`. Do not merge unless asked.
+**Stop. 10.2 is implemented** on `feat/10.2-pnw-chrome` (PR not merged). Do not start 10.3 until 10.2 merges. Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-11)
 
-Phases 0–9 are complete and merged. 10.1 (PNW tokens + type stack) is implemented on `feat/10.1-pnw-tokens`. 10.2–10.7 remain specced. Vercel Web Analytics landed before Phase 10 as a root-level change. Security design: `docs/superpowers/specs/2026-09-11-security-design.md`.
+Phases 0–9 are complete and merged. 10.1 is on `main`. 10.2 (shared chrome) is implemented on `feat/10.2-pnw-chrome`. 10.3–10.7 remain specced.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -23,7 +23,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. 10.1 is implemented (PR). Next after merge: 10.2. Spec: `features/phase-10-pnw/10.2-shared-chrome-launcher-login.md`.
+6. 10.2 is implemented (PR). Next after merge: 10.3–10.6.
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Phase 9 is complete and merged; the Neon **dev** branch carries migrations `0000`–`0007` (`auth_throttles` live). Phase 10 PNW specs 10.1–10.7 are on `main`. 10.1 is implemented on `feat/10.1-pnw-tokens`; next is 10.2 after that PR merges.
+Phase 9 is complete and merged; the Neon **dev** branch carries migrations `0000`–`0007` (`auth_throttles` live). 10.1 is on `main`. 10.2 is implemented on `feat/10.2-pnw-chrome`; next is 10.3–10.6 after that PR merges.
