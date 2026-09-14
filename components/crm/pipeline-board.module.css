@@ -1,3 +1,11 @@
+/* ============================================================
+   CRM pipeline board — PNW pass (10.3)
+   Basalt columns on `--bg-1` with a 3px stage accent, mono numerals,
+   and the same six-accent family as the rest of CRM: neutral slate,
+   open moss, warming timber/clay, a golden win, a cedar-ink loss.
+   Drag behaviour is untouched — presentation only.
+   ============================================================ */
+
 .header {
   display: flex;
   flex-wrap: wrap;
@@ -12,17 +20,19 @@
 }
 
 .headerLabel {
-  font-size: 11px;
-  font-weight: 550;
-  letter-spacing: 0.14em;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 400;
+  letter-spacing: var(--text-label-tracking);
   text-transform: uppercase;
   color: var(--ink-faint);
 }
 
 .headerValue {
   font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 560;
+  font-size: var(--text-h2);
+  font-weight: var(--text-h2-weight);
+  letter-spacing: var(--text-h2-tracking);
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
@@ -41,7 +51,7 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: color-mix(in srgb, var(--bg-1) 55%, var(--bg-0));
+  background: var(--bg-1);
   border: 1px solid var(--line);
   border-top-width: 3px;
   border-top-color: var(--stage-c, var(--line-strong));
@@ -56,17 +66,20 @@
 
 .columnName {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 620;
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
   color: var(--ink);
 }
 
 .columnTotals {
   margin: 0.2rem 0 0;
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--text-label);
   letter-spacing: 0.04em;
   color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
 }
 
 .list {
@@ -86,12 +99,22 @@
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   padding: 0.6rem 0.65rem;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
-  transition: border-color 0.18s, box-shadow 0.18s;
+  box-shadow: inset 0 1px 0 var(--line);
+  transition:
+    border-color 0.18s,
+    background 0.18s;
+}
+
+/* dragHandleProps makes the card keyboard-focusable, so it takes the shared
+   brass ring too (the gate asserts a ring on every focusable interactive). */
+.card:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
 }
 
 .card:hover {
-  border-color: color-mix(in srgb, var(--brass) 45%, var(--line));
+  border-color: var(--line-strong);
+  background: var(--bg-2);
 }
 
 .cardName {
@@ -104,31 +127,43 @@
 }
 
 .cardName:hover {
-  color: var(--brass);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 2px;
+}
+
+.cardName:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
 }
 
 .cardMeta {
   margin: 0.3rem 0 0;
-  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-data);
   color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
 }
 
-/* stage accent (top rule color per pipeline stage) */
+/* Stage accents — one PNW family that advances from neutral to golden.
+   Semantic, not decorative: open = moss, won = brass (golden),
+   lost = cedar-ink. `--clay` is a rule-only tone, never ink. */
 .stageNew {
   --stage-c: var(--slate);
 }
 .stageQualified {
-  --stage-c: var(--violet);
-}
-.stageProposal {
-  --stage-c: var(--brass);
-}
-.stageNegotiation {
-  --stage-c: var(--brass);
-}
-.stageWon {
   --stage-c: var(--moss);
 }
-.stageLost {
+.stageProposal {
+  --stage-c: var(--timber);
+}
+.stageNegotiation {
   --stage-c: var(--clay);
+}
+.stageWon {
+  --stage-c: var(--brass);
+}
+.stageLost {
+  --stage-c: var(--clay-ink);
 }

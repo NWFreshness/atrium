@@ -23,9 +23,23 @@ import type {
 } from "@/lib/crm/dashboard";
 import styles from "./dashboard.module.css";
 
+/*
+ * PNW data palette (10.1 values, restyled roles here in 10.3). Recharts writes
+ * SVG attributes, where `var(--token)` does not resolve, so the four series
+ * stay literals and mirror the role tokens:
+ *
+ *   WON      lichen   → the `--moss` data role
+ *   FORECAST timber   → the slot the retired violet held
+ *   OPEN     rain     → the `--slate` role (value unchanged, role was)
+ *   LATE     cedar    → `--clay-ink`, the lifted clay for late work
+ *   BRASS    golden   → the screen's one highlight (the deal-count line)
+ *
+ * The hues sit within 1.0–1.29 of each other in luminance, so colour can never
+ * be the only channel: every series carries a name and every chart a legend.
+ */
 const WON = "#a3b19b"; // lichen
 const FORECAST = "#b9ab93"; // timber
-const OPEN = "#8b9fc2"; // rain
+const OPEN = "#8b9fc2"; // rain — unchanged value, slate role
 const LATE = "#e0a488"; // cedar lifted
 const BRASS = "#dfa84a"; // golden
 
@@ -97,9 +111,14 @@ export function DashboardCharts({
               <XAxis type="number" />
               <YAxis type="category" dataKey="label" width={90} />
               <Tooltip />
+              <Legend />
               <Bar
                 dataKey="value"
-                name="Value"
+                /* Not "Pipeline value": that string is the KPI tile's label on
+                   this same screen, and e2e/crm.spec.ts matches it with a
+                   strict getByText — a legend duplicating it resolves to two
+                   elements and throws. */
+                name="Pipeline by stage"
                 fill={OPEN}
                 isAnimationActive={false}
               />
@@ -145,9 +164,10 @@ export function DashboardCharts({
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
+                <Legend />
                 <Bar
                   dataKey="value"
-                  name="Value"
+                  name="Value by organization"
                   fill={OPEN}
                   isAnimationActive={false}
                 />
