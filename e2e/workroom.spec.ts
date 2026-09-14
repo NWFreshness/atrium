@@ -24,9 +24,9 @@ const email = demoEmail ?? ownerEmail;
 const password =
   demoEmail && demoPassword ? demoPassword : (ownerPassword ?? null);
 
-/** Workroom surfaces, straight from app/globals.css --bg-0. */
-const ESPRESSO = "rgb(19, 16, 12)"; // :root (dark)
-const PAPER = "rgb(236, 229, 214)"; // [data-theme="light"]
+/** PNW surfaces, straight from app/globals.css --bg-0. */
+const ESPRESSO = "rgb(37, 40, 42)"; // :root (dark / basalt)
+const PAPER = "rgb(238, 241, 242)"; // [data-theme="light"] / mist
 
 test.beforeAll(() => {
   if (!email || !password) {

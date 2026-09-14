@@ -17,7 +17,7 @@ describe("CRM subnav", () => {
   it("uses inline SVG glyphs and the shared subtab classes", () => {
     expect(subnav).toContain("<svg");
     expect(subnav).toContain("atrium-subtab");
-    expect(subnav).toContain("aria-label=\"CRM\"");
+    expect(subnav).toContain('aria-label="CRM"');
   });
 
   it("drops the unicode glyph literals", () => {
@@ -34,11 +34,11 @@ describe("CRM dashboard", () => {
     expect(charts).not.toContain("monthlyRevenue");
   });
 
-  it("themes the charts to the warm palette (brass / moss / slate / clay)", () => {
-    expect(charts).toContain("#dfa33c"); // brass
-    expect(charts).toContain("#8fae83"); // moss
-    expect(charts).toContain("#8b9fc2"); // slate
-    expect(charts).toContain("#cd7258"); // clay
+  it("themes the charts to the PNW data palette (golden / lichen / rain / cedar)", () => {
+    expect(charts).toContain("#dfa84a"); // golden
+    expect(charts).toContain("#a3b19b"); // lichen
+    expect(charts).toContain("#8b9fc2"); // rain
+    expect(charts).toContain("#e0a488"); // cedar lifted
   });
 
   it("uses the shared pagetitle and staggers the KPI tiles", () => {

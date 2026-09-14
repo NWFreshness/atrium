@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** Phase 10 (PNW redesign) is specced, not implemented: 10.1–10.7 in `features/phase-10-pnw/`, design in `docs/superpowers/specs/2026-09-14-pnw-design.md`. Next implementable unit is **10.1**, after this docs PR merges. Phase 9 is complete and merged.
+**None in progress.** 10.1 is implemented on `feat/10.1-pnw-tokens` (PR not merged). Next implementable unit is **10.2**, after 10.1 merges. Do not start 10.2 on this branch.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 9 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`. A `script-src` CSP stays out until a feature has to touch `middleware.ts`.
 
@@ -401,3 +401,7 @@ What the measurements settled: the six are a palette, not a theme. Moss is 1.53:
 Seven specs in `features/phase-10-pnw/` (10.1 tokens + type stack + theme scaffold → 10.2 shared chrome/launcher/login → 10.3–10.6 per-app passes and the Groove instrument recast → 10.7 the QA gate). The gate is the phase's one new fitness function: `tests/theme-contrast.test.ts` computes WCAG contrast from the shipped CSS for a declared list of role pairs in both themes plus Groove's `--inst-*` scope, with fill-only exceptions named rather than thresholds softened, and it must be proven by four injection probes. 10.7 also retires the espresso assertions across `app/globals.test.ts`, `tests/workroom-namespace.test.ts`, the four `*-pass.test.ts` gates, and `e2e/workroom.spec.ts`'s ground constants (`rgb(19, 16, 12)` / `rgb(236, 229, 214)` → `rgb(37, 40, 42)` / `rgb(238, 241, 242)`), and adds computed font-family assertions, because a source-grep cannot tell a loaded Outfit from a fallback.
 
 Board work: the parent design amended (Phase 10 section, Stack line, a Non-goals line retiring the espresso values rather than keeping them behind a flag, progress line), `features/INDEX.md` (design links, Phase 10 table, critical path `10.1 → 10.2 → 10.7` with 10.3–10.6 order-free after 10.2), and this file. Nothing is in progress; the next implementable unit is 10.1 after this PR merges.
+
+### 10.1 PNW tokens, type stack, and theme scaffold (completed)
+
+Basalt/mist token block, Outfit + Archivo + Geist Mono via `next/font`, type-scale tokens, grain + 46s clearing-sky (reduced-motion stops the drift). Chart literals moved to lichen / cedar-lifted / rain / timber / golden. `--violet` retired. `app/pnw-tokens.test.ts` locks the role table, the usage-rule comments, and the contrast claims that the table actually supports. Dark `--slate` vs `--bg-2` stays 4.33:1 as measured — not lifted. Controller: `env -u DATABASE_URL npm test` 709 passed; `AUTH_SECRET=ci-build-placeholder npm run build` exit 0. Playwright suite blocked on empty `AUTH_OWNER_*` / `AUTH_DEMO_*` in `.env`; Chromium `/login` walk confirmed dark `rgb(37, 40, 42)`, light `rgb(238, 241, 242)`, Outfit headings, Archivo 16px body, zero console errors. Spec compliance FAIL on AC4-as-written (slate); quality CHANGES REQUESTED on the reduced-motion gate (fixed: tests now require `body::after { animation: none }`). Next is 10.2 after this PR merges.

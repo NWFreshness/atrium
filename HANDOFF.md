@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Nothing is in progress.** Phase 10's specs (10.1–10.7) are written on `docs/phase10-pnw` and **nothing is implemented** — do not start 10.1 until that docs PR merges. Do not push to `main`. Do not merge unless asked.
+**Stop. 10.1 is implemented** on `feat/10.1-pnw-tokens` (PR not merged). Do not start 10.2 until 10.1 merges. Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-11)
 
-Phases 0–9 are complete and merged. Phase 10 (PNW redesign) is **specced, not implemented**: 10.1–10.7 in `features/phase-10-pnw/`, design in `docs/superpowers/specs/2026-09-14-pnw-design.md`, studies in `docs/prototypes/2026-09-14-pnw/`. Vercel Web Analytics landed before it as a root-level change — one dependency and one mount in `app/layout.tsx` — with no phase spec and no INDEX row. Security design: `docs/superpowers/specs/2026-09-11-security-design.md`.
+Phases 0–9 are complete and merged. 10.1 (PNW tokens + type stack) is implemented on `feat/10.1-pnw-tokens`. 10.2–10.7 remain specced. Vercel Web Analytics landed before Phase 10 as a root-level change. Security design: `docs/superpowers/specs/2026-09-11-security-design.md`.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -23,7 +23,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Nothing is implemented. The next implementable unit is 10.1 — only after the Phase 10 docs PR merges.
+6. 10.1 is implemented (PR). Next after merge: 10.2. Spec: `features/phase-10-pnw/10.2-shared-chrome-launcher-login.md`.
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Phase 9 is complete and merged; the Neon **dev** branch carries migrations `0000`–`0007` (`auth_throttles` live). Phase 10 PNW specs 10.1–10.7 exist (docs PR, no code). Next implementable unit is 10.1 after that PR merges — `git checkout main && git pull`, branch `feat/10.1-pnw-tokens`, port the token values from the studies verbatim.
+Phase 9 is complete and merged; the Neon **dev** branch carries migrations `0000`–`0007` (`auth_throttles` live). Phase 10 PNW specs 10.1–10.7 are on `main`. 10.1 is implemented on `feat/10.1-pnw-tokens`; next is 10.2 after that PR merges.

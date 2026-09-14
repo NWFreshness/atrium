@@ -191,7 +191,7 @@ Replace the theme's warmth and the type stack with a Pacific Northwest palette (
 
 | ID   | Feature                                                                               | Status  | Depends on |
 | ---- | ------------------------------------------------------------------------------------- | ------- | ---------- |
-| 10.1 | [PNW tokens, type stack, theme scaffold](./phase-10-pnw/10.1-pnw-tokens-and-type.md)  | specced | nothing    |
+| 10.1 | [PNW tokens, type stack, theme scaffold](./phase-10-pnw/10.1-pnw-tokens-and-type.md)  | completed | nothing    |
 | 10.2 | [Shared chrome, launcher, login](./phase-10-pnw/10.2-shared-chrome-launcher-login.md) | specced | 10.1       |
 | 10.3 | [CRM pass](./phase-10-pnw/10.3-crm-pass.md)                                           | specced | 10.1, 10.2 |
 | 10.4 | [Space pass](./phase-10-pnw/10.4-space-pass.md)                                       | specced | 10.1, 10.2 |

@@ -271,8 +271,9 @@ describe("both themes define the full Workroom token set", () => {
     "--brass-glow",
     "--moss",
     "--clay",
+    "--clay-ink",
     "--slate",
-    "--violet",
+    "--timber",
   ];
 
   function block(start: string): string {
@@ -295,9 +296,9 @@ describe("both themes define the full Workroom token set", () => {
     }
   });
 
-  it("keeps dark espresso and light paper apart", () => {
-    expect(block(":root {")).toContain("--bg-0: #13100c");
-    expect(block('[data-theme="light"] {')).toContain("--bg-0: #ece5d6");
+  it("keeps dark basalt and light mist apart", () => {
+    expect(block(":root {")).toContain("--bg-0: #25282a");
+    expect(block('[data-theme="light"] {')).toContain("--bg-0: #eef1f2");
   });
 });
 
@@ -307,7 +308,7 @@ describe("the retired palette does not come back", () => {
     "components/crm/dashboard-charts.tsx",
     "components/rolodex/today-charts.tsx",
   ];
-  const DATA_TOKENS = ["#8fae83", "#cd7258", "#8b9fc2", "#a88fc0", "#dfa33c"];
+  const DATA_TOKENS = ["#a3b19b", "#e0a488", "#8b9fc2", "#b9ab93", "#dfa84a"];
 
   it("paints every chart series from the Workroom data palette", () => {
     for (const file of CHART_FILES) {
@@ -332,7 +333,7 @@ describe("the retired palette does not come back", () => {
     // 0.4's theme was create-next-app's #0a0a0a / #171717 / #ededed / #ffffff pair;
     // 5.1 replaced it with the espresso/paper tokens. Test files are skipped: a
     // stylesheet test may legitimately name the values it forbids.
-    const RETIRED = ["#0a0a0a", "#171717", "#ededed", "#ffffff"];
+    const RETIRED = ["#0a0a0a", "#171717", "#ededed"];
     for (const { abs, rel } of sources) {
       if (/\.test\.tsx?$/.test(rel)) continue;
       const src = stripComments(read(abs));

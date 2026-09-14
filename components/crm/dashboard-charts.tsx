@@ -23,11 +23,11 @@ import type {
 } from "@/lib/crm/dashboard";
 import styles from "./dashboard.module.css";
 
-const WON = "#8fae83"; // moss
-const FORECAST = "#a88fc0"; // violet
-const OPEN = "#8b9fc2"; // slate
-const LATE = "#cd7258"; // clay
-const BRASS = "#dfa33c";
+const WON = "#a3b19b"; // lichen
+const FORECAST = "#b9ab93"; // timber
+const OPEN = "#8b9fc2"; // rain
+const LATE = "#e0a488"; // cedar lifted
+const BRASS = "#dfa84a"; // golden
 
 export function DashboardCharts({
   monthly,
@@ -56,7 +56,11 @@ export function DashboardCharts({
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="label" />
               <YAxis />
-              <YAxis yAxisId="count" orientation="right" allowDecimals={false} />
+              <YAxis
+                yAxisId="count"
+                orientation="right"
+                allowDecimals={false}
+              />
               <Tooltip />
               <Legend />
               <Bar
@@ -93,7 +97,12 @@ export function DashboardCharts({
               <XAxis type="number" />
               <YAxis type="category" dataKey="label" width={90} />
               <Tooltip />
-              <Bar dataKey="value" name="Value" fill={OPEN} isAnimationActive={false} />
+              <Bar
+                dataKey="value"
+                name="Value"
+                fill={OPEN}
+                isAnimationActive={false}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
