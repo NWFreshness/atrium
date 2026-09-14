@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PNW Palette Study — Atrium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────
+   PNW PALETTE STUDY — the six given colors are a PALETTE.
+   A palette becomes a THEME only when each color gets a ROLE,
+   and the roles are decided by measured contrast, not by taste.
+
+   Given:      --pnw-moss #2d4a3e   --pnw-mist #eef1f2   --pnw-charcoal #25282a
+               --pnw-lichen #a3b19b --pnw-cedar #b87355  --pnw-golden #dfa84a
+
+   Measured with WCAG 2.1 relative-luminance contrast (see numbers in the board
+   below; every ratio printed in this page was computed, not estimated):
+
+     moss   on charcoal  1.53  → FAIL  (moss is a SURFACE on dark, never ink)
+     moss   on mist      8.56  → AAA   (moss is the primary INK on light)
+     mist   on charcoal 13.07  → AAA   (the dark-mode ink)
+     lichen on charcoal  6.58  → AA    (dark-mode support ink)
+     lichen on mist      1.99  → FAIL  (light mode needs a darker lichen)
+     cedar  on charcoal  3.97  → UI    (large text / fills only)
+     cedar  on mist      3.29  → UI    (large text / fills only)
+     golden on charcoal  6.95  → AA    (dark-mode highlight ink)
+     golden on mist      1.88  → FAIL  (light mode needs a darker gold)
+
+   Derived for light mode (measured on mist):
+     --lichen-ink #5a6a53  5.11      --cedar-ink #8f5138  5.44
+     --golden-ink #8a6320  4.76
+
+   Dark-mode raised surfaces, moss-cast, separation from charcoal:
+     #313b37  1.28  (subtle card)   mist text 10.21 · lichen 5.15 · golden 5.43
+     #39443f  1.46  (panel)         mist text  8.93 · lichen 4.50 · golden 4.75
+     #43514a  1.78  (active/line)   mist text  7.36 · lichen 3.71 · golden 3.91
+
+   REFINEMENT PASS — a rendered QA sweep of every text node (nearest opaque
+   ancestor background, WCAG thresholds by size) found and fixed five real
+   failures in the first cut of this page:
+     · micro-labels at rgba(lichen,.62) were 2.96:1 on a panel — WCAG has no
+       micro-label exemption, so the quiet tier became solid lichen (6.58 · 5.15
+       · 4.50) and hierarchy is carried by size and tracking instead of opacity;
+     · light-mode --ink-faint #7c8a76 was 3.22:1 → #5f6b5a (4.95 · 5.62 on white);
+     · light-mode --ink-dim #5a6a53 → #4f5f48 (6.04 · 6.86);
+     · the solid button used the *text* golden as a fill in light mode
+       (charcoal on #8a6320 = 2.75:1) → fills keep the bright pigment
+       (--fill-highlight #dfa84a, charcoal on it 6.95) while text dims;
+     · cedar as small text is 3.97:1 on basalt and 3.10 on a card → text uses
+       --accent-ink #e0a488 (6.95 · 5.43 · 4.75); #b87355 stays a fill/rule.
+   The three deliberately broken samples in "What breaks" are excluded from that
+   sweep — they exist to fail.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* the six as given — never renamed, so the study stays honest to the brief */
+  --pnw-moss: #2d4a3e;
+  --pnw-mist: #eef1f2;
+  --pnw-charcoal: #25282a;
+  --pnw-lichen: #a3b19b;
+  --pnw-cedar: #b87355;
+  --pnw-golden: #dfa84a;
+
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius: 3px;
+  --radius-lg: 6px;
+  --ease: cubic-bezier(.22, .68, 0, 1);
+}
+
+/* ── DARK: basalt ground, moss-cast surfaces. "Wet forest floor at dusk." ── */
+[data-theme="dark"] {
+  --ground: var(--pnw-charcoal);          /* #25282a */
+  --s0: #2b3330;
+  --s1: #313b37;                          /* 1.28 vs ground */
+  --s2: #39443f;                          /* 1.46 */
+  --s3: #43514a;                          /* 1.78 */
+  --line: rgba(163, 177, 155, .16);
+  --line-strong: rgba(163, 177, 155, .30);
+  --ink: var(--pnw-mist);                 /* 13.07 ground · 10.21 card */
+  --ink-dim: #b3bfa9;                     /* 7.73 ground · 6.04 card · 5.28 panel */
+  --ink-faint: var(--pnw-lichen);         /* 6.58 ground · 5.15 card · 4.50 panel */
+  --accent: var(--pnw-cedar);             /* 3.97 — fills, rules, 2px accents ONLY */
+  --accent-ink: #e0a488;                  /* cedar lifted for text: 6.95 · 5.43 · 4.75 */
+  --support: var(--pnw-lichen);           /* 6.58 */
+  --highlight: var(--pnw-golden);         /* 6.95 */
+  --fill-highlight: var(--pnw-golden);    /* bright pigment as a fill — charcoal on it 6.95 */
+  --brand: var(--pnw-lichen);
+  --shadow: 0 1px 0 rgba(0,0,0,.28), 0 18px 40px -28px rgba(0,0,0,.85);
+  --grain-opacity: .05;
+  --sky-1: #1b2a25;
+  --sky-2: #2d4a3e;
+  --sky-3: #b87355;
+  --sky-4: #dfa84a;
+}
+
+/* ── LIGHT: overcast mist ground. "The ten minutes the sun gets through." ── */
+[data-theme="light"] {
+  --ground: var(--pnw-mist);              /* #eef1f2 */
+  --s0: #e7ebec;
+  --s1: #f5f7f8;
+  --s2: #fbfcfc;
+  --s3: #ffffff;
+  --line: #c9d2d0;                        /* 1.36 vs ground */
+  --line-strong: #a9b6b3;                 /* 1.84 */
+  --ink: var(--pnw-charcoal);             /* 13.07 */
+  --ink-dim: #4f5f48;                     /* lichen stepped down: 6.04 · 6.86 on white */
+  --ink-faint: #5f6b5a;                   /* 4.95 · 5.62 on white */
+  --accent: #8f5138;                      /* cedar-ink, 5.44 — safe as text */
+  --accent-ink: #8f5138;
+  --support: #5a6a53;                     /* lichen-ink, 5.11 */
+  --highlight: #8a6320;                   /* golden-ink, 4.76 — the text role */
+  --fill-highlight: var(--pnw-golden);    /* golden hour stays bright as a FILL: 6.95 */
+  --brand: var(--pnw-moss);               /* 8.56 */
+  --shadow: 0 1px 0 rgba(37,40,42,.05), 0 16px 34px -26px rgba(45,74,62,.45);
+  --grain-opacity: .035;
+  --sky-1: #dfe6e4;
+  --sky-2: #a3b19b;
+  --sky-3: #dfa84a;
+  --sky-4: #b87355;
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--ground); }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background .5s var(--ease), color .5s var(--ease);
+}
+
+/* Atmosphere: grain + a slow-drifting mist. Depth instead of flat fills. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(60% 45% at 18% 12%, color-mix(in srgb, var(--sky-2) 32%, transparent), transparent 70%),
+    radial-gradient(45% 38% at 88% 4%, color-mix(in srgb, var(--sky-3) 22%, transparent), transparent 72%),
+    radial-gradient(70% 50% at 60% 100%, color-mix(in srgb, var(--sky-1) 26%, transparent), transparent 70%);
+  animation: drift 46s linear infinite alternate;
+  opacity: .85;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+}
+
+@keyframes drift {
+  from { transform: translate3d(-2%, -1%, 0) scale(1.02); }
+  to   { transform: translate3d(3%, 2%, 0) scale(1.06); }
+}
+
+.wrap { position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; padding: 0 28px 120px; }
+
+/* ── reveal motion ─────────────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(14px); animation: rise .7s var(--ease) forwards; animation-delay: calc(var(--i, 0) * 70ms); }
+@keyframes rise { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .reveal, body::before { animation: none !important; }
+  .reveal { opacity: 1; transform: none; }
+}
+
+/* ── type ──────────────────────────────────────────────────── */
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; letter-spacing: -.015em; }
+h1 { font-size: clamp(2.6rem, 6.4vw, 4.6rem); line-height: .96; font-variation-settings: "opsz" 96; }
+h2 { font-size: clamp(1.5rem, 2.6vw, 2.05rem); line-height: 1.1; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); font-variant-ligatures: none; }
+.label {
+  font-family: var(--font-mono); font-size: .68rem; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+
+/* ── masthead ──────────────────────────────────────────────── */
+header.top {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 18px;
+  padding: 14px 28px;
+  background: color-mix(in srgb, var(--ground) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(1.1);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand .mark { font-family: var(--font-display); font-size: 1.32rem; letter-spacing: -.02em; }
+.brand .dot { width: 7px; height: 7px; background: var(--highlight); transform: rotate(45deg); display: inline-block; }
+.brand .sub { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-faint); }
+.btn {
+  font-family: var(--font-mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink); background: transparent; border: 1px solid var(--line-strong);
+  padding: 8px 14px; border-radius: var(--radius); cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: color .25s var(--ease), border-color .25s var(--ease), transform .25s var(--ease);
+}
+.btn::after {
+  content: ""; position: absolute; inset: 0; transform: translateY(101%);
+  background: color-mix(in srgb, var(--highlight) 22%, transparent);
+  transition: transform .32s var(--ease);
+}
+.btn:hover { border-color: var(--highlight); color: var(--highlight); }
+.btn:hover::after { transform: translateY(0); }
+.btn span { position: relative; z-index: 1; }
+
+/* ── hero ──────────────────────────────────────────────────── */
+.hero { padding: 78px 0 54px; display: grid; gap: 26px; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: end; }
+@media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }
+.hero .lede { font-family: var(--font-display); font-size: clamp(1.05rem, 1.5vw, 1.28rem); line-height: 1.5; color: var(--ink-dim); max-width: 46ch; font-style: italic; }
+.hero h1 em { font-style: italic; color: var(--highlight); }
+.ridgeline { width: 100%; height: 92px; display: block; margin-top: 8px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 22px; border-top: 1px solid var(--line); padding-top: 16px; }
+.meta div { display: flex; gap: 10px; align-items: baseline; }
+.meta b { font-family: var(--font-mono); font-weight: 400; font-size: .82rem; color: var(--ink); }
+
+/* ── swatch board ──────────────────────────────────────────── */
+.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); gap: 14px; }
+.swatch { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--s1); }
+.swatch .chip { height: 104px; display: flex; align-items: flex-end; padding: 12px; }
+.swatch .chip span { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; background: rgba(37,40,42,.72); color: #eef1f2; padding: 3px 7px; border-radius: 2px; }
+.swatch .info { padding: 12px 13px 14px; display: grid; gap: 8px; }
+.swatch .role { font-family: var(--font-mono); font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+.ratios { display: grid; gap: 4px; }
+.ratio { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: .72rem; }
+.ratio i { font-style: normal; width: 62px; color: var(--ink-dim); }
+.ratio .val { color: var(--ink); min-width: 52px; }
+.tag { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; border: 1px solid var(--line-strong); color: var(--ink-dim); }
+.tag.aaa { border-color: color-mix(in srgb, var(--support) 60%, transparent); color: var(--support); }
+.tag.aa { border-color: color-mix(in srgb, var(--support) 45%, transparent); color: var(--support); }
+.tag.ui { border-color: color-mix(in srgb, var(--accent) 55%, transparent); color: var(--accent-ink); }
+.tag.fail { border-color: color-mix(in srgb, var(--accent) 70%, transparent); color: var(--accent-ink); }
+
+/* ── sections ──────────────────────────────────────────────── */
+section { margin-top: 84px; }
+.section-head { display: flex; align-items: baseline; gap: 20px; border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 26px; }
+.section-head .num { font-family: var(--font-mono); font-size: .72rem; color: var(--highlight); letter-spacing: .14em; }
+.section-head p { margin-left: auto; color: var(--ink-dim); font-size: .92rem; max-width: 52ch; }
+
+/* ── role map ──────────────────────────────────────────────── */
+.roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 14px; }
+.role-card { border: 1px solid var(--line); border-left: 3px solid var(--rc, var(--support)); background: var(--s1); border-radius: var(--radius); padding: 15px 16px; display: grid; gap: 7px; }
+.role-card .n { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-faint); }
+.role-card .v { font-family: var(--font-mono); font-size: .86rem; }
+.role-card .why { font-size: .84rem; color: var(--ink-dim); line-height: 1.5; }
+
+/* ── the failure strip (deliberately broken renders) ───────── */
+.donts { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.dont { border: 1px dashed color-mix(in srgb, var(--pnw-cedar) 55%, transparent); border-radius: var(--radius); padding: 14px 15px; display: grid; gap: 9px; background: var(--s0); }
+.dont .stage { padding: 14px; border-radius: var(--radius); font-family: var(--font-display); font-size: 1.02rem; }
+.dont .why { font-size: .82rem; color: var(--ink-dim); line-height: 1.5; }
+
+/* ── app mock ──────────────────────────────────────────────── */
+.appframe { border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; background: var(--ground); box-shadow: var(--shadow); }
+.chrome { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: var(--s1); border-bottom: 1px solid var(--line); }
+.chrome .lights { display: flex; gap: 6px; }
+.chrome .lights i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+.chrome .url { font-family: var(--font-mono); font-size: .7rem; color: var(--ink-dim); margin-left: 10px; }
+
+.nav { display: flex; align-items: center; gap: 4px; padding: 11px 16px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--s0) 70%, transparent); }
+.nav .brand { margin-right: 18px; }
+.nav a { font-family: var(--font-mono); font-size: .74rem; letter-spacing: .05em; color: var(--ink-dim); text-decoration: none; padding: 7px 11px; border-radius: var(--radius); position: relative; transition: color .22s var(--ease), background .22s var(--ease); }
+.nav a:hover { color: var(--ink); background: var(--s1); }
+.nav a[aria-current="page"] { color: var(--highlight); }
+.nav a[aria-current="page"]::after { content: ""; position: absolute; left: 11px; right: 11px; bottom: 2px; height: 2px; background: var(--highlight); animation: sweep .5s var(--ease) both; }
+@keyframes sweep { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); } }
+.nav .who { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.avatar { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-mono); font-size: .64rem; background: var(--pnw-moss); color: var(--pnw-mist); letter-spacing: .04em; }
+
+.screen { display: grid; grid-template-columns: 178px minmax(0, 1fr); min-height: 470px; }
+@media (max-width: 760px) { .screen { grid-template-columns: 1fr; } }
+.side { border-right: 1px solid var(--line); padding: 16px 12px; background: var(--s0); }
+.side .label { display: block; margin-bottom: 10px; }
+.side a { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--ink-dim); text-decoration: none; padding: 6px 8px; border-radius: var(--radius); }
+.side a:hover { color: var(--ink); background: var(--s1); }
+.side a.on { color: var(--ink); background: var(--s1); box-shadow: inset 2px 0 0 var(--highlight); }
+.side .count { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+.main { padding: 22px 24px 26px; display: grid; gap: 22px; align-content: start; }
+.pagetitle { display: flex; align-items: flex-end; gap: 14px; }
+.pagetitle .sub { font-family: var(--font-mono); font-size: .72rem; color: var(--ink-faint); letter-spacing: .1em; text-transform: uppercase; padding-bottom: 6px; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.kpi { position: relative; border: 1px solid var(--line); border-radius: var(--radius); background: var(--s1); padding: 14px 15px 16px; overflow: hidden; }
+.kpi::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--tone, var(--support)); }
+.kpi .k { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+.kpi .v { font-family: var(--font-display); font-size: 1.9rem; line-height: 1.1; margin-top: 8px; font-variation-settings: "opsz" 60; }
+.kpi .d { font-family: var(--font-mono); font-size: .68rem; color: var(--ink-dim); margin-top: 4px; }
+
+.panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--s1); overflow: hidden; }
+.panel > .head { display: flex; align-items: center; gap: 12px; padding: 12px 15px; border-bottom: 1px solid var(--line); }
+.panel > .head .label { margin-right: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-family: var(--font-mono); font-size: .64rem; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-faint); font-weight: 400; padding: 10px 15px; border-bottom: 1px solid var(--line); }
+td { padding: 11px 15px; border-bottom: 1px solid var(--line); font-size: .87rem; }
+tbody tr { transition: background .2s var(--ease); }
+tbody tr:hover { background: var(--s2); }
+td.num { font-family: var(--font-mono); font-size: .82rem; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--ink-dim); }
+.pill i { width: 6px; height: 6px; border-radius: 50%; background: var(--tone, var(--support)); }
+
+.bars { display: grid; gap: 9px; padding: 16px 15px 18px; }
+.bar { display: grid; grid-template-columns: 74px minmax(0,1fr) 62px; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: .74rem; }
+.bar .track { height: 9px; background: var(--s0); border-radius: 999px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--tone, var(--support)); transform-origin: left; animation: grow .9s var(--ease) both; animation-delay: calc(var(--i,0) * 90ms + 250ms); }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.bar .amt { text-align: right; color: var(--ink-dim); }
+
+.contacts { display: grid; }
+.contact { display: flex; align-items: center; gap: 13px; padding: 12px 15px; border-bottom: 1px solid var(--line); }
+.contact:hover { background: var(--s2); }
+.contact .nm { font-size: .89rem; }
+.contact .cad { font-family: var(--font-mono); font-size: .69rem; color: var(--ink-faint); }
+.contact .right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.chip { font-family: var(--font-mono); font-size: .66rem; letter-spacing: .07em; padding: 3px 8px; border-radius: 2px; border: 1px solid color-mix(in srgb, var(--tone, var(--support)) 55%, transparent); color: var(--tone-ink, var(--tone, var(--support))); }
+.btn-solid { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; background: var(--fill-highlight); color: var(--pnw-charcoal); border: 0; padding: 7px 11px; border-radius: var(--radius); cursor: pointer; transition: transform .2s var(--ease), filter .2s var(--ease); }
+.btn-solid:hover { transform: translateY(-1px); filter: brightness(1.06); }
+
+.split { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(0,1fr); gap: 14px; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+/* ── port notes ────────────────────────────────────────────── */
+.port { border: 1px solid var(--line); border-radius: var(--radius); background: var(--s1); overflow: hidden; }
+.port .head { padding: 13px 16px; border-bottom: 1px solid var(--line); }
+.port pre { margin: 0; padding: 16px; font-family: var(--font-mono); font-size: .78rem; line-height: 1.65; color: var(--ink-dim); overflow-x: auto; }
+.port pre b { color: var(--ink); font-weight: 400; }
+.port pre em { color: var(--highlight); font-style: normal; }
+.notes { display: grid; gap: 11px; margin-top: 16px; }
+.note { display: grid; grid-template-columns: 15px minmax(0,1fr); gap: 11px; font-size: .87rem; line-height: 1.55; color: var(--ink-dim); }
+.note b { color: var(--ink); font-weight: 400; }
+.note .bullet { color: var(--highlight); font-family: var(--font-mono); }
+footer { margin-top: 76px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; gap: 18px; flex-wrap: wrap; color: var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <span class="dot" aria-hidden="true"></span>
+    <span class="mark">Atrium</span>
+    <span class="sub">PNW palette study</span>
+  </div>
+  <button class="btn" id="toggle" type="button"><span id="toggle-label">Switch to mist</span></button>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="reveal" style="--i:0">
+      <h1>The Pacific<br />Northwest<br /><em>Overcast</em></h1>
+      <svg class="ridgeline" viewBox="0 0 900 92" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 78 L96 46 L150 62 L214 30 L268 58 L330 22 L392 54 L452 34 L516 60 L580 26 L644 56 L706 38 L772 62 L836 44 L900 66 L900 92 L0 92 Z" fill="var(--s3)" opacity=".55" />
+        <path d="M0 86 L70 66 L140 78 L210 54 L286 74 L356 50 L430 72 L500 56 L574 76 L648 54 L722 74 L796 60 L900 80 L900 92 L0 92 Z" fill="var(--s2)" />
+        <path d="M0 92 L900 92" stroke="var(--line-strong)" />
+      </svg>
+    </div>
+    <div style="display:grid; gap:20px" class="reveal">
+      <p class="lede">Six colors, measured against each other. Moss and mist are the ground and the ink; lichen is the quiet support; cedar is the human warmth; golden is the ten minutes the sun gets through — one per screen, never more.</p>
+      <div style="display:grid; gap:12px">
+        <div class="meta">
+          <div><span class="label">Ground</span><b id="m-ground">#25282a</b></div>
+          <div><span class="label">Surfaces</span><b>3 moss-cast steps</b></div>
+        </div>
+        <div class="meta">
+          <div><span class="label">Ink</span><b id="m-ink">#eef1f2</b></div>
+          <div><span class="label">Body contrast</span><b id="m-cr">13.07 : 1</b></div>
+        </div>
+        <div class="meta">
+          <div><span class="label">Directions</span><b>dark + light</b></div>
+          <div><span class="label">Method</span><b>WCAG 2.1</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="reveal" style="--i:1">
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>The six, as given</h2>
+      <p>Every ratio on this page is computed from WCAG relative luminance. The verdict column is what decides a color's role — <span class="mono">FAIL</span> means it cannot carry text on that ground.</p>
+    </div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section class="reveal" style="--i:2">
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>Where each color sits</h2>
+      <p>A palette is six pigments. A theme is seven roles. The mapping is not arbitrary: contrast decides it, and the two themes invert moss and mist.</p>
+    </div>
+    <div class="roles" id="roles"></div>
+  </section>
+
+  <section class="reveal" style="--i:3">
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>What breaks, rendered</h2>
+      <p>Not hypotheticals — these are the three combinations a naive application of the palette produces, drawn as they would ship.</p>
+    </div>
+    <div class="donts">
+      <div class="dont">
+        <div class="stage" style="background:var(--pnw-charcoal); color:var(--pnw-moss)">Moss text on basalt</div>
+        <div class="ratio"><i>moss / charcoal</i><span class="val">1.53</span><span class="tag fail">unreadable</span></div>
+        <p class="why">Moss is 1.53:1 on the dark ground — the single most likely mistake, because “primary brand color on the background” is the default instinct. On dark, moss is a <b>surface</b>, never ink.</p>
+      </div>
+      <div class="dont">
+        <div class="stage" style="background:var(--pnw-mist); color:var(--pnw-golden)">Golden text on mist</div>
+        <div class="ratio"><i>golden / mist</i><span class="val">1.88</span><span class="tag fail">unreadable</span></div>
+        <p class="why">Golden hour is a highlight, not an ink. Light mode needs <span class="mono">#8a6320</span> (4.76:1) for text and keeps <span class="mono">#dfa84a</span> for fills, rules and glow.</p>
+      </div>
+      <div class="dont">
+        <div class="stage" style="background:var(--pnw-mist); color:var(--pnw-lichen)">Lichen text on mist</div>
+        <div class="ratio"><i>lichen / mist</i><span class="val">1.99</span><span class="tag fail">unreadable</span></div>
+        <p class="why">Lichen is a dark-ground support color. Light mode steps it down to <span class="mono">#5a6a53</span> (5.11:1) — same hue family, same quietness, legible.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" style="--i:4">
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>Tried out on Atrium</h2>
+      <p>The real chrome — top nav, four-app launcher, CRM dashboard with KPIs, pipeline bars, organizations table, Rolodex follow-ups. Same token names the app already uses.</p>
+    </div>
+
+    <div class="appframe">
+      <div class="chrome">
+        <div class="lights"><i style="background:var(--pnw-cedar)"></i><i style="background:var(--pnw-golden)"></i><i style="background:var(--pnw-lichen)"></i></div>
+        <span class="url mono">atrium — /crm</span>
+      </div>
+
+      <div class="nav">
+        <div class="brand" style="gap:8px">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="mark" style="font-size:1.05rem">Atrium</span>
+        </div>
+        <a href="#" aria-current="page">CRM</a>
+        <a href="#">Space</a>
+        <a href="#">Rolodex</a>
+        <a href="#">Groove</a>
+        <div class="who">
+          <div class="avatar">d@</div>
+          <button class="btn" type="button" style="padding:5px 9px"><span>Theme</span></button>
+          <button class="btn" type="button" style="padding:5px 9px"><span>Reset demo</span></button>
+        </div>
+      </div>
+
+      <div class="screen">
+        <aside class="side">
+          <span class="label">CRM</span>
+          <a href="#" class="on">Dashboard</a>
+          <a href="#">Organizations</a>
+          <a href="#">Contacts</a>
+          <a href="#">Deals</a>
+          <a href="#">Pipeline</a>
+          <div class="side count">
+            <span class="label">This quarter</span>
+            <div class="mono" style="font-size:.78rem; color:var(--ink-dim); margin-top:6px">3 orgs · 4 contacts<br />6 deals · 2 open</div>
+          </div>
+        </aside>
+
+        <div class="main">
+          <div class="pagetitle">
+            <h2>Dashboard</h2>
+            <span class="sub">Trailing 6 months</span>
+          </div>
+
+          <div class="kpis">
+            <div class="kpi" style="--tone:var(--support)"><div class="k">Open deals</div><div class="v">4</div><div class="d">$130.0k pipeline</div></div>
+            <div class="kpi" style="--tone:var(--highlight)"><div class="k">Won</div><div class="v">$66.5k</div><div class="d">2 deals closed</div></div>
+            <div class="kpi" style="--tone:var(--accent)"><div class="k">Win rate</div><div class="v">67%</div><div class="d">3 of 4 decisions</div></div>
+            <div class="kpi" style="--tone:var(--pnw-lichen)"><div class="k">Overdue</div><div class="v">1</div><div class="d">follow-up due</div></div>
+          </div>
+
+          <div class="split">
+            <div class="panel">
+              <div class="head">
+                <span class="label">Organizations</span>
+                <span class="pill" style="--tone:var(--support)"><i></i>3</span>
+              </div>
+              <table>
+                <thead><tr><th>Name</th><th>Industry</th><th>Contacts</th><th>Open value</th></tr></thead>
+                <tbody>
+                  <tr><td>Northwind Trading</td><td style="color:var(--ink-dim)">Logistics</td><td class="num">2</td><td class="num">$78.0k</td></tr>
+                  <tr><td>Bluepeak Analytics</td><td style="color:var(--ink-dim)">Software</td><td class="num">1</td><td class="num">$52.0k</td></tr>
+                  <tr><td>Harbor &amp; Lane</td><td style="color:var(--ink-dim)">Legal</td><td class="num">1</td><td class="num">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="panel">
+              <div class="head"><span class="label">Pipeline by stage</span></div>
+              <div class="bars">
+                <div class="bar" style="--tone:var(--pnw-lichen); --i:0"><span>Lead</span><span class="track"><span class="fill" style="width:38%"></span></span><span class="amt">$18k</span></div>
+                <div class="bar" style="--tone:var(--support); --i:1"><span>Qualified</span><span class="track"><span class="fill" style="width:62%"></span></span><span class="amt">$30k</span></div>
+                <div class="bar" style="--tone:var(--accent); --i:2"><span>Proposal</span><span class="track"><span class="fill" style="width:46%"></span></span><span class="amt">$22k</span></div>
+                <div class="bar" style="--tone:var(--highlight); --i:3"><span>Won</span><span class="track"><span class="fill" style="width:74%"></span></span><span class="amt">$66k</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="head">
+              <span class="label">Who to contact</span>
+              <span class="pill" style="--tone:var(--accent)"><i></i>2 overdue</span>
+            </div>
+            <div class="contacts">
+              <div class="contact">
+                <div class="avatar">MK</div>
+                <div><div class="nm">Maya Kowalski</div><div class="cad">Northwind Trading · every 30 days</div></div>
+                <div class="right">
+                  <span class="chip" style="--tone:var(--accent); --tone-ink:var(--accent-ink)">overdue 6d</span>
+                  <span class="chip" style="--tone:var(--support)">inner circle</span>
+                  <button class="btn-solid" type="button">Log contact</button>
+                </div>
+              </div>
+              <div class="contact">
+                <div class="avatar">DO</div>
+                <div><div class="nm">Daniel Okafor</div><div class="cad">Bluepeak Analytics · every 60 days</div></div>
+                <div class="right">
+                  <span class="chip" style="--tone:var(--highlight)">due in 4d</span>
+                  <span class="chip" style="--tone:var(--support)">client</span>
+                  <button class="btn-solid" type="button">Log contact</button>
+                </div>
+              </div>
+              <div class="contact" style="border-bottom:0">
+                <div class="avatar">RS</div>
+                <div><div class="nm">Ruth Salazar</div><div class="cad">Harbor &amp; Lane · birthday 12 Oct</div></div>
+                <div class="right">
+                  <span class="chip" style="--tone:var(--support)">on cadence</span>
+                  <button class="btn-solid" type="button">Log contact</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" style="--i:5">
+    <div class="section-head">
+      <span class="num">05</span>
+      <h2>Porting it into the app</h2>
+      <p>The theme already exposes these token names — the swap is a rewrite of <span class="mono">:root</span> and <span class="mono">[data-theme="light"]</span> in <span class="mono">app/globals.css</span>, plus a rename of <span class="mono">--brass-*</span> into <span class="mono">cedar</span>/<span class="mono">golden</span>.</p>
+    </div>
+    <div class="split">
+      <div class="port">
+        <div class="head label">app/globals.css — dark</div>
+<pre><b>:root / [data-theme="dark"]</b> {
+  --bg-0: <em>#25282a</em>;   <i>/* basalt ground */</i>
+  --bg-1: <em>#2b3330</em>;   --bg-2: <em>#39443f</em>;   --bg-3: <em>#43514a</em>;
+  --line: rgba(163,177,155,.16);   --line-strong: rgba(163,177,155,.30);
+  --ink: <em>#eef1f2</em>;      <i>/* mist, 13.07:1 */</i>
+  --ink-dim: <em>#a3b19b</em>;  <i>/* lichen,  6.58:1 */</i>
+  --accent: <em>#b87355</em>;   <i>/* cedar,  UI/large 3.97:1 */</i>
+  --golden: <em>#dfa84a</em>;   <i>/* 6.95:1 */</i>
+}
+
+<b>[data-theme="light"]</b> {
+  --bg-0: <em>#eef1f2</em>;   <i>/* overcast ground */</i>
+  --ink: <em>#25282a</em>;    <i>/* 13.07:1 */</i>
+  --accent: <em>#8f5138</em>; <i>/* cedar-ink 5.44:1 */</i>
+  --ink-dim: <em>#5a6a53</em>; <i>/* lichen-ink 5.11:1 */</i>
+  --golden: <em>#8a6320</em>; <i>/* golden-ink 4.76:1 */</i>
+}
+</pre>
+      </div>
+      <div class="notes">
+        <div class="note"><span class="bullet">→</span><span><b>Keep the names, change the values.</b> Every app CSS module resolves <span class="mono">var(--bg-1)</span>/<span class="mono">var(--brass)</span> — a token rewrite re-themes all four apps with no component edits, the same way the Workroom pass did it.</span></div>
+        <div class="note"><span class="bullet">→</span><span><b>The espresso→basalt shift is cool.</b> The Workroom is warm (espresso #13100c, brass). This is cold-damp (basalt #25282a, moss). The grain overlay, the Fraunces display and the mono data lines all still work — only the temperature changes.</span></div>
+        <div class="note"><span class="bullet">→</span><span><b>Groove's instrument tokens have to be re-cast by hand.</b> The groovebox declares its own <span class="mono">--inst-*</span> set and must stay dark under light mode; nothing here covers it.</span></div>
+        <div class="note"><span class="bullet">→</span><span><b>Five test gates will need real updates:</b> <span class="mono">app/globals.test.ts</span> locks the token values and the retired hexes, <span class="mono">tests/workroom-namespace.test.ts</span> asserts both themes declare the full colour set and that no retired hex (<span class="mono">#0a0a0a</span>, <span class="mono">#171717</span>, <span class="mono">#ffffff</span>) appears in app code, and 5.7's e2e reads the computed <span class="mono">rgb()</span> of the ground for dark and light. A palette swap is a spec-level change, not a CSS drive-by.</span></div>
+        <div class="note"><span class="bullet">→</span><span><b>Read this page in both directions.</b> Toggle the button — the same markup and the same six pigments, two temperatures. The dark direction is “wet forest floor at dusk”; the light one is “the ten minutes the sun gets through.”</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="mono" style="font-size:.72rem">
+    <span>PNW palette study · standalone · not part of the Atrium repo</span>
+    <span>contrast: WCAG 2.1 relative luminance</span>
+    <span id="foot-ratio">dark · ink 13.07 · support 6.58 · highlight 6.95</span>
+  </footer>
+</div>
+
+<script>
+const P = {
+  moss:     { hex: "#2d4a3e", name: "moss",     role: "Primary ink on light · surface on dark" },
+  mist:     { hex: "#eef1f2", name: "mist",     role: "Overcast ground (light) · ink (dark)" },
+  charcoal: { hex: "#25282a", name: "charcoal", role: "Basalt ground (dark) · ink (light)" },
+  lichen:   { hex: "#a3b19b", name: "lichen",   role: "Support ink, data, quiet chrome" },
+  cedar:    { hex: "#b87355", name: "cedar",    role: "Human accent — overdue, warmth, timber" },
+  golden:   { hex: "#dfa84a", name: "golden",   role: "One highlight per screen — active, won" },
+};
+const DARK = "#25282a", LIGHT = "#eef1f2";
+
+function lin(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+function lum(hex) {
+  const h = hex.replace("#", "");
+  return 0.2126 * lin(parseInt(h.slice(0,2),16)) + 0.7152 * lin(parseInt(h.slice(2,4),16)) + 0.0722 * lin(parseInt(h.slice(4,6),16));
+}
+function cr(a, b) { const la = lum(a), lb = lum(b); return ((Math.max(la,lb)+0.05)/(Math.min(la,lb)+0.05)); }
+function verdict(r) { return r >= 7 ? ["AAA","aaa"] : r >= 4.5 ? ["AA body","aa"] : r >= 3 ? ["UI / large","ui"] : ["FAIL","fail"]; }
+
+const inkFor = (bg) => cr("#25282a", bg) > cr("#eef1f2", bg) ? "#25282a" : "#eef1f2";
+
+document.getElementById("board").innerHTML = Object.values(P).map((c, i) => {
+  const onDark = cr(c.hex, DARK), onLight = cr(c.hex, LIGHT);
+  const vd = verdict(onDark), vl = verdict(onLight);
+  return `
+  <article class="swatch reveal" style="--i:${i + 2}">
+    <div class="chip" style="background:${c.hex}; color:${inkFor(c.hex)}"><span>${c.hex}</span></div>
+    <div class="info">
+      <h3 style="font-size:1.02rem">${c.name}</h3>
+      <div class="role">${c.role}</div>
+      <div class="ratios">
+        <div class="ratio"><i>on basalt</i><span class="val">${onDark.toFixed(2)}</span><span class="tag ${vd[1]}">${vd[0]}</span></div>
+        <div class="ratio"><i>on mist</i><span class="val">${onLight.toFixed(2)}</span><span class="tag ${vl[1]}">${vl[0]}</span></div>
+      </div>
+    </div>
+  </article>`;
+}).join("");
+
+const ROLES = [
+  { n: "Ground",           d: "charcoal on dark, mist on light", v: "#25282a / #eef1f2", c: "#25282a" },
+  { n: "Surface ×3",       d: "moss-cast steps, 1.28 → 1.78 from the ground", v: "#2b3330 · #39443f · #43514a", c: "#39443f" },
+  { n: "Ink",              d: "mist on dark, charcoal on light — 13.07:1 throughout", v: "#eef1f2 / #25282a", c: "#eef1f2" },
+  { n: "Support ink",      d: "lichen on dark; lichen stepped down 5.11:1 on light", v: "#a3b19b / #5a6a53", c: "#a3b19b" },
+  { n: "Accent",           d: "cedar for warmth and urgency, UI/large only", v: "#b87355 / #8f5138", c: "#b87355" },
+  { n: "Highlight",        d: "golden — active nav, wins, the one loud thing", v: "#dfa84a / #8a6320", c: "#dfa84a" },
+  { n: "Quiet brand",      d: "moss carries the wordmark on light, lichen on dark", v: "#2d4a3e / #a3b19b", c: "#2d4a3e" },
+];
+document.getElementById("roles").innerHTML = ROLES.map(r => `
+  <div class="role-card" style="--rc:${r.c}">
+    <span class="n">${r.n}</span>
+    <span class="v">${r.v}</span>
+    <span class="why">${r.d}</span>
+  </div>`).join("");
+
+/* theme toggle — same contract as the app: data-theme on <html>, remembered */
+const html = document.documentElement;
+const btn = document.getElementById("toggle");
+const label = document.getElementById("toggle-label");
+const readout = () => {
+  const cs = getComputedStyle(html);
+  const ink = cs.getPropertyValue("--ink").trim();
+  const ground = cs.getPropertyValue("--ground").trim();
+  const inkCr = cr(ink, ground).toFixed(2);
+  html.dataset.contrast = inkCr;
+  document.getElementById("m-ground").textContent = ground;
+  document.getElementById("m-ink").textContent = ink;
+  document.getElementById("m-cr").textContent = inkCr + " : 1";
+  document.getElementById("foot-ratio").textContent =
+    html.dataset.theme + " · ink " + inkCr + " · support " + cr(cs.getPropertyValue("--support").trim(), ground).toFixed(2) +
+    " · highlight " + cr(cs.getPropertyValue("--highlight").trim(), ground).toFixed(2);
+};
+function set(theme) {
+  html.dataset.theme = theme;
+  label.textContent = theme === "dark" ? "Switch to mist" : "Switch to basalt";
+  localStorage.setItem("pnw.study.theme", theme);
+  requestAnimationFrame(readout);
+}
+btn.addEventListener("click", () => set(html.dataset.theme === "dark" ? "light" : "dark"));
+set(localStorage.getItem("pnw.study.theme") || "dark");
+</script>
+</body>
+</html>

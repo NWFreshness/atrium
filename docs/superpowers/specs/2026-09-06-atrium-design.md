@@ -27,13 +27,13 @@ Atrium is a Vercel-hosted clone of those four apps as one Next.js product, with 
 
 Same jobs-to-be-done as the reference implementation, not pixel-identical CSS and not a file-by-file port of Express + SQLite + Vite.
 
-| App | Path | Job |
-| --- | --- | --- |
-| Launcher | `/` | One entrance to the four apps |
-| CRM | `/crm` | Personal sales CRM: organizations, contacts, deals, drag-and-drop pipeline, activities, dashboard |
-| Space | `/space` | Personal knowledge manager: pages and blocks, databases with table / board / list views, search |
-| Rolodex | `/rolodex` | Personal CRM: people, circles, cadences, birthdays, conversation timeline, CSV and vCard import |
-| Groove | `/groove` | Browser groovebox: four synth units, one transport, master DJ filter, Web Audio only |
+| App      | Path       | Job                                                                                               |
+| -------- | ---------- | ------------------------------------------------------------------------------------------------- |
+| Launcher | `/`        | One entrance to the four apps                                                                     |
+| CRM      | `/crm`     | Personal sales CRM: organizations, contacts, deals, drag-and-drop pipeline, activities, dashboard |
+| Space    | `/space`   | Personal knowledge manager: pages and blocks, databases with table / board / list views, search   |
+| Rolodex  | `/rolodex` | Personal CRM: people, circles, cadences, birthdays, conversation timeline, CSV and vCard import   |
+| Groove   | `/groove`  | Browser groovebox: four synth units, one transport, master DJ filter, Web Audio only              |
 
 The reference implementation's `docs/<app>/REQUIREMENTS.md` and `IMPLEMENTATION.md` are the behavior bible per app. Where they disagree with the reference implementation's code, prefer the reference implementation's code as the original truth, then adapt to this design (tenancy, Next.js, Postgres).
 
@@ -48,6 +48,7 @@ The reference implementation's `docs/<app>/REQUIREMENTS.md` and `IMPLEMENTATION.
 - SQLite, better-sqlite3, Express, Vite MPA
 - TanStack Router (Next.js owns routing)
 - TanStack Query in v1 (RSC + server actions; add later only if client cache becomes a real problem)
+- A third theme: Phase 10 retires the espresso/brass values rather than keeping them behind a flag, and no component library or CSS framework arrives with the redesign
 
 OAuth is deferred, not forbidden. Credentials signup is Phase 6, behind `AUTH_SIGNUP_ENABLED`. The user/session schema must not block adding Google later (`accounts` / `sessions` tables stay).
 
@@ -187,18 +188,18 @@ Phases 0–4 shipped functional but visually bare: Geist + Arial fallbacks, flat
 
 The direction, “the Workroom”: warm editorial rather than a generic dark dashboard.
 
-| Element | Decision | Why |
-| --- | --- | --- |
-| Surfaces | Espresso / ink browns `#13100c` → `#2b251b` (dark), warm paper (light) | Personal, not corporate-dashboard |
-| Ink | Warm off-white `#f0e9da`, dimmed `#a99e88` / `#7a6f5b` | Calm, readable |
-| Accent | Brass `#dfa33c` — evolution of the existing amber active state | Continuity with the nav |
-| Display type | Fraunces (characterful serif) for titles, KPI figures, brand | Distinctive identity |
-| Body type | Geist, already loaded | No regression in readability |
-| Data type | Geist Mono for labels, dates, tempo, IDs, chips | Editorial data texture |
-| Theme | Dark default; light is warm “paper”, not white | Follows existing `atrium.theme` |
-| Texture | Low-opacity SVG paper grain + top radial brass glow | Quiet depth, not noise |
-| Motion | Staggered load reveals, nav underline sweep, card lift, animated meters. `<prefers-reduced-motion>` respected | Alive without gimmick |
-| Groove | Stays instrument-dark in both themes, per its spec | Hardware panel needs contrast |
+| Element      | Decision                                                                                                      | Why                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| Surfaces     | Espresso / ink browns `#13100c` → `#2b251b` (dark), warm paper (light)                                        | Personal, not corporate-dashboard |
+| Ink          | Warm off-white `#f0e9da`, dimmed `#a99e88` / `#7a6f5b`                                                        | Calm, readable                    |
+| Accent       | Brass `#dfa33c` — evolution of the existing amber active state                                                | Continuity with the nav           |
+| Display type | Fraunces (characterful serif) for titles, KPI figures, brand                                                  | Distinctive identity              |
+| Body type    | Geist, already loaded                                                                                         | No regression in readability      |
+| Data type    | Geist Mono for labels, dates, tempo, IDs, chips                                                               | Editorial data texture            |
+| Theme        | Dark default; light is warm “paper”, not white                                                                | Follows existing `atrium.theme`   |
+| Texture      | Low-opacity SVG paper grain + top radial brass glow                                                           | Quiet depth, not noise            |
+| Motion       | Staggered load reveals, nav underline sweep, card lift, animated meters. `<prefers-reduced-motion>` respected | Alive without gimmick             |
+| Groove       | Stays instrument-dark in both themes, per its spec                                                            | Hardware panel needs contrast     |
 
 Shared presentational classes (buttons, fields, panels, KPI cards, chips, avatars, subnav, page titles) and the design tokens land in the foundation features 5.1–5.2; per-app passes (5.3–5.6) apply them to each app’s own components. The per-app CSS namespaces (`crm-`, `space-`, `rolodex-`, `groove-`) and the `atrium-nav-` prefix rule from `AGENTS.md` still hold — the prototype uses unprefixed classes because it never ships into the app.
 
@@ -230,6 +231,14 @@ Feature specs: `features/phase-9-security/` (9.1–9.6). Board: `features/INDEX.
 
 ---
 
+### Phase 10 — PNW (redesign)
+
+Replace the theme's warmth and the type stack with a Pacific Northwest palette (basalt, mist, moss, lichen, cedar, golden) and a sturdier stack (Outfit headings, Archivo body, Geist Mono data), then prove it with a gate that computes WCAG contrast from the shipped tokens. Values-only change: no new app, route, table, migration, dependency, or behaviour. Groove keeps its own instrument scope and stays dark under the light theme. Design: [2026-09-14-pnw-design.md](./2026-09-14-pnw-design.md). Studies: `docs/prototypes/2026-09-14-pnw/`.
+
+Feature specs: `features/phase-10-pnw/` (10.1–10.7). Board: `features/INDEX.md`.
+
+---
+
 ## Testing and quality
 
 Not cloning the reference implementation's course control plane.
@@ -248,13 +257,13 @@ Coverage is a signal, not an 80% gate.
 
 ## Process files
 
-| File | Role |
-| --- | --- |
-| `features/INDEX.md` | The board. Phases, feature ids, status, one-line summary, link to spec. This is how you see what is done. No second progress file. |
-| `CURRENT_FEATURE.md` | Top: the single in-progress feature (id, link, status). Bottom: append-only log. When a feature finishes, add a short summary. Never delete old summaries. |
-| `features/phase-N-name/N.M-feature-name.md` | One spec per feature. writing-plans template: Goal, Scope, Files, Acceptance criteria, Verification, Commit. Status updated in the same commit as the work. |
-| `AGENTS.md` | Stack, tenancy rule (no query without tenant_id from session), CSS scoping, TDD, do not copy the reference implementation's Express/SQLite. |
-| `docs/superpowers/specs/2026-09-06-atrium-design.md` | This design. Frozen after review; amend deliberately if the product changes. |
+| File                                                 | Role                                                                                                                                                        |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `features/INDEX.md`                                  | The board. Phases, feature ids, status, one-line summary, link to spec. This is how you see what is done. No second progress file.                          |
+| `CURRENT_FEATURE.md`                                 | Top: the single in-progress feature (id, link, status). Bottom: append-only log. When a feature finishes, add a short summary. Never delete old summaries.  |
+| `features/phase-N-name/N.M-feature-name.md`          | One spec per feature. writing-plans template: Goal, Scope, Files, Acceptance criteria, Verification, Commit. Status updated in the same commit as the work. |
+| `AGENTS.md`                                          | Stack, tenancy rule (no query without tenant_id from session), CSS scoping, TDD, do not copy the reference implementation's Express/SQLite.                 |
+| `docs/superpowers/specs/2026-09-06-atrium-design.md` | This design. Frozen after review; amend deliberately if the product changes.                                                                                |
 
 Rules:
 
@@ -273,6 +282,7 @@ Feature granularity: independently shippable, hours to a couple of days, numbere
 - PostgreSQL hosted on Neon (`DATABASE_URL`)
 - Drizzle ORM + drizzle-kit migrations (TypeScript schema, SQL-shaped queries, no Prisma engine)
 - Auth.js (Credentials; signup in Phase 6)
+- Typography (Phase 10): Outfit headings, Archivo body, Geist Mono data — loaded through `next/font`, exposed as `--font-display` / `--font-sans` / `--font-mono`. No other family without a spec.
 - Vitest + Playwright
 - Vercel
 
@@ -303,4 +313,4 @@ Do not add TanStack packages until the feature that uses them.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-Progress: `features/INDEX.md`. Phases 0–8 complete. Phase 9 Security specs 9.1–9.6 exist. Next implementable unit is 9.1, after the Phase 9 docs PR merges.
+Progress: `features/INDEX.md`. Phases 0–9 complete and merged. Phase 10 PNW specs 10.1–10.7 exist. Next implementable unit is 10.1, after the Phase 10 docs PR merges.

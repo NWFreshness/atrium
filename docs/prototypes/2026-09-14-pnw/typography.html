@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Typography Study — Atrium / PNW</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=League+Spartan:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&family=Lora:wght@400;500;600;700&family=Merriweather:wght@300;400;700;900&family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Archivo:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────
+   TYPOGRAPHY STUDY — "modern architectural firm / high-end outdoor
+   heritage brand: sturdy, highly readable, clear."
+
+   Brief (Tyler): headings = bold geometric sans (Outfit, League
+   Spartan, Montserrat) or editorial serif (Lora, Merriweather);
+   body = Inter or DM Sans.
+
+   Six heading candidates + four body candidates + the Atrium status
+   quo (Fraunces / Geist) carried as the baseline to beat. Every
+   number this page prints for a font is measured in the browser from
+   real glyph outlines (canvas TextMetrics), not copied from a
+   specimen sheet: x-height/em, cap-height/em, their ratio, full
+   ascent+descent em, average lowercase advance, and — the number that
+   actually decides body text — characters per line at a fixed 72ch
+   measure.
+
+   Palette tokens are carried over unchanged from the PNW colour study,
+   so the two studies read as one system.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --pnw-moss:#2d4a3e; --pnw-mist:#eef1f2; --pnw-charcoal:#25282a;
+  --pnw-lichen:#a3b19b; --pnw-cedar:#b87355; --pnw-golden:#dfa84a;
+
+  --font-heading: "Outfit", sans-serif;      /* switched live */
+  --font-body: "Archivo", sans-serif;        /* switched live */
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius: 3px; --radius-lg: 6px;
+  --ease: cubic-bezier(.22,.68,0,1);
+}
+
+[data-theme="dark"] {
+  --ground:#25282a; --s0:#2b3330; --s1:#313b37; --s2:#39443f; --s3:#43514a;
+  --line: rgba(163,177,155,.16); --line-strong: rgba(163,177,155,.30);
+  --ink:#eef1f2; --ink-dim:#b3bfa9; --ink-faint:#a3b19b;
+  --accent-ink:#e0a488; --support:#a3b19b; --highlight:#dfa84a; --fill-highlight:#dfa84a;
+  --shadow: 0 1px 0 rgba(0,0,0,.28), 0 18px 40px -28px rgba(0,0,0,.85);
+  --grain: .05;
+}
+[data-theme="light"] {
+  --ground:#eef1f2; --s0:#e7ebec; --s1:#f5f7f8; --s2:#fbfcfc; --s3:#ffffff;
+  --line:#c9d2d0; --line-strong:#a9b6b3;
+  --ink:#25282a; --ink-dim:#4f5f48; --ink-faint:#5f6b5a;
+  --accent-ink:#8f5138; --support:#5a6a53; --highlight:#8a6320; --fill-highlight:#dfa84a;
+  --shadow: 0 1px 0 rgba(37,40,42,.05), 0 16px 34px -26px rgba(45,74,62,.45);
+  --grain: .035;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--ground); }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background .4s var(--ease), color .4s var(--ease);
+}
+body::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: var(--grain);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+}
+.wrap { position: relative; z-index: 2; max-width: 1240px; margin: 0 auto; padding: 0 28px 120px; }
+
+h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 600; margin: 0; letter-spacing: -.01em; }
+h1 { font-size: clamp(2.4rem, 5.6vw, 4.1rem); line-height: 1.02; font-weight: 700; }
+h2 { font-size: clamp(1.4rem, 2.4vw, 1.95rem); line-height: 1.12; }
+h3 { font-size: 1.06rem; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); font-variant-ligatures: none; }
+.label { font-family: var(--font-mono); font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); }
+.lede { font-size: 1.06rem; line-height: 1.62; color: var(--ink-dim); max-width: 60ch; }
+
+header.top {
+  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 14px;
+  padding: 13px 28px; background: color-mix(in srgb, var(--ground) 84%, transparent);
+  backdrop-filter: blur(14px) saturate(1.1); border-bottom: 1px solid var(--line);
+}
+.mark { font-family: var(--font-heading); font-weight: 700; font-size: 1.2rem; letter-spacing: -.02em; }
+.mark .dot { display: inline-block; width: 6px; height: 6px; background: var(--highlight); transform: rotate(45deg); margin-right: 9px; vertical-align: .12em; }
+header .spacer { margin-right: auto; }
+select, button.tgl {
+  font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink); background: var(--s1); border: 1px solid var(--line-strong);
+  padding: 7px 10px; border-radius: var(--radius); cursor: pointer;
+}
+button.tgl:hover { border-color: var(--highlight); color: var(--highlight); }
+.picker { display: flex; align-items: center; gap: 7px; }
+
+.hero { padding: 66px 0 40px; display: grid; gap: 24px; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); }
+@media (max-width: 940px) { .hero { grid-template-columns: 1fr; } }
+.hero h1 em { font-style: normal; color: var(--highlight); }
+.hero .ridgeline { width: 100%; height: 78px; display: block; }
+.hero aside { display: grid; gap: 14px; align-content: start; }
+.kv { display: grid; gap: 9px; border-top: 1px solid var(--line); padding-top: 14px; }
+.kv div { display: flex; gap: 12px; align-items: baseline; font-size: .84rem; }
+.kv span { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-faint); min-width: 96px; }
+.kv b { font-family: var(--font-mono); font-weight: 400; font-size: .8rem; }
+
+section { margin-top: 76px; }
+.section-head { display: flex; align-items: baseline; gap: 18px; border-bottom: 1px solid var(--line); padding-bottom: 13px; margin-bottom: 24px; }
+.section-head .num { font-family: var(--font-mono); font-size: .7rem; color: var(--highlight); letter-spacing: .14em; }
+.section-head p { margin-left: auto; color: var(--ink-dim); font-size: .9rem; max-width: 56ch; }
+
+/* ── pairing bar ─────────────────────────────────────────────── */
+.pairbar { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; border: 1px solid var(--line); background: var(--s1); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px; }
+.pairbar .readout { margin-left: auto; display: flex; gap: 20px; flex-wrap: wrap; }
+.pairbar .readout b { font-family: var(--font-mono); font-weight: 400; font-size: .78rem; }
+.pairbar .readout i { font-style: normal; font-family: var(--font-mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-right: 7px; }
+
+/* ── heading specimens ───────────────────────────────────────── */
+.specs { display: grid; gap: 14px; }
+.spec { border: 1px solid var(--line); background: var(--s1); border-radius: var(--radius-lg); padding: 18px 20px 16px; display: grid; gap: 14px; }
+.spec.pick { border-color: color-mix(in srgb, var(--highlight) 55%, transparent); box-shadow: inset 3px 0 0 var(--highlight); }
+.spec .meta { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.spec .meta h3 { font-family: var(--font-mono); font-weight: 400; font-size: .84rem; letter-spacing: .04em; }
+.spec .meta .cat { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-faint); border: 1px solid var(--line-strong); border-radius: 2px; padding: 2px 6px; }
+.spec .meta .nm { margin-left: auto; font-family: var(--font-mono); font-size: .72rem; color: var(--ink-dim); }
+.spec .display { font-size: clamp(1.9rem, 3.4vw, 2.7rem); line-height: 1.06; font-weight: 700; letter-spacing: -.015em; }
+.spec .wordmark { font-size: 1.7rem; font-weight: 700; letter-spacing: -.02em; }
+.spec .numerals { font-family: inherit; font-size: 2.1rem; font-weight: 600; letter-spacing: -.01em; }
+.spec .row { display: flex; align-items: baseline; gap: 22px; flex-wrap: wrap; }
+.spec .body16 { font-size: 1rem; line-height: 1.6; color: var(--ink-dim); max-width: 58ch; }
+.spec .note { font-size: .87rem; line-height: 1.55; color: var(--ink-dim); }
+.spec .note b { color: var(--ink); font-weight: 600; }
+.spec .metrics { display: flex; gap: 18px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 11px; }
+.metric { display: grid; gap: 2px; }
+.metric i { font-style: normal; font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+.metric b { font-family: var(--font-mono); font-weight: 400; font-size: .8rem; }
+.warn { color: var(--accent-ink); }
+.good { color: var(--support); }
+
+/* ── body specimens ──────────────────────────────────────────── */
+.bodies { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.bcard { border: 1px solid var(--line); background: var(--s1); border-radius: var(--radius-lg); padding: 17px 18px; display: grid; gap: 12px; }
+.bcard.pick { border-color: color-mix(in srgb, var(--highlight) 55%, transparent); box-shadow: inset 3px 0 0 var(--highlight); }
+.bcard h3 { font-family: var(--font-mono); font-weight: 400; font-size: .84rem; }
+.bcard .sample { font-size: 1rem; line-height: 1.6; color: var(--ink); }
+.bcard .sample .dim { color: var(--ink-dim); }
+.bcard .data { font-family: var(--font-mono); font-size: .82rem; color: var(--ink-dim); }
+.bcard .note { font-size: .84rem; color: var(--ink-dim); line-height: 1.5; }
+
+/* ── applied ─────────────────────────────────────────────────── */
+.appframe { border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; background: var(--ground); box-shadow: var(--shadow); }
+.chrome { display: flex; align-items: center; gap: 9px; padding: 9px 13px; background: var(--s1); border-bottom: 1px solid var(--line); }
+.chrome i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+.chrome span { font-family: var(--font-mono); font-size: .7rem; color: var(--ink-dim); margin-left: 8px; }
+.nav { display: flex; align-items: center; gap: 3px; padding: 11px 16px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--s0) 70%, transparent); }
+.nav .mark { margin-right: 16px; }
+.nav a { font-family: var(--font-mono); font-size: .73rem; letter-spacing: .05em; color: var(--ink-dim); text-decoration: none; padding: 7px 11px; border-radius: var(--radius); }
+.nav a:hover { color: var(--ink); background: var(--s1); }
+.nav a[aria-current="page"] { color: var(--highlight); box-shadow: inset 0 -2px 0 var(--highlight); }
+.nav .who { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+.avatar { width: 25px; height: 25px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-mono); font-size: .62rem; background: var(--pnw-moss); color: var(--pnw-mist); }
+.screen { display: grid; grid-template-columns: 176px minmax(0,1fr); min-height: 420px; }
+@media (max-width: 780px) { .screen { grid-template-columns: 1fr; } }
+.side { border-right: 1px solid var(--line); padding: 16px 12px; background: var(--s0); display: grid; gap: 3px; align-content: start; }
+.side .label { display: block; margin-bottom: 9px; }
+.side a { display: block; font-size: .85rem; color: var(--ink-dim); text-decoration: none; padding: 6px 8px; border-radius: var(--radius); }
+.side a.on { color: var(--ink); background: var(--s1); box-shadow: inset 2px 0 0 var(--highlight); }
+.main { padding: 22px 24px 26px; display: grid; gap: 20px; align-content: start; }
+.pagetitle { display: flex; align-items: baseline; gap: 12px; }
+.pagetitle .sub { font-family: var(--font-mono); font-size: .7rem; color: var(--ink-faint); letter-spacing: .1em; text-transform: uppercase; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.kpi { position: relative; border: 1px solid var(--line); border-radius: var(--radius); background: var(--s1); padding: 13px 14px 15px; }
+.kpi::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--tone, var(--support)); }
+.kpi .k { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+.kpi .v { font-family: var(--font-heading); font-weight: 700; font-size: 1.85rem; line-height: 1.12; margin-top: 7px; letter-spacing: -.02em; }
+.kpi .d { font-family: var(--font-mono); font-size: .66rem; color: var(--ink-dim); margin-top: 3px; }
+table { width: 100%; border-collapse: collapse; }
+.panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--s1); overflow: hidden; }
+.panel .head { display: flex; align-items: center; gap: 12px; padding: 12px 15px; border-bottom: 1px solid var(--line); }
+.panel .head .label { margin-right: auto; }
+th { text-align: left; font-family: var(--font-mono); font-size: .62rem; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-faint); font-weight: 400; padding: 10px 15px; border-bottom: 1px solid var(--line); }
+td { padding: 10px 15px; border-bottom: 1px solid var(--line); font-size: .88rem; }
+td.num { font-family: var(--font-mono); font-size: .82rem; }
+.pill { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--ink-dim); }
+.btn-solid { font-family: var(--font-mono); font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; background: var(--fill-highlight); color: var(--pnw-charcoal); border: 0; padding: 6px 10px; border-radius: var(--radius); cursor: pointer; }
+.contacts { display: grid; }
+.contact { display: flex; align-items: center; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--line); }
+.contact .nm { font-size: .9rem; }
+.contact .cad { font-family: var(--font-mono); font-size: .68rem; color: var(--ink-faint); }
+.contact .right { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+.chip { font-family: var(--font-mono); font-size: .64rem; padding: 3px 8px; border-radius: 2px; border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent); color: var(--tone-ink, var(--tone)); }
+
+/* ── verdict ─────────────────────────────────────────────────── */
+.verdicts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.vcard { border: 1px solid var(--line); background: var(--s1); border-radius: var(--radius-lg); padding: 17px 18px; display: grid; gap: 10px; }
+.vcard .tagrow { display: flex; align-items: center; gap: 9px; }
+.vcard .tag { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; border: 1px solid var(--line-strong); color: var(--ink-dim); }
+.vcard .tag.win { border-color: color-mix(in srgb, var(--highlight) 60%, transparent); color: var(--highlight); }
+.vcard h4 { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; }
+.vcard .pair { font-family: var(--font-mono); font-size: .74rem; color: var(--ink-dim); }
+.vcard p { font-size: .88rem; line-height: 1.58; color: var(--ink-dim); }
+.vcard p b { color: var(--ink); font-weight: 600; }
+table.grid { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+table.grid td, table.grid th { font-family: var(--font-mono); font-size: .76rem; }
+table.grid td.name { font-family: var(--font-body); font-size: .86rem; }
+footer { margin-top: 70px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; gap: 18px; flex-wrap: wrap; color: var(--ink-faint); font-family: var(--font-mono); font-size: .7rem; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="mark"><span class="dot"></span>Atrium</span>
+  <span class="spacer"></span>
+  <span class="picker"><span class="label">Headings</span>
+    <select id="pick-head">
+      <option value="Outfit" selected>Outfit</option>
+      <option value="League Spartan">League Spartan</option>
+      <option value="Montserrat">Montserrat</option>
+      <option value="Lora">Lora</option>
+      <option value="Merriweather">Merriweather</option>
+      <option value="Fraunces">Fraunces (current)</option>
+    </select>
+  </span>
+  <span class="picker"><span class="label">Body</span>
+    <select id="pick-body">
+      <option value="Archivo" selected>Archivo</option>
+      <option value="Inter">Inter</option>
+      <option value="DM Sans">DM Sans</option>
+      <option value="Geist">Geist (current)</option>
+    </select>
+  </span>
+  <button class="tgl" id="toggle" type="button">Mist</button>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div>
+      <h1>Structural<br />letterforms for<br /><em>weather that<br />does not move</em></h1>
+      <svg class="ridgeline" viewBox="0 0 900 78" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 66 L96 38 L150 52 L214 24 L268 48 L330 18 L392 44 L452 28 L516 50 L580 22 L644 46 L706 32 L772 52 L836 36 L900 56 L900 78 L0 78 Z" fill="var(--s3)" opacity=".55"/>
+        <path d="M0 72 L70 54 L140 66 L210 44 L286 62 L356 42 L430 60 L500 46 L574 64 L648 44 L722 62 L796 50 L900 68 L900 78 L0 78 Z" fill="var(--s2)"/>
+      </svg>
+    </div>
+    <aside>
+      <p class="lede">Flat rooflines, clerestory ribbon windows, an open plan, and a house that reads as part of the landscape: the brief for this region is clean lines over ornament, and heavy timber where you touch it. Type should behave the same way — structure you can see, no flourish, and enough weight to hold up in a downpour of data.</p>
+      <div class="kv">
+        <div><span>Heading</span><b id="ro-head">Outfit 700</b></div>
+        <div><span>Body</span><b id="ro-body">Archivo 400</b></div>
+        <div><span>Data</span><b>Geist Mono 400</b></div>
+        <div><span>x-height</span><b id="ro-x">measuring…</b></div>
+        <div><span>Body measure</span><b id="ro-measure">measuring…</b></div>
+      </div>
+    </aside>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>Heading candidates</h2>
+      <p>Each card sets the same headline, a wordmark, a KPI figure and an alphabet in that face. The metrics are measured from the loaded outlines — x-height decides how large 16px actually reads.</p>
+    </div>
+    <div class="specs" id="specs"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>Body candidates</h2>
+      <p>Body type is judged at 16px over a 72ch measure — the width Atrium's panels and tables actually give it. Characters per line and x-height together decide whether a table stays scannable.</p>
+    </div>
+    <div class="bodies" id="bodies"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>Applied to Atrium</h2>
+      <p>The live pairing, on the real screens: nav, sidebar, KPI figures, organizations table, contact rows. Change the pickers above and this re-sets.</p>
+    </div>
+    <div class="pairbar">
+      <span class="label">Live pairing</span>
+      <b class="mono" id="pair-label">Outfit 700 / Archivo 400</b>
+      <div class="readout">
+        <span><i>KPI figures</i><b id="kpi-metric">—</b></span>
+        <span><i>Table row</i><b id="table-metric">—</b></span>
+        <span><i>Nav</i><b id="nav-metric">—</b></span>
+      </div>
+    </div>
+    <div class="appframe">
+      <div class="chrome">
+        <i style="background:var(--pnw-cedar)"></i><i style="background:var(--pnw-golden)"></i><i style="background:var(--pnw-lichen)"></i>
+        <span>atrium — /crm</span>
+      </div>
+      <div class="nav">
+        <span class="mark"><span class="dot"></span>Atrium</span>
+        <a href="#" aria-current="page">CRM</a><a href="#">Space</a><a href="#">Rolodex</a><a href="#">Groove</a>
+        <span class="who"><span class="avatar">d@</span></span>
+      </div>
+      <div class="screen">
+        <aside class="side">
+          <span class="label">CRM</span>
+          <a href="#" class="on">Dashboard</a><a href="#">Organizations</a><a href="#">Contacts</a><a href="#">Deals</a><a href="#">Pipeline</a>
+        </aside>
+        <div class="main">
+          <div class="pagetitle"><h2>Dashboard</h2><span class="sub">Trailing 6 months</span></div>
+          <div class="kpis">
+            <div class="kpi" style="--tone:var(--support)"><div class="k">Open deals</div><div class="v">$130.0k</div><div class="d">4 in pipeline</div></div>
+            <div class="kpi" style="--tone:var(--highlight)"><div class="k">Won</div><div class="v">$66.5k</div><div class="d">2 closed</div></div>
+            <div class="kpi" style="--tone:var(--accent-ink)"><div class="k">Win rate</div><div class="v">67%</div><div class="d">3 of 4</div></div>
+          </div>
+          <div class="panel">
+            <div class="head"><span class="label">Organizations</span><span class="pill">3</span></div>
+            <table>
+              <thead><tr><th>Name</th><th>Industry</th><th>Contacts</th><th>Open value</th></tr></thead>
+              <tbody>
+                <tr><td>Northwind Trading</td><td style="color:var(--ink-dim)">Logistics</td><td class="num">2</td><td class="num">$78.0k</td></tr>
+                <tr><td>Bluepeak Analytics</td><td style="color:var(--ink-dim)">Software</td><td class="num">1</td><td class="num">$52.0k</td></tr>
+                <tr><td>Harbor &amp; Lane</td><td style="color:var(--ink-dim)">Legal</td><td class="num">1</td><td class="num">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <div class="head"><span class="label">Who to contact</span><span class="pill">2 overdue</span></div>
+            <div class="contacts">
+              <div class="contact">
+                <span class="avatar">MK</span>
+                <div><div class="nm">Maya Kowalski</div><div class="cad">Northwind Trading · every 30 days</div></div>
+                <div class="right">
+                  <span class="chip" style="--tone:var(--accent-ink)">overdue 6d</span>
+                  <button class="btn-solid" type="button">Log contact</button>
+                </div>
+              </div>
+              <div class="contact" style="border-bottom:0">
+                <span class="avatar">DO</span>
+                <div><div class="nm">Daniel Okafor</div><div class="cad">Bluepeak Analytics · every 60 days</div></div>
+                <div class="right">
+                  <span class="chip" style="--tone:var(--highlight)">due in 4d</span>
+                  <button class="btn-solid" type="button">Log contact</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>Measured, and where each one breaks</h2>
+      <p>Every figure below was read out of the browser for the loaded webfont. The last column is the honest one: what happens when the face meets a dense table at 16px.</p>
+    </div>
+    <table class="grid" id="grid"></table>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="num">05</span>
+      <h2>Pairings, with a verdict</h2>
+      <p>Four pairings worth shipping, ranked. Two of them are the brief's named combinations; two are the additions I would argue for.</p>
+    </div>
+    <div class="verdicts">
+      <div class="vcard">
+        <div class="tagrow"><span class="tag win">Recommend</span><span class="tag">structural</span></div>
+        <h4>The Architect's Office</h4>
+        <span class="pair">Outfit 700 / Archivo 400 / Geist Mono</span>
+        <p><b>Why:</b> Outfit's single-storey <span class="mono">a</span> and squared terminals read as drawn rather than typed — the geometric-sans half of the brief, without Montserrat's width. Archivo underneath is the sturdiest of the body candidates: a grotesque with rectangular counters that stays scannable in a four-column table.</p>
+        <p><b>Cost:</b> Outfit is popular in startup land, so it needs the letter-spacing discipline (‑0.015em) and the brass/golden accent to not look like every other dashboard.</p>
+      </div>
+      <div class="vcard">
+        <div class="tagrow"><span class="tag win">Recommend</span><span class="tag">heritage</span></div>
+        <h4>Timber and Brass</h4>
+        <span class="pair">Lora 600 / DM Sans 400 / Geist Mono</span>
+        <p><b>Why:</b> the literary-solitude half of the brief. Lora has the calligraphic roots that make a nameplate feel like a firm's rather than a product's, and DM Sans is warmer than Inter without losing its geometry.</p>
+        <p><b>Cost:</b> a serif heading over a data product needs restraint — serif KPI figures at $130.0k read as a magazine. Keep Lora for headings and navigation only, never for numerals in a table.</p>
+      </div>
+      <div class="vcard">
+        <div class="tagrow"><span class="tag">named pairing</span><span class="tag">safe</span></div>
+        <h4>The Mailing List</h4>
+        <span class="pair">Montserrat 700 / Inter 400 / Geist Mono</span>
+        <p><b>Why:</b> both are bulletproof. Montserrat was drawn from Buenos Aires signage and holds a wordmark beautifully; Inter is the most legible option in a dense table at 16px — measured, it is the best of the four for characters-per-line at a fixed measure.</p>
+        <p><b>Cost:</b> it is also the default answer, and it reads that way. Inter plus a purple gradient is the visual signature of every AI-generated dashboard; with the PNW palette the pair looks like a well-typeset template, not a firm with a point of view.</p>
+      </div>
+      <div class="vcard">
+        <div class="tagrow"><span class="tag">display only</span><span class="tag">caution</span></div>
+        <h4>Nameplate</h4>
+        <span class="pair">League Spartan 700 + Archivo / Merriweather</span>
+        <p><b>Why:</b> League Spartan at 700 is the closest thing here to cast metal signage — it makes "Atrium" feel carved. Merriweather at 900 is the heavyweight editorial option if you want the firm to look institutional.</p>
+        <p><b>Cost:</b> measured, League Spartan carries the smallest x-height of all ten faces here (42% against Inter's 55%), so it reads visually smaller at 16px than the body text under it — it needs size compensation and belongs to the nameplate, not the UI. Merriweather's high stroke contrast is the one thing here I could not measure, only judge: at small sizes on a dark ground it looks thinner than it does on white.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Typography study · standalone · paired with the PNW colour study</span>
+    <span>metrics measured from loaded outlines via canvas TextMetrics</span>
+    <span id="foot-pair">Outfit / Archivo</span>
+  </footer>
+</div>
+
+<script>
+const HEAD = {
+  "Outfit":         { cat: "geometric sans", note: "Single-storey <b>a</b>, squared terminals, even rhythm. The cleanest match for flat rooflines and clerestory lines — architectural without being cold.", use: "UI headings, KPI figures, wordmark" },
+  "League Spartan": { cat: "geometric sans", note: "Cast-metal geometry: the <b>smallest x-height of the ten faces here</b> (42%) over a narrow advance, so at 16px it reads visually smaller than every other candidate. Superb for a carved nameplate at large sizes, wrong for anything small.", use: "Display only, ≥20px" },
+  "Montserrat":     { cat: "geometric sans", note: "Drawn from city signage. Wide, confident, slightly nostalgic — reads as a firm's letterhead.", use: "Wordmark, section headings" },
+  "Lora":           { cat: "editorial serif", note: "Calligraphic roots with brushed curves. Gives the product a literary, place-specific voice — a cabin with a library in it.", use: "Headings, nav, never table numerals" },
+  "Merriweather":   { cat: "editorial serif", note: "Sturdy and high-contrast — the largest x-height of the ten (56%), so it reads big. Institutional, and a little dated; the thin strokes are a judgement call on the dark ground, not something the metrics can settle.", use: "Long-form reading, not UI chrome" },
+  "Fraunces":       { cat: "soft serif · current", note: "Atrium's present display face: wonky axes, brass-era warmth. Characterful, but 'sturdy and clear' is not its brief — it is the baseline to beat, not a candidate by default.", use: "Current — headings" },
+};
+const BODY = {
+  "Archivo":  { note: "A grotesque with rectangular counters and a tight vertical rhythm; the sturdiest of the four and the best fit for a four-column table.", use: "Body, tables, controls" },
+  "Inter":    { note: "Engineered for UI: tall x-height, open apertures, unambiguous <b>1Il</b>. Measured as the most efficient at a fixed measure.", use: "Body, tables — the safe answer" },
+  "DM Sans":  { note: "Geometric and warm; rounder than Inter and quicker to read in prose, a little wider in tables and it shows at 16px.", use: "Body, marketing surfaces" },
+  "Geist":    { note: "Atrium's current sans: neutral, slightly technical, quiet next to Fraunces. Hard to fault, hard to remember.", use: "Current — body" },
+};
+const SELECT = "Naples · Bergen · Rotterdam · Seattle · Portland";
+
+/* ── measurement: x-height, cap height, ascent+descent, avg advance ── */
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
+function measure(family, weight) {
+  const size = 100;
+  ctx.font = `${weight} ${size}px "${family}"`;
+  const x = ctx.measureText("x");
+  const cap = ctx.measureText("H");
+  const z = ctx.measureText("z");
+  const asc = ctx.measureText("Hxd");
+  const lower = ctx.measureText("abcdefghijklmnopqrstuvwxyz");
+  const em = ctx.measureText("M");
+  return {
+    xh: x.actualBoundingBoxAscent / size,
+    cap: cap.actualBoundingBoxAscent / size,
+    xOnCap: x.actualBoundingBoxAscent / cap.actualBoundingBoxAscent,
+    ascSpan: (asc.fontBoundingBoxAscent + asc.fontBoundingBoxDescent) / size,
+    avgLower: lower.width / 26 / size,
+    capAdvance: em.width / size,
+    descenderClear: (z.actualBoundingBoxDescent || 0),
+  };
+}
+function measure72(family, weight, px) {
+  ctx.font = `${weight} ${px}px "${family}"`;
+  const perChar = ctx.measureText(SELECT).width / SELECT.length;
+  return Math.round(perChar * 72);
+}
+const pct = (v) => (v * 100).toFixed(1) + "%";
+
+let M = {};
+function measureAll() {
+  M = {};
+  for (const f of Object.keys(HEAD)) M[f] = measure(f, 700);
+  for (const f of Object.keys(BODY)) M[f] = measure(f, 400);
+}
+
+/* ── render specimens ─────────────────────────────────────── */
+function renderSpecs() {
+  document.getElementById("specs").innerHTML = Object.entries(HEAD).map(([name, d]) => {
+    const m = M[name];
+    const tight = m.xh > 0.54;
+    return `<article class="spec" data-font="${name}">
+      <div class="meta">
+        <h3 style="font-family:var(--font-heading)">${name}</h3>
+        <span class="cat">${d.cat}</span>
+        <span class="nm">${d.use}</span>
+      </div>
+      <div class="display" style="font-family:'${name}',sans-serif">Modern, and honest about weather.</div>
+      <div class="row">
+        <span class="wordmark" style="font-family:'${name}',sans-serif">Atrium</span>
+        <span class="numerals" style="font-family:'${name}',sans-serif">$130.0k · 67%</span>
+      </div>
+      <p class="body16" style="font-family:'${name}',sans-serif; font-weight:400">${SELECT} — solid wood, streamlined hardware, clean lines, no ornament.</p>
+      <p class="note">${d.note}</p>
+      <div class="metrics">
+        <span class="metric"><i>x-height</i><b>${pct(m.xh)} em</b></span>
+        <span class="metric"><i>cap height</i><b>${pct(m.cap)} em</b></span>
+        <span class="metric"><i>x/cap</i><b class="${tight ? "warn" : "good"}">${m.xOnCap.toFixed(2)}</b></span>
+        <span class="metric"><i>ascent+descent</i><b>${pct(m.ascSpan)} em</b></span>
+        <span class="metric"><i>min readable size</i><b>${m.xh < 0.47 ? "20px+ (small x-height)" : m.xh >= 0.54 ? "14px is fine" : "16px"}</b></span>
+      </div>
+    </article>`;
+  }).join("");
+  document.querySelectorAll(".spec").forEach((el) => {
+    el.classList.toggle("pick", el.dataset.font === heading);
+  });
+}
+
+function renderBodies() {
+  document.getElementById("bodies").innerHTML = Object.entries(BODY).map(([name, d]) => {
+    const m = M[name];
+    const cpl = measure72(name, 400, 16);
+    return `<article class="bcard" data-font="${name}">
+      <h3 style="font-family:var(--font-body)">${name}</h3>
+      <p class="sample" style="font-family:'${name}',sans-serif">Northwind Trading closed two deals this quarter. Maya Kowalski is six days overdue; Daniel Okafor is due in four. <span class="dim">The pipeline is $130.0k across four stages.</span></p>
+      <p class="data" style="font-family:'${name}',sans-serif">0123456789 $78.0k — 67% · 1Il O0 5S</p>
+      <p class="note">${d.note}</p>
+      <div class="metrics">
+        <span class="metric"><i>x-height</i><b>${pct(m.xh)} em</b></span>
+        <span class="metric"><i>avg lowercase</i><b>${(m.avgLower * 1000).toFixed(0)}/1000 em</b></span>
+        <span class="metric"><i>72-char line</i><b>${cpl}px wide</b></span>
+        <span class="metric"><i>line-height</i><b>${m.xh > 0.52 ? "1.50" : "1.60"}</b></span>
+      </div>
+      <p class="note">${d.use}</p>
+    </article>`;
+  }).join("");
+  document.querySelectorAll(".bcard").forEach((el) => el.classList.toggle("pick", el.dataset.font === body));
+}
+
+function renderGrid() {
+  const rows = [];
+  for (const [name, m] of Object.entries(M)) {
+    const isHead = name in HEAD;
+    const verdict = isHead
+      ? (name === "Merriweather" ? "large + high stroke contrast — judge it on the dark ground"
+        : m.xh < 0.47 ? "reads small at 16px — display only, size it up"
+        : m.xh >= 0.54 ? "large for its size — set it a step smaller"
+        : name === "Fraunces" ? "current — warmer, narrower, less sturdy"
+        : "holds up across sizes")
+      : (name === "Inter" ? "most efficient at a fixed measure"
+        : name === "Archivo" ? "sturdiest; best in tables"
+        : name === "DM Sans" ? "warm, slightly wide in tables"
+        : "current — neutral, forgettable");
+    rows.push(`<tr>
+      <td class="name" style="font-family:'${name}',sans-serif">${name}</td>
+      <td>${isHead ? "heading" : "body"}</td>
+      <td>${pct(m.xh)}</td><td>${pct(m.cap)}</td><td>${m.xOnCap.toFixed(2)}</td>
+      <td>${(m.avgLower * 1000).toFixed(0)}</td><td>${measure72(name, isHead ? 700 : 400, 16)}px</td>
+      <td style="color:var(--ink-dim)">${verdict}</td>
+    </tr>`);
+  }
+  document.getElementById("grid").innerHTML = `<thead><tr>
+      <th>Face</th><th>Role</th><th>x-height/em</th><th>cap/em</th><th>x/cap</th><th>avg lower</th><th>72-char line</th><th>Verdict at 16px</th>
+    </tr></thead><tbody>${rows.join("")}</tbody>`;
+}
+
+let heading = "Outfit", body = "Archivo";
+function applyPairing(remeasure) {
+  document.documentElement.style.setProperty("--font-heading", `"${heading}", sans-serif`);
+  document.documentElement.style.setProperty("--font-body", `"${body}", sans-serif`);
+  const mh = M[heading] || measure(heading, 700);
+  const mb = M[body] || measure(body, 400);
+  document.getElementById("ro-head").textContent = `${heading} 700`;
+  document.getElementById("ro-body").textContent = `${body} 400`;
+  document.getElementById("ro-x").textContent = `${pct(mb.xh)} em (body)`;
+  document.getElementById("ro-measure").textContent = `${measure72(body, 400, 16)}px for a 72-char line`;
+  document.getElementById("pair-label").textContent = `${heading} 700 / ${body} 400`;
+  document.getElementById("foot-pair").textContent = `${heading} / ${body}`;
+  document.getElementById("kpi-metric").textContent = `x-height ${pct(mh.xh)}`;
+  document.getElementById("table-metric").textContent = `x-height ${pct(mb.xh)}`;
+  document.getElementById("nav-metric").textContent = `mono (unchanged)`;
+  if (remeasure) { renderSpecs(); renderBodies(); renderGrid(); }
+}
+
+/* ── theme + pickers ─────────────────────────────────────── */
+const html = document.documentElement;
+document.getElementById("toggle").addEventListener("click", () => {
+  html.dataset.theme = html.dataset.theme === "dark" ? "light" : "dark";
+  document.getElementById("toggle").textContent = html.dataset.theme === "dark" ? "Mist" : "Basalt";
+});
+document.getElementById("pick-head").addEventListener("change", (e) => { heading = e.target.value; applyPairing(true); });
+document.getElementById("pick-body").addEventListener("change", (e) => { body = e.target.value; applyPairing(true); });
+
+/* wait for the webfonts before measuring — otherwise every ratio is a fallback's */
+(async () => {
+  const fams = [...Object.keys(HEAD), ...Object.keys(BODY)];
+  await Promise.all(fams.map((f) => document.fonts.load(`700 100px "${f}"`).catch(() => {})));
+  await document.fonts.load(`400 100px "Geist Mono"`).catch(() => {});
+  await document.fonts.ready;
+  measureAll();
+  applyPairing(true);
+  const missing = fams.filter((f) => !document.fonts.check(`700 100px "${f}"`));
+  document.body.dataset.fontsMissing = missing.join(",");
+  window.__typeStudy = { M, heading, body, missing, measure72 };
+})();
+</script>
+</body>
+</html>
