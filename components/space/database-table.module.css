@@ -21,7 +21,7 @@
 .space-db-form select,
 .space-cell-input {
   font: inherit;
-  font-size: 13.5px;
+  font-size: var(--text-small);
   padding: 6px 10px;
   border: 1px solid var(--line);
   border-bottom: 1px solid var(--line-strong);
@@ -29,7 +29,9 @@
   background: var(--bg-2);
   color: var(--ink);
   outline: none;
-  transition: border-color 0.18s, background 0.18s;
+  transition:
+    border-color 0.18s,
+    background 0.18s;
 }
 
 .space-db-form input:focus,
@@ -38,6 +40,19 @@
   border-color: var(--brass);
   background: var(--bg-3);
   box-shadow: 0 0 0 3px var(--brass-soft);
+}
+
+/* 10.4 spec 4 — numbers are data: right-aligned, tabular. */
+.space-cell-input[type="number"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dates and select values read as mono data. */
+.space-cell-input[type="date"],
+select.space-cell-input {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .space-table-wrap {
@@ -51,7 +66,7 @@
 .space-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: var(--text-small);
 }
 
 .space-table th,
@@ -62,9 +77,12 @@
   vertical-align: top;
 }
 
+/* 10.4 spec 4 — header row is a mono label in faint ink. */
 .space-table th {
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 400;
+  letter-spacing: var(--text-label-tracking);
   text-transform: uppercase;
   color: var(--ink-faint);
   background: var(--bg-2);
@@ -74,8 +92,9 @@
   border-bottom: none;
 }
 
+/* Row hover, and no zebra striping anywhere in the table. */
 .space-table tbody tr:hover td {
-  background: color-mix(in srgb, var(--brass-soft) 40%, transparent);
+  background: var(--bg-2);
 }
 
 .space-prop-head {
@@ -92,7 +111,7 @@
 }
 
 .space-icon-button:hover {
-  color: var(--brass);
+  color: var(--ink);
 }
 
 .space-row-link {
@@ -102,7 +121,7 @@
 }
 
 .space-row-link:hover {
-  color: var(--brass);
+  color: var(--ink);
   text-decoration: underline;
 }
 
@@ -121,7 +140,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.8rem;
+  font-size: var(--text-small);
 }
 
 .space-option-legend {
@@ -136,7 +155,7 @@
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--text-label);
   color: var(--ink-dim);
 }
 
@@ -154,8 +173,9 @@
 }
 
 .space-row-prop dt {
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: var(--text-label-tracking);
   text-transform: uppercase;
   color: var(--ink-faint);
 }
@@ -163,4 +183,6 @@
 .space-row-prop dd {
   margin: 0;
   color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-data);
 }

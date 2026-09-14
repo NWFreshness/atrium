@@ -66,3 +66,34 @@ describe("Space database views", () => {
     expect(dbCss).toContain("var(--font-mono)");
   });
 });
+
+// 10.4 extends the 5.4 palette gate rather than replacing it: the assertions
+// above still hold, and the pass adds the type scale it consumes.
+describe("Space PNW pass (10.4)", () => {
+  it("consumes the measured type scale instead of literal sizes", () => {
+    expect(shellCss).toContain("var(--text-h1)");
+    expect(shellCss).toContain("var(--text-label)");
+    expect(editorCss).toContain("var(--measure)");
+    expect(editorCss).toContain("var(--text-body)");
+    expect(editorCss).toContain("var(--text-data)");
+    for (const css of [dbCss, viewsCss, boardCss]) {
+      expect(css).toContain("var(--text-label)");
+    }
+  });
+
+  it("retires the espresso hexes and --violet from components/space", () => {
+    for (const css of [shellCss, editorCss, dbCss, viewsCss, boardCss]) {
+      expect(css).not.toMatch(/#[0-9a-fA-F]{6}\b/);
+      expect(css).not.toContain("var(--violet)");
+    }
+  });
+
+  it("keeps the 5.4 row-action reveal on opacity and off display", () => {
+    // Comments may name the pitfall; only declarations may not use it.
+    const declarations = shellCss.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(declarations).not.toMatch(/display:\s*none/);
+    expect(declarations).toMatch(
+      /\.space-sidebar-action\s*\{[^}]*opacity:\s*0/,
+    );
+  });
+});

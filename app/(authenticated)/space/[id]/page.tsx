@@ -28,7 +28,9 @@ export default async function SpacePage({
       <span className={styles["space-page-icon"]} aria-hidden="true">
         <SpaceGlyph type={page.type} />
       </span>
-      <h1>{page.title.trim() === "" ? "Untitled" : page.title}</h1>
+      <div className="atrium-pagetitle">
+        <h1>{page.title.trim() === "" ? "Untitled" : page.title}</h1>
+      </div>
     </header>
   );
 
