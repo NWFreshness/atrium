@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** 10.3–10.6 are implemented in parallel on `feat/10.3-pnw-crm`, `feat/10.4-pnw-space`, `feat/10.5-pnw-rolodex`, `feat/10.6-pnw-groove` (four PRs open, not merged). Next implementable unit is **10.7** once those land — it is the phase gate and must run last.
+**None in progress.** Phase 10 is complete (10.1–10.7). Nothing is queued.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 9 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`. A `script-src` CSP stays out until a feature has to touch `middleware.ts`.
 
@@ -425,3 +425,13 @@ Rolodex re-skinned; cadence, snooze, gifts, connections, dates, import, and the 
 ### 10.6 Groove instrument recast (completed)
 
 The desk's `--inst-*` scope carries the PNW instrument values; no light-theme override, so it stays dark under `data-theme="light"`. `:global()` class contract and the `.groove-led` / `on` selector unchanged. Espresso literals that were never `--inst-*` tokens (chassis gradients, control faces, pad velocity steps, fader caps, the scope canvas's cyan trace/grid/spectrum) were mapped into the instrument family. Lit LED `#dfa84a` on `#23282a` measures 6.98:1, computed in the new gate. Controller: `env -u DATABASE_URL npm test` 740 passed (110 files), build exit 0. No browser run; the diff changes no dimension, spacing, grid, or flex declaration.
+
+### 10.7 Contrast gate, theme QA, and smoke (completed) — Phase 10 closed
+
+`tests/theme-contrast.test.ts` computes WCAG 2.1 contrast from the shipped CSS (`:root`, `[data-theme="light"]`, `.groove-chassis`). Text roles vs `--bg-0`…`--bg-3` in both themes at 4.5:1; instrument ink/dim/faint/brass vs `--inst-panel` at 4.5:1. Last declaration wins after comments are stripped. Named fill exceptions: `--brass-deep` and `--clay` on dark `--bg-0`. 10.1 table locks: dark `--slate` vs `--bg-2` 4.33 / `--bg-3` 3.78, `--timber` vs `--bg-3` 4.49, `--ink-faint` vs `--bg-3` 4.50. Dark `--brass-deep` on `--bg-0` locked at 2.75 (gradient-only, below UI 3:1).
+
+Four probes, each reversed byte-identically: (1) dark `--ink-faint` → `rgba(163,177,155,.62)` → `--ink-faint on --bg-2 = 2.96:1 (need 4.5)`; (2) a second light `--brass: #dfa84a` after the mist value → last-declaration `--brass on --bg-3 = 2.13:1 (need 4.5)`; (3) drop dark `--clay-ink` → `token missing: --clay-ink`; (4) `FILL_EXCEPTIONS` `role: "fill"` → `"text"` fails the list pin and `--brass-deep on --bg-0 = 2.75:1 (need 4.5)` / `--clay on --bg-0 = 3.97:1 (need 4.5)`.
+
+Espresso hexes added to the 5.7 retired list. e2e grounds are basalt `rgb(37, 40, 42)` / mist `rgb(238, 241, 242)`. Type stack asserted in source (10.1) and computed on `/login` (Outfit / Archivo / Geist Mono). Reduced-motion: `.reveal` and `body::after` `animation-name: none`.
+
+Controller: `env -u DATABASE_URL npm test` 932 passed (114 files); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0; `npx playwright test e2e/workroom.spec.ts` 3 passed / 4 skipped. Limits: `.env` has no `AUTH_OWNER_*` / `AUTH_DEMO_*`, so theme-toggle, Groove-on-mist, link-walk, and the thirteen-screen no-console walk did not run here — they skip locally and will run in CI when those secrets exist. "One golden element per screen" stays a review criterion.

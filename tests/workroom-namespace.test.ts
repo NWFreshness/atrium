@@ -289,7 +289,7 @@ describe("both themes define the full Workroom token set", () => {
     }
   });
 
-  it("overrides every colour token for the warm-paper light theme", () => {
+  it("overrides every colour token for the mist light theme", () => {
     const light = block('[data-theme="light"] {');
     for (const token of COLOR_TOKENS) {
       expect(light, `light theme is missing ${token}`).toContain(`${token}:`);
@@ -303,14 +303,14 @@ describe("both themes define the full Workroom token set", () => {
 });
 
 describe("the retired palette does not come back", () => {
-  /** The two recharts surfaces; both must paint from the warm data tokens. */
+  /** The two recharts surfaces; both must paint from the PNW data tokens. */
   const CHART_FILES = [
     "components/crm/dashboard-charts.tsx",
     "components/rolodex/today-charts.tsx",
   ];
   const DATA_TOKENS = ["#a3b19b", "#e0a488", "#8b9fc2", "#b9ab93", "#dfa84a"];
 
-  it("paints every chart series from the Workroom data palette", () => {
+  it("paints every chart series from the PNW data palette", () => {
     for (const file of CHART_FILES) {
       const hexes = [
         ...read(resolve(root, file)).matchAll(/#[0-9a-fA-F]{3,8}\b/g),
@@ -330,10 +330,23 @@ describe("the retired palette does not come back", () => {
   });
 
   it("keeps the pre-Workroom flat surfaces out of the app", () => {
-    // 0.4's theme was create-next-app's #0a0a0a / #171717 / #ededed / #ffffff pair;
-    // 5.1 replaced it with the espresso/paper tokens. Test files are skipped: a
-    // stylesheet test may legitimately name the values it forbids.
-    const RETIRED = ["#0a0a0a", "#171717", "#ededed"];
+    // 0.4's theme was create-next-app's #0a0a0a / #171717 / #ededed pair;
+    // 5.1 replaced it with espresso/paper; 10.1 retired those for basalt/mist.
+    // Test files are skipped: a stylesheet test may name the values it forbids.
+    // #ffffff is light --bg-3, so it stays off this list.
+    const RETIRED = [
+      "#0a0a0a",
+      "#171717",
+      "#ededed",
+      "#13100c",
+      "#1b1712",
+      "#231e16",
+      "#2b251b",
+      "#f0e9da",
+      "#ece5d6",
+      "#262015",
+      "#a86f14",
+    ];
     for (const { abs, rel } of sources) {
       if (/\.test\.tsx?$/.test(rel)) continue;
       const src = stripComments(read(abs));
