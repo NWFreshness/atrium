@@ -11,8 +11,10 @@ export default async function SpaceLandingPage() {
 
   return (
     <main>
-      <h1>Space</h1>
-      <p>Pick a page</p>
+      <div className="atrium-pagetitle">
+        <h1>Space</h1>
+      </div>
+      <p className="atrium-sub">Pick a page</p>
     </main>
   );
 }

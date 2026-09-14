@@ -107,7 +107,14 @@ function BoardCard({ row }: { row: ViewRow }) {
         {...attributes}
         {...listeners}
       >
-        ⋮⋮
+        <span className={styles["space-board-grip-dots"]} aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
       </button>
       <Link
         className={styles["space-board-card-title"]}
@@ -121,7 +128,7 @@ function BoardCard({ row }: { row: ViewRow }) {
 
 function Column({ column }: { column: BoardColumn }) {
   const id = columnId(column.option?.id ?? null);
-  const { setNodeRef } = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id,
     data: { type: "column" },
   });
@@ -133,7 +140,14 @@ function Column({ column }: { column: BoardColumn }) {
           {column.rows.length}
         </span>
       </header>
-      <div ref={setNodeRef} className={styles["space-board-list"]}>
+      <div
+        ref={setNodeRef}
+        className={
+          isOver
+            ? `${styles["space-board-list"]} ${styles["space-board-list-over"]}`
+            : styles["space-board-list"]
+        }
+      >
         <SortableContext
           items={column.rows.map((row) => row.id)}
           strategy={verticalListSortingStrategy}
@@ -313,7 +327,19 @@ export function BoardView({
       <DragOverlay>
         {activeRow ? (
           <article className={styles["space-board-overlay"]}>
-            <span className={styles["space-board-grip"]}>⋮⋮</span>
+            <span className={styles["space-board-grip"]}>
+              <span
+                className={styles["space-board-grip-dots"]}
+                aria-hidden="true"
+              >
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
+            </span>
             <span className={styles["space-board-card-title"]}>
               {titleOf(activeRow)}
             </span>

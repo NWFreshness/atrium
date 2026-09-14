@@ -2,13 +2,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  max-width: 44rem;
+  /* 10.4 spec 3 — the measured column, not the old 44rem. */
+  max-width: var(--measure);
 }
 
 .space-editor-meta {
   margin: 0 0 0.9rem;
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: var(--text-data);
   letter-spacing: 0.02em;
   color: var(--ink-faint);
 }
@@ -63,6 +64,7 @@
   position: relative;
 }
 
+/* 10.4 spec 3 — Archivo body at 16px/1.6, never the display face. */
 .space-block-input {
   display: block;
   width: 100%;
@@ -72,8 +74,10 @@
   border: none;
   background: transparent;
   color: inherit;
-  font: inherit;
-  line-height: 1.6;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: var(--text-body-weight);
+  line-height: var(--text-body-leading);
   padding: 0.3rem 0;
 }
 
@@ -85,27 +89,33 @@
   color: var(--ink-faint);
 }
 
+/* Headings inside a page are Outfit on the h2/h3 scale. */
 .space-block-heading1 .space-block-input {
   font-family: var(--font-display);
-  font-size: 1.85rem;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: var(--text-h2);
+  font-weight: var(--text-h2-weight);
+  letter-spacing: var(--text-h2-tracking);
+  line-height: var(--text-h2-leading);
 }
 
 .space-block-heading2 .space-block-input {
   font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 580;
-  line-height: 1.25;
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-leading);
 }
 
 .space-block-heading3 .space-block-input {
-  font-size: 1.15rem;
+  font-family: var(--font-display);
+  font-size: var(--text-small);
   font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.35;
 }
 
 .space-block-quote {
-  border-left: 3px solid var(--brass);
+  border-left: 3px solid var(--timber);
   padding-left: 0.7rem;
   color: var(--ink-dim);
   font-style: italic;
@@ -113,7 +123,7 @@
 
 .space-block-code .space-block-input {
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: var(--text-data);
   background: var(--bg-3);
   color: var(--ink);
   padding: 0.7rem 0.8rem;
@@ -121,9 +131,11 @@
   border-radius: var(--r-sm);
 }
 
+/* Moss is a surface on dark (10.1 rule 2), so the callout is moss-cast. */
 .space-block-callout .space-block-body {
-  background: var(--brass-soft);
-  border: 1px solid color-mix(in srgb, var(--brass) 35%, transparent);
+  background: color-mix(in srgb, var(--moss) 22%, var(--bg-1));
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--moss);
   border-radius: var(--r-sm);
   padding: 0.5rem 0.75rem;
 }
@@ -138,7 +150,7 @@
 .space-block-check {
   margin-top: 0.6rem;
   flex-shrink: 0;
-  accent-color: var(--brass);
+  accent-color: var(--ink-dim);
 }
 
 .space-block-rule {
@@ -168,6 +180,7 @@
     background 0.2s;
 }
 
+/* The editor's one golden moment: its primary affordance, on hover only. */
 .space-add-block:hover {
   color: var(--brass);
   border-color: color-mix(in srgb, var(--brass) 55%, transparent);
@@ -180,7 +193,7 @@
   display: grid;
   place-items: center;
   border: 1px solid currentColor;
-  border-radius: 5px;
+  border-radius: var(--r-sm);
   font-size: 11px;
 }
 
@@ -196,6 +209,7 @@
   opacity: 0.75;
 }
 
+/* 10.4 spec 3 — the slash menu sits on --bg-2 with a golden selected row. */
 .space-slash {
   position: absolute;
   z-index: 5;
@@ -205,11 +219,11 @@
   margin: 0;
   padding: 0.3rem;
   list-style: none;
-  background: var(--bg-1);
+  background: var(--bg-2);
   color: var(--ink);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel), var(--glow-brass);
+  box-shadow: var(--shadow-panel);
 }
 
 .space-slash-item {
@@ -218,10 +232,11 @@
   text-align: left;
   padding: 0.4rem 0.55rem;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--r-sm);
   background: transparent;
   color: inherit;
   font: inherit;
+  font-size: var(--text-small);
   cursor: pointer;
 }
 
