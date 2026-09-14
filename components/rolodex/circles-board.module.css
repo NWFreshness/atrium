@@ -20,7 +20,10 @@
   box-shadow: var(--shadow-panel);
 }
 
-/* circle accents */
+/* circle accents — a ladder that warms as the circle gets closer (10.5 AC3):
+   the distant column takes lichen, then moss, then cedar, and the inner circle
+   takes the phase's golden. The 3px top rule is the accent; nothing here paints
+   a golden fill. */
 .columnInner {
   --circle-c: var(--brass);
 }
@@ -41,8 +44,11 @@
 
 .columnName {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 620;
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-leading);
   color: var(--ink);
 }
 

@@ -15,7 +15,11 @@ export function ImportPeopleButton() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        className="atrium-btn"
+        onClick={() => setOpen(true)}
+      >
         Import
       </button>
       {open ? <ImportDialog onClose={() => setOpen(false)} /> : null}
@@ -184,11 +188,17 @@ function ImportDialog({ onClose }: { onClose: () => void }) {
           </div>
         ) : null}
         <div className={styles["rolodex-form-actions"]}>
-          <button type="button" onClick={onClose} disabled={pending}>
+          <button
+            type="button"
+            className="atrium-btn"
+            onClick={onClose}
+            disabled={pending}
+          >
             Cancel
           </button>
           <button
             type="button"
+            className="atrium-btn atrium-btn-primary"
             onClick={() => void onApply()}
             disabled={pending || rows.every((row) => !row.selected)}
           >

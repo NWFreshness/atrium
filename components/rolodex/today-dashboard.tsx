@@ -58,6 +58,27 @@ export function TodayDashboard({ data }: { data: RolodexDashboard }) {
   ).length;
   const dueSoonCount = data.whoToContact.length - overdueCount;
 
+  /*
+    10.5 §4 — one highlight per screen. The list arrives sorted by cadence
+    urgency (`lib/rolodex/dashboard`), so the first row is the one to do next:
+    it alone takes the shared golden primary, and the first row that is merely
+    due (rather than overdue) alone takes the golden chip. Every other row
+    steps down to the neutral button and the moss or cedar chip.
+  */
+  const soonestDueId =
+    data.whoToContact.find((row) => row.status !== "overdue")?.id ?? null;
+
+  const tiles = [
+    { label: "overdue to contact", value: overdueCount, accent: true },
+    { label: "due within a week", value: dueSoonCount, accent: false },
+    {
+      label: "dates in 30 days",
+      value: data.upcomingDates.length,
+      accent: false,
+    },
+    { label: "reminders due", value: data.dueReminders.length, accent: false },
+  ];
+
   async function logContact(personId: string) {
     setPending(personId);
     try {
@@ -86,22 +107,27 @@ export function TodayDashboard({ data }: { data: RolodexDashboard }) {
     <div>
       <p className={styles["rolodex-today-lede"]}>{data.today}</p>
       <div className={styles["rolodex-today-stats"]}>
-        <div className="reveal" style={{ "--i": 1 } as CSSProperties}>
-          <strong>{overdueCount}</strong>
-          <span>overdue to contact</span>
-        </div>
-        <div className="reveal" style={{ "--i": 2 } as CSSProperties}>
-          <strong>{dueSoonCount}</strong>
-          <span>due within a week</span>
-        </div>
-        <div className="reveal" style={{ "--i": 3 } as CSSProperties}>
-          <strong>{data.upcomingDates.length}</strong>
-          <span>dates in 30 days</span>
-        </div>
-        <div className="reveal" style={{ "--i": 4 } as CSSProperties}>
-          <strong>{data.dueReminders.length}</strong>
-          <span>reminders due</span>
-        </div>
+        {tiles.map((tile, index) => (
+          <div
+            key={tile.label}
+            className="reveal"
+            style={{ "--i": index + 1 } as CSSProperties}
+          >
+            <div
+              className={`atrium-kpi ${styles["rolodex-today-stat"]}`}
+              style={{ "--kpi-c": "var(--stat-c)" } as CSSProperties}
+            >
+              <div className="atrium-label">{tile.label}</div>
+              <div
+                className={
+                  tile.accent ? "atrium-kpi-value accent" : "atrium-kpi-value"
+                }
+              >
+                {tile.value}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       <section className={styles["rolodex-today-hero"]}>
@@ -126,9 +152,9 @@ export function TodayDashboard({ data }: { data: RolodexDashboard }) {
               >
                 <Link href={`/rolodex/people/${row.id}`}>
                   <Initials name={row.name} />
-                  <span>
+                  <span className={styles["rolodex-today-who"]}>
                     <strong>{row.name}</strong>
-                    <span>
+                    <span className={styles["rolodex-today-cadence"]}>
                       {CIRCLE_META[row.circle].label}
                       {" · "}
                       {row.lastContacted
@@ -142,13 +168,18 @@ export function TodayDashboard({ data }: { data: RolodexDashboard }) {
                   className={
                     row.status === "overdue"
                       ? styles["rolodex-today-overdue"]
-                      : styles["rolodex-today-due"]
+                      : row.id === soonestDueId
+                        ? styles["rolodex-today-due"]
+                        : styles["rolodex-today-soon"]
                   }
                 >
                   {urgency(row)}
                 </span>
                 <button
                   type="button"
+                  className={
+                    index === 0 ? "atrium-btn atrium-btn-primary" : "atrium-btn"
+                  }
                   disabled={pending === row.id}
                   onClick={() => void logContact(row.id)}
                 >
@@ -196,6 +227,7 @@ export function TodayDashboard({ data }: { data: RolodexDashboard }) {
                 <li key={row.id}>
                   <button
                     type="button"
+                    className="atrium-btn"
                     aria-label={`Mark done: ${row.text}`}
                     disabled={pending === row.id}
                     onClick={() => void markReminderDone(row.id)}

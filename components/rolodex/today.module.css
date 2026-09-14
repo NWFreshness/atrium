@@ -1,12 +1,27 @@
+/*
+  Rolodex · Today (10.5 — PNW pass)
+
+  Cadence is the palette's job (§1): overdue = --clay-ink, due within seven
+  days = --brass, on cadence = --moss, snoozed/off = --slate. The tiles, the
+  rows and the two charts on this screen all read the same four states.
+
+  One highlight per screen (§4): the single golden fill is the first row's
+  `Log contact` (the shared .atrium-btn-primary), and exactly one chip — the
+  soonest due row — is golden. Everything else steps down.
+*/
+
 .rolodex-today-lede {
   margin: 0 0 0.9rem;
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
   color: var(--ink-faint);
 }
 
-/* KPI tiles */
+/* KPI tiles — the shared .atrium-kpi carries the chrome (10.2); this module
+   only maps the four cadence accents, which it hands to the shared rule as
+   `--kpi-c` (the tile markup bridges them). */
 .rolodex-today-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
@@ -14,35 +29,16 @@
   margin-bottom: 1.25rem;
 }
 
-.rolodex-today-stats > div {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  padding: 15px 17px 13px;
-  background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel);
+.rolodex-today-stat {
+  height: 100%;
 }
 
-.rolodex-today-stats > div::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--stat-c, var(--brass)),
-    transparent 75%
-  );
+.rolodex-today-stats > div {
+  --stat-c: var(--brass);
 }
 
 .rolodex-today-stats > div:nth-child(1) {
-  --stat-c: var(--clay);
+  --stat-c: var(--clay-ink);
 }
 .rolodex-today-stats > div:nth-child(2) {
   --stat-c: var(--brass);
@@ -51,24 +47,7 @@
   --stat-c: var(--moss);
 }
 .rolodex-today-stats > div:nth-child(4) {
-  --stat-c: var(--moss);
-}
-
-.rolodex-today-stats strong {
-  font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 560;
-  line-height: 1.1;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.rolodex-today-stats span {
-  font-size: 11px;
-  font-weight: 550;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  --stat-c: var(--slate);
 }
 
 /* Who-to-contact hero */
@@ -93,8 +72,10 @@
 .rolodex-today-hero-head h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 580;
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-leading);
   color: var(--ink);
 }
 
@@ -116,22 +97,26 @@
   gap: 2px;
 }
 
+/* Rows stay cards, but their height is pinned by the avatar plus two lines of
+   text and the study's 12px padding (§2) — never by the card filling up, so at
+   least eight rows still fit an 800px viewport. */
 .rolodex-today-hero-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 0.9rem;
   align-items: center;
-  padding: 9px 10px;
+  padding: 12px;
   border-radius: var(--r-sm);
-  border: 1px solid transparent;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg-2) 40%, transparent);
   transition:
     background 0.18s,
     border-color 0.18s;
 }
 
 .rolodex-today-hero-row:hover {
-  background: color-mix(in srgb, var(--bg-2) 60%, transparent);
-  border-color: var(--line);
+  background: color-mix(in srgb, var(--bg-2) 75%, transparent);
+  border-color: var(--line-strong);
 }
 
 .rolodex-today-hero-row a {
@@ -143,83 +128,71 @@
   min-width: 0;
 }
 
-.rolodex-today-hero-row a > span {
+.rolodex-today-who {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
 .rolodex-today-hero-row a strong {
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
+  line-height: 1.25;
   color: var(--ink);
 }
 
-.rolodex-today-hero-row a > span > span {
+/* the cadence line — mono, tabular, clamped to one line */
+.rolodex-today-cadence {
   margin-top: 2px;
-  font-size: 12.5px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
   color: var(--ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.rolodex-today-hero-row button {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-family: var(--font-sans);
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 6px 13px;
-  border: none;
-  border-radius: var(--r-sm);
-  background: linear-gradient(180deg, var(--brass-bright), var(--brass-deep));
-  color: #221a0c;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    var(--glow-brass);
-  cursor: pointer;
-  transition:
-    transform 0.15s,
-    filter 0.2s;
-}
-
-[data-theme="light"] .rolodex-today-hero-row button {
-  color: #fdf8ec;
-}
-
-.rolodex-today-hero-row button:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.06);
-}
-
-.rolodex-today-hero-row button:disabled {
-  opacity: 0.6;
-}
-
-/* due chips */
+/* due chips — shared geometry, cadence state supplies the colour */
 .rolodex-today-overdue,
-.rolodex-today-due {
+.rolodex-today-due,
+.rolodex-today-soon {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
   padding: 3px 9px;
   border-radius: 999px;
   white-space: nowrap;
 }
 
+/* overdue: cedar lifted for the label (the raw cedar is only the 1px rule) */
 .rolodex-today-overdue {
-  border: 1px solid color-mix(in srgb, var(--clay) 50%, transparent);
-  background: color-mix(in srgb, var(--clay) 14%, transparent);
-  color: var(--clay);
+  color: var(--clay-ink);
+  border: 1px solid color-mix(in srgb, var(--clay) 55%, transparent);
+  background: color-mix(in srgb, var(--clay-ink) 12%, transparent);
 }
 
+/* golden — the soonest due row, and the only golden chip on this screen */
 .rolodex-today-due {
+  color: var(--brass);
   border: 1px solid color-mix(in srgb, var(--brass) 50%, transparent);
   background: color-mix(in srgb, var(--brass) 14%, transparent);
-  color: var(--brass);
+}
+
+/* the rest of the due rows step down to the on-cadence moss family. Dark moss
+   is a surface, never ink (1.53:1), so it tints the chip and the label stays a
+   measured ink. */
+.rolodex-today-soon {
+  color: var(--ink-dim);
+  border: 1px solid color-mix(in srgb, var(--moss) 45%, var(--line));
+  background: color-mix(in srgb, var(--moss) 12%, transparent);
 }
 
 /* panels */
@@ -242,8 +215,11 @@
 .rolodex-today-panel h2,
 .rolodex-today-chart h2 {
   margin: 0 0 0.6rem;
-  font-size: 16px;
-  font-weight: 580;
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-leading);
   color: var(--ink);
 }
 
@@ -256,17 +232,23 @@
   gap: 0.5rem;
 }
 
+/* dates and counts read in mono; the person link inside the line is Archivo */
 .rolodex-today-panel li {
-  font-size: 13.5px;
-  color: var(--ink-dim);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
 }
 
 .rolodex-today-panel li a {
-  color: var(--brass);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  color: var(--ink-dim);
   text-decoration: none;
 }
 
 .rolodex-today-panel li a:hover {
+  color: var(--ink);
   text-decoration: underline;
 }
 
@@ -295,5 +277,5 @@
 
 .rolodex-today-chart-body {
   width: 100%;
-  height: 210px;
+  height: 190px;
 }

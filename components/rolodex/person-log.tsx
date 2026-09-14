@@ -145,7 +145,7 @@ export function PersonLog({
           <label htmlFor="interaction-notes">Notes</label>
           <input id="interaction-notes" name="notes" />
         </div>
-        <button type="submit" disabled={pending}>
+        <button type="submit" className="atrium-btn" disabled={pending}>
           Log
         </button>
       </form>
@@ -165,7 +165,7 @@ export function PersonLog({
           <label htmlFor="fact-text">Fact</label>
           <input id="fact-text" name="text" required />
         </div>
-        <button type="submit" disabled={pending}>
+        <button type="submit" className="atrium-btn" disabled={pending}>
           Add fact
         </button>
       </form>
@@ -180,7 +180,7 @@ export function PersonLog({
           <label htmlFor="news-date">Date</label>
           <input id="news-date" name="date" type="date" defaultValue={today} />
         </div>
-        <button type="submit" disabled={pending}>
+        <button type="submit" className="atrium-btn" disabled={pending}>
           Add news
         </button>
       </form>
@@ -221,7 +221,7 @@ export function PersonLog({
           <label htmlFor="reminder-due">Due</label>
           <input id="reminder-due" name="dueDate" type="date" required />
         </div>
-        <button type="submit" disabled={pending}>
+        <button type="submit" className="atrium-btn" disabled={pending}>
           Add reminder
         </button>
       </form>

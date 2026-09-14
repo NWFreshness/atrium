@@ -72,7 +72,9 @@ export default async function RolodexPeoplePage({
               ))}
             </select>
           </div>
-          <button type="submit">Search</button>
+          <button type="submit" className="atrium-btn">
+            Search
+          </button>
         </form>
         <AddPersonButton />
         <ImportPeopleButton />
