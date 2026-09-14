@@ -23,7 +23,10 @@ export default async function OrganizationDetailPage({
 
   return (
     <main>
-      <h1>{organization.name}</h1>
+      <div className="atrium-pagetitle">
+        <h1>{organization.name}</h1>
+        <p className="atrium-sub">Organization · tenant-scoped</p>
+      </div>
       <dl className={styles["crm-detail"]}>
         <dt>Website</dt>
         <dd>{organization.website ?? ""}</dd>

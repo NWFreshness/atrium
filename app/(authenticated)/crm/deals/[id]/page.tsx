@@ -30,7 +30,10 @@ export default async function DealDetailPage({
 
   return (
     <main>
-      <h1>{deal.name}</h1>
+      <div className="atrium-pagetitle">
+        <h1>{deal.name}</h1>
+        <p className="atrium-sub">Deal · {deal.stage}</p>
+      </div>
       <dl className={styles["crm-detail"]}>
         <dt>Stage</dt>
         <dd>{deal.stage}</dd>

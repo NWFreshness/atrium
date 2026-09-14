@@ -1,5 +1,16 @@
+/* ============================================================
+   CRM dashboard — PNW pass (10.3)
+   KPI tiles on `--bg-1`, one accent rule per tile from the four
+   semantic tones (`--moss` / `--brass` / `--clay-ink` / `--slate`),
+   figures in the display face at `--text-kpi` with tabular numerals,
+   labels in Geist Mono at `--text-label`. Golden (`--brass`) is spent
+   once per screen: here, on the tile whose value matters most.
+   ============================================================ */
+
 .page {
-  padding: 0;
+  /* 5.3 zeroed <main>'s padding here, which left the tiles flush to the
+     viewport edge while the subnav above them kept its 2rem gutter. */
+  max-width: none;
 }
 
 .tiles {
@@ -9,7 +20,7 @@
   margin: 1.25rem 0;
 }
 
-/* KPI tile — Workroom `.kpi` pattern */
+/* KPI tile — the `.atrium-kpi` pattern, app-local so the tones stay here */
 .tile {
   position: relative;
   overflow: hidden;
@@ -30,47 +41,60 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--tile-c, var(--brass)), transparent 75%);
+  background: linear-gradient(
+    90deg,
+    var(--tile-c, var(--line-strong)),
+    transparent 75%
+  );
 }
 
 .tileLabel {
-  font-size: 11px;
-  font-weight: 550;
-  letter-spacing: 0.14em;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 400;
+  letter-spacing: var(--text-label-tracking);
   text-transform: uppercase;
   color: var(--ink-faint);
 }
 
 .tileValue {
   font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 560;
+  font-size: var(--text-kpi);
+  font-weight: var(--text-kpi-weight);
+  letter-spacing: var(--text-kpi-tracking);
   line-height: 1.1;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
+/* If a figure wraps at 375px, drop the scale — never shrink the label. */
+@media (max-width: 375px) {
+  .tileValue {
+    font-size: var(--text-h2);
+  }
+}
+
 .tileSub {
   margin-top: 0.1rem;
-  font-size: 12px;
+  font-size: var(--text-small);
   color: var(--ink-faint);
 }
 
-/* warm tone → top accent rule */
+/* semantic tones — exactly one accent per tile, drawn from the PNW family */
 .tileCount {
-  --tile-c: var(--violet);
+  --tile-c: var(--slate); /* neutral */
 }
 .tileOpen {
-  --tile-c: var(--slate);
+  --tile-c: var(--moss); /* in pipeline */
 }
 .tileForecast {
-  --tile-c: var(--brass);
+  --tile-c: var(--moss); /* in pipeline, forward-looking */
 }
 .tileWon {
-  --tile-c: var(--moss);
+  --tile-c: var(--brass); /* golden — the win, the screen's one highlight */
 }
 .tileLate {
-  --tile-c: var(--clay);
+  --tile-c: var(--clay-ink); /* late — cedar lifted, never the clay fill */
 }
 
 .charts {
@@ -91,8 +115,11 @@
 
 .chartTitle {
   margin: 0 0 0.5rem;
-  font-size: 15.5px;
-  font-weight: 580;
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-leading);
   color: var(--ink);
 }
 
@@ -106,10 +133,9 @@
   display: grid;
   place-items: center;
   color: var(--ink-faint);
-  font-family: var(--font-display);
-  font-size: 14.5px;
-  font-style: italic;
-  letter-spacing: 0.01em;
+  font-family: var(--font-mono);
+  font-size: var(--text-data);
+  letter-spacing: 0.02em;
 }
 
 .feeds {
@@ -130,13 +156,16 @@
 
 .feedTitle {
   margin: 0 0 0.6rem;
-  font-size: 16px;
-  font-weight: 580;
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-leading);
   color: var(--ink);
 }
 
 .feedTitleLate {
-  color: var(--clay);
+  color: var(--clay-ink);
 }
 
 .feedList {
@@ -152,22 +181,39 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  font-size: 14px;
+  font-size: var(--text-small);
   color: var(--ink-dim);
 }
 
 .feedMeta {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--text-data);
   color: var(--ink-faint);
-  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
+/* The follow-up "done" checkbox is the one focusable control the dashboard
+   owns; it takes the same 2px brass ring as every other interactive. */
+.feedItem input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
+
+/* Quiet links: golden stays reserved for the win, so a feed link is ink. */
 .feedLink {
-  color: var(--brass);
-  text-decoration: none;
+  color: var(--ink-dim);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 2px;
 }
 
 .feedLink:hover {
-  text-decoration: underline;
+  color: var(--ink);
+  text-decoration-color: var(--brass);
+}
+
+.feedLink:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
 }

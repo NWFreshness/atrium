@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** 10.2 is implemented on `feat/10.2-pnw-chrome` (PR not merged). Next implementable unit is **10.3–10.6** in any order after 10.2 merges (10.6 only needs 10.1). Do not start them on this branch.
+**None in progress.** 10.3–10.6 are implemented in parallel on `feat/10.3-pnw-crm`, `feat/10.4-pnw-space`, `feat/10.5-pnw-rolodex`, `feat/10.6-pnw-groove` (four PRs open, not merged). Next implementable unit is **10.7** once those land — it is the phase gate and must run last.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 9 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`. A `script-src` CSP stays out until a feature has to touch `middleware.ts`.
 
@@ -409,3 +409,19 @@ Basalt/mist token block, Outfit + Archivo + Geist Mono via `next/font`, type-sca
 ### 10.2 Shared chrome, launcher, and login (completed)
 
 Outfit wordmark, 7px golden diamond, active-only underline (hover no longer paints a second highlight). Shared `atrium-` layer restyled in place (`app/workroom.css` path unchanged): primary button `#dfa84a` / charcoal `#25282a`, 2px `--brass` `:focus-visible` on fields, `--clay-ink` alerts. Launcher cards `--clay-ink` / `--moss` / `--slate` / `--brass`. Controller: `env -u DATABASE_URL npm test` 724 passed (109 files); build exit 0. Chromium `/login` primary `rgb(223, 168, 74)` on `rgb(37, 40, 42)`. Playwright still needs owner/demo creds. Next after merge: 10.3–10.6.
+
+### 10.3 CRM pass (completed)
+
+All five CRM screens on the PNW tokens; TanStack config, dialogs, drag, and recharts data untouched. `--violet` removed from `dashboard.module.css` and `pipeline-board.module.css` (the two files 10.1 left pointing at it). Tile tones slate/moss/moss/brass/clay-ink; six pipeline stages step slate → moss → timber → clay → brass → clay-ink. Row actions reveal by opacity, never `display`. Charts keep 10.1's five literals and every chart section now carries a `Legend`. Controller: `env -u DATABASE_URL npm test` 749 passed (110 files), build exit 0. No browser run (no owner/demo creds). Spec §4's right-aligned money column left alone — it needs a cell class in the deal table, which this feature's "no column change" exclusion forbids.
+
+### 10.4 Space pass (completed)
+
+Space re-skinned; autosave, `/` menu, todo toggle, dnd reorder, property types, view persistence, filters/sorts, QuickFind, and the page tree untouched. Sidebar is the raised surface with a 2px golden inset rule on the current page. Row actions stay opacity-revealed. Editor prose is Archivo at `--text-body`/`--text-body-leading` inside `--measure` (68ch); code and property values are Geist Mono. Board drop indicator `--brass`, lifted card `--shadow-panel` only. The board's `⋮⋮` text grip became currentColor dots. Controller: `env -u DATABASE_URL npm test` 772 passed (110 files), build exit 0. No browser run.
+
+### 10.5 Rolodex pass (completed)
+
+Rolodex re-skinned; cadence, snooze, gifts, connections, dates, import, and the circles drag untouched. One cadence mapping across tiles, rows, and charts (clay-ink / brass / moss / slate). `Log contact` is the only golden fill on Today, with one golden chip on the soonest due row. Calendar today marker is a `--brass` ring. **The spec's avatar contrast claim was wrong and was caught here**: mist on raw cedar measures 3.29:1, not 4.55:1, so the avatar fills with `--clay-ink` and takes `--bg-0` text (6.95:1 dark / 5.44:1 light) and the gate computes that ratio from `app/globals.css` instead of restating it. The design doc's Decisions table row 3 was corrected to match. Controller: `env -u DATABASE_URL npm test` 759 passed (110 files), build exit 0. No browser run.
+
+### 10.6 Groove instrument recast (completed)
+
+The desk's `--inst-*` scope carries the PNW instrument values; no light-theme override, so it stays dark under `data-theme="light"`. `:global()` class contract and the `.groove-led` / `on` selector unchanged. Espresso literals that were never `--inst-*` tokens (chassis gradients, control faces, pad velocity steps, fader caps, the scope canvas's cyan trace/grid/spectrum) were mapped into the instrument family. Lit LED `#dfa84a` on `#23282a` measures 6.98:1, computed in the new gate. Controller: `env -u DATABASE_URL npm test` 740 passed (110 files), build exit 0. No browser run; the diff changes no dimension, spacing, grid, or flex declaration.

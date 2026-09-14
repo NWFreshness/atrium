@@ -39,6 +39,10 @@ describe("CRM dashboard", () => {
     expect(charts).toContain("#a3b19b"); // lichen
     expect(charts).toContain("#8b9fc2"); // rain
     expect(charts).toContain("#e0a488"); // cedar lifted
+    expect(charts).toContain("#b9ab93"); // timber — the violet slot
+    for (const retired of ["#8fae83", "#a88fc0", "#cd7258", "#dfa33c"]) {
+      expect(charts).not.toContain(retired);
+    }
   });
 
   it("uses the shared pagetitle and staggers the KPI tiles", () => {
@@ -48,6 +52,9 @@ describe("CRM dashboard", () => {
     expect(dashboardCss).toContain("--tile-c");
     expect(dashboardCss).toContain("var(--font-display)");
     expect(dashboardCss).toContain("var(--bg-1)");
+    expect(dashboardCss).toContain("var(--text-kpi)");
+    expect(dashboardCss).toContain("var(--font-mono)");
+    expect(dashboardCss).not.toContain("--violet");
   });
 });
 
@@ -66,6 +73,9 @@ describe("CRM tables / dialogs / board use Workroom tokens", () => {
     expect(pipelineCss).toContain("var(--moss)");
     expect(pipelineCss).toContain("var(--clay)");
     expect(pipelineCss).toContain("var(--slate)");
+    expect(pipelineCss).toContain("var(--timber)");
+    expect(pipelineCss).toContain("var(--clay-ink)");
+    expect(pipelineCss).not.toContain("--violet");
   });
 
   it("section pages carry the shared pagetitle", () => {
