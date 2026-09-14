@@ -197,6 +197,8 @@ Replace the theme's warmth and the type stack with a Pacific Northwest palette (
 | 10.4 | [Space pass](./phase-10-pnw/10.4-space-pass.md)                                       | completed | 10.1, 10.2 |
 | 10.5 | [Rolodex pass](./phase-10-pnw/10.5-rolodex-pass.md)                                   | completed | 10.1, 10.2 |
 | 10.6 | [Groove instrument recast](./phase-10-pnw/10.6-groove-instrument-recast.md)           | completed | 10.1       |
-| 10.7 | [Contrast gate, theme QA, smoke](./phase-10-pnw/10.7-theme-contrast-qa.md)            | specced | 10.2–10.6  |
+| 10.7 | [Contrast gate, theme QA, smoke](./phase-10-pnw/10.7-theme-contrast-qa.md)            | completed | 10.2–10.6  |
 
 Long pole: 10.1 → 10.2 → 10.7. 10.3–10.6 may run in any order after 10.2 (disjoint CSS module sets) but all must land before 10.7. Do not parallel two features that touch the same files. Preserve the `crm-`/`space-`/`rolodex-`/`groove-`/`atrium-nav-` namespaces and the shared `atrium-` layer.
+
+**Phase 10 is complete** — 10.1–10.7 shipped: PNW tokens and type stack, shared chrome, four app passes, Groove instrument recast, contrast gate and theme QA.
