@@ -8,14 +8,15 @@ Groove: [docs/superpowers/specs/2026-09-09-groove-design.md](../docs/superpowers
 Accounts: [docs/superpowers/specs/2026-09-11-accounts-design.md](../docs/superpowers/specs/2026-09-11-accounts-design.md)
 Architecture: [docs/superpowers/specs/2026-09-11-architecture-design.md](../docs/superpowers/specs/2026-09-11-architecture-design.md)
 Integrity: [docs/superpowers/specs/2026-09-11-integrity-design.md](../docs/superpowers/specs/2026-09-11-integrity-design.md)
-Security: [docs/superpowers/specs/2026-09-11-security-design.md](../docs/superpowers/specs/2026-09-11-security-design.md)
-In progress: [CURRENT_FEATURE.md](../CURRENT_FEATURE.md)
+| Security: [2026-09-11-security-design.md](../docs/superpowers/specs/2026-09-11-security-design.md)
+| PNW (Phase 10): [2026-09-14-pnw-design.md](../docs/superpowers/specs/2026-09-14-pnw-design.md) · studies in [docs/prototypes/2026-09-14-pnw/](../docs/prototypes/2026-09-14-pnw/README.md)
+| In progress: [CURRENT_FEATURE.md](../CURRENT_FEATURE.md)
 
 Only one feature `in_progress`. Later phases get specs when that phase starts.
 
 ## Build order
 
-Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7 → 6.1 → 6.2 → 6.3 → 6.4 → 7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 8.1 → 8.2 → 8.3 → 9.1 → 9.2 → 9.3 → 9.4 → 9.5 → 9.6.
+Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7 → 6.1 → 6.2 → 6.3 → 6.4 → 7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 8.1 → 8.2 → 8.3 → 9.1 → 9.2 → 9.3 → 9.4 → 9.5 → 9.6 → 10.1 → 10.2 → 10.7 (10.3–10.6 in any order after 10.2).
 3.4 / 3.6 / 3.7 start after 3.3 (same person page — do not parallel). 3.8 after 3.7.
 Phase 3 is sequential. Phase 4 is sequential. Do not run two Groove features in parallel.
 Phase 5 is sequential through 5.2 and the QA gate 5.7; the per-app passes 5.3–5.6 may run in any order after 5.2 (disjoint CSS module sets), but must all land before 5.7.
@@ -23,6 +24,7 @@ Phase 6 is sequential. Do not run two Accounts features in parallel.
 Phase 7 is sequential. Do not run two Architecture features in parallel. Do not add RLS, extract Groove, or unify the drag libraries.
 Phase 8 is sequential. Do not run two Integrity features in parallel. Do not add RLS, OAuth, a mailer, or rename `middleware.ts`.
 Phase 9 is sequential. Do not run two Security features in parallel. Do not add RLS, OAuth, a mailer, MFA, a `script-src` CSP, or rename `middleware.ts`.
+Phase 10 is sequential through 10.2 and the gate 10.7; the per-app passes 10.3–10.6 may run in any order after 10.2 (disjoint CSS module sets) but all must land before 10.7. Do not add a third theme, a component library, or a CSS framework; espresso/brass is retired, not kept behind a flag.
 
 ### Phase 0 — Atrium platform
 
@@ -182,3 +184,19 @@ Close six AppSec holes: known HIGH in `drizzle-orm`, isolation headers, login ti
 **Phase 9 is complete** — 9.1–9.6 shipped: drizzle-orm patch + CI audit, isolation headers, dummy-hash login, auth throttle, bounded Rolodex import, text ceilings + LIKE escape.
 
 Phase 9 is sequential. Do not run two Security features in parallel. Do not add RLS, OAuth, a mailer, MFA, a `script-src` CSP, or rename `middleware.ts`.
+
+### Phase 10 — PNW (redesign)
+
+Replace the theme's warmth and the type stack with a Pacific Northwest palette (basalt, mist, moss, lichen, cedar, golden) and a sturdier stack (Outfit headings, Archivo body, Geist Mono data). Values only: no new route, table, migration, dependency, or behaviour. Groove keeps its `--inst-*` scope and stays dark under the light theme. The phase closes with a gate that computes WCAG contrast from the shipped tokens. Design: [2026-09-14-pnw-design.md](../docs/superpowers/specs/2026-09-14-pnw-design.md). Studies: [docs/prototypes/2026-09-14-pnw/](../docs/prototypes/2026-09-14-pnw/README.md).
+
+| ID   | Feature                                                                               | Status  | Depends on |
+| ---- | ------------------------------------------------------------------------------------- | ------- | ---------- |
+| 10.1 | [PNW tokens, type stack, theme scaffold](./phase-10-pnw/10.1-pnw-tokens-and-type.md)  | specced | nothing    |
+| 10.2 | [Shared chrome, launcher, login](./phase-10-pnw/10.2-shared-chrome-launcher-login.md) | specced | 10.1       |
+| 10.3 | [CRM pass](./phase-10-pnw/10.3-crm-pass.md)                                           | specced | 10.1, 10.2 |
+| 10.4 | [Space pass](./phase-10-pnw/10.4-space-pass.md)                                       | specced | 10.1, 10.2 |
+| 10.5 | [Rolodex pass](./phase-10-pnw/10.5-rolodex-pass.md)                                   | specced | 10.1, 10.2 |
+| 10.6 | [Groove instrument recast](./phase-10-pnw/10.6-groove-instrument-recast.md)           | specced | 10.1       |
+| 10.7 | [Contrast gate, theme QA, smoke](./phase-10-pnw/10.7-theme-contrast-qa.md)            | specced | 10.2–10.6  |
+
+Long pole: 10.1 → 10.2 → 10.7. 10.3–10.6 may run in any order after 10.2 (disjoint CSS module sets) but all must land before 10.7. Do not parallel two features that touch the same files. Preserve the `crm-`/`space-`/`rolodex-`/`groove-`/`atrium-nav-` namespaces and the shared `atrium-` layer.

@@ -2,17 +2,17 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Nothing is in progress.** Phases 0–9 are complete and merged (9.6 closed Phase 9 as PR #80). Do not start a new phase until a docs PR lands. Do not push to `main`. Do not merge unless asked.
+**Stop. Nothing is in progress.** Phase 10's specs (10.1–10.7) are written on `docs/phase10-pnw` and **nothing is implemented** — do not start 10.1 until that docs PR merges. Do not push to `main`. Do not merge unless asked.
 
 ## Where we are (2026-09-11)
 
-Phases 0–9 are complete and merged. Vercel Web Analytics landed after Phase 9 as a root-level change — one dependency and one mount in `app/layout.tsx` — with no phase spec and no INDEX row. Design: `docs/superpowers/specs/2026-09-11-security-design.md`.
+Phases 0–9 are complete and merged. Phase 10 (PNW redesign) is **specced, not implemented**: 10.1–10.7 in `features/phase-10-pnw/`, design in `docs/superpowers/specs/2026-09-14-pnw-design.md`, studies in `docs/prototypes/2026-09-14-pnw/`. Vercel Web Analytics landed before it as a root-level change — one dependency and one mount in `app/layout.tsx` — with no phase spec and no INDEX row. Security design: `docs/superpowers/specs/2026-09-11-security-design.md`.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
-Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phase 9). Architecture: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Integrity: `docs/superpowers/specs/2026-09-11-integrity-design.md`. Security: `docs/superpowers/specs/2026-09-11-security-design.md`. Decisions: `docs/adr/` (ADR-0001 … ADR-0006 + a C4 context/container view; the design doc wins if an ADR and it disagree). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. If a spec and the design disagree, update the design first.
+Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phases 5, 9, and 10). Architecture: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Integrity: `docs/superpowers/specs/2026-09-11-integrity-design.md`. Security: `docs/superpowers/specs/2026-09-11-security-design.md`. Decisions: `docs/adr/` (ADR-0001 … ADR-0006 + a C4 context/container view; the design doc wins if an ADR and it disagree). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. PNW (Phase 10): `docs/superpowers/specs/2026-09-14-pnw-design.md` + studies `docs/prototypes/2026-09-14-pnw/`. If a spec and the design disagree, update the design first.
 
 Open decisions carried forward: Session revocation was decided in 6.3: passwords can be changed, but existing JWTs stay valid — no revocation list, no `passwordChangedAt` claim, by spec. RLS is deferred: neon-http cannot persist `SET LOCAL`. 8.1 closed the case-sensitive `users_email_unique` index — uniqueness is now `users_email_lower_idx` on `lower(email)`. 8.2 closed the UTF-16 password floor. Deliberately still open, and not to be reopened without a spec: RLS (neon-http cannot persist `SET LOCAL`), session revocation, OAuth, a mailer, `tenants.name` moving to `lower(name)`, `Intl.Segmenter` grapheme counting, and Next 16's `middleware.ts` → `proxy` rename (it stays out until a feature has to touch that file).
 
@@ -23,7 +23,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Nothing is queued. A new phase starts as a docs PR.
+6. Nothing is implemented. The next implementable unit is 10.1 — only after the Phase 10 docs PR merges.
 
 ## How we ship
 
@@ -48,7 +48,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 
 ## Stack locks
 
-Next.js App Router, Neon Postgres, Drizzle, Auth.js Credentials + JWT. No Express, no SQLite, no Tailwind, no TanStack until a CRM/Space/Rolodex table spec. Session `user` has `id`, `email`, `tenantId`, `role` (`owner` | `demo` | `member` after 6.1). Never take `tenantId` from the client.
+Next.js App Router, Neon Postgres, Drizzle, Auth.js Credentials + JWT. No Express, no SQLite, no Tailwind, no TanStack until a CRM/Space/Rolodex table spec. Session `user` has `id`, `email`, `tenantId`, `role` (`owner` | `demo` | `member` after 6.1). Never take `tenantId` from the client. Typography (Phase 10): Outfit headings, Archivo body, Geist Mono data, loaded through `next/font`; no other family without a spec.
 
 Next 16 warns that `middleware.ts` is deprecated in favor of `proxy`. Leave middleware unless a feature spec says to rename it.
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Phase 9 is complete and merged; the Neon **dev** branch carries migrations `0000`–`0007` (`auth_throttles` live). Nothing is queued, so the next step is a docs PR for a new phase — not `N.1`.
+Phase 9 is complete and merged; the Neon **dev** branch carries migrations `0000`–`0007` (`auth_throttles` live). Phase 10 PNW specs 10.1–10.7 exist (docs PR, no code). Next implementable unit is 10.1 after that PR merges — `git checkout main && git pull`, branch `feat/10.1-pnw-tokens`, port the token values from the studies verbatim.
