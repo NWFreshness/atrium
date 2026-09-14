@@ -13,14 +13,14 @@ import {
 import type { CircleCounts, MonthCount } from "@/lib/rolodex/dashboard";
 import styles from "./today.module.css";
 
-/* Workroom data palette — the same warm hexes the CRM charts use (5.3); the status
-   colours match the Today KPI tiles and chips in today.module.css (moss/brass/clay/
-   slate), so the chart and the row it summarises never disagree. */
-const IN_TOUCH = "#8fae83"; // moss
-const DUE = "#dfa33c"; // brass
-const OVERDUE = "#cd7258"; // clay
-const SNOOZED = "#8b9fc2"; // slate
-const COUNT = "#a88fc0"; // violet
+/* PNW data palette — the same hexes the CRM charts use (10.1); series are
+   lichen / golden / cedar-lifted / rain / timber, labelled directly so colour
+   is never the only channel. */
+const IN_TOUCH = "#a3b19b"; // lichen
+const DUE = "#dfa84a"; // golden
+const OVERDUE = "#e0a488"; // cedar lifted
+const SNOOZED = "#8b9fc2"; // rain
+const COUNT = "#b9ab93"; // timber
 
 export function TodayCharts({
   months,
