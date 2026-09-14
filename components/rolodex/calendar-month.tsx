@@ -8,10 +8,14 @@ export function CalendarMonth({
   year,
   month,
   entries,
+  today,
 }: {
   year: number;
   month: number;
   entries: MonthDate[];
+  /** Today's ISO date from the page — the marker is a string compare, no new
+      date arithmetic lives here. */
+  today?: string;
 }) {
   const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
   const length = daysInMonth(year, month);
@@ -28,6 +32,9 @@ export function CalendarMonth({
     list.push(entry);
     byDay.set(entry.day, list);
   }
+  const [todayYear, todayMonth, todayDay] = (today ?? "")
+    .split("-")
+    .map((part) => Number(part));
 
   return (
     <div className={styles.grid}>
@@ -36,21 +43,31 @@ export function CalendarMonth({
           {day}
         </div>
       ))}
-      {cells.map((day, index) => (
-        <div key={index} className={styles.cell}>
-          {day != null ? <span className={styles.day}>{day}</span> : null}
-          {(day != null ? byDay.get(day) : undefined)?.map((entry) => (
-            <Link
-              key={entry.id}
-              className={styles.entry}
-              href={`/rolodex/people/${entry.personId}`}
-            >
-              {entry.personName}
-              {entry.milestone ? " · milestone" : ""}
-            </Link>
-          ))}
-        </div>
-      ))}
+      {cells.map((day, index) => {
+        const isToday =
+          day != null &&
+          todayYear === year &&
+          todayMonth === month &&
+          todayDay === day;
+        return (
+          <div
+            key={index}
+            className={isToday ? `${styles.cell} ${styles.today}` : styles.cell}
+          >
+            {day != null ? <span className={styles.day}>{day}</span> : null}
+            {(day != null ? byDay.get(day) : undefined)?.map((entry) => (
+              <Link
+                key={entry.id}
+                className={styles.entry}
+                href={`/rolodex/people/${entry.personId}`}
+              >
+                {entry.personName}
+                {entry.milestone ? " · milestone" : ""}
+              </Link>
+            ))}
+          </div>
+        );
+      })}
     </div>
   );
 }

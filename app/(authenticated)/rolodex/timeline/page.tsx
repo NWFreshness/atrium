@@ -68,7 +68,9 @@ export default async function RolodexTimelinePage({
             ))}
           </select>
         </div>
-        <button type="submit">Filter</button>
+        <button type="submit" className="atrium-btn">
+          Filter
+        </button>
       </form>
       <TimelineList entries={entries} showPerson />
     </main>

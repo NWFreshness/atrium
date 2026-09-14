@@ -13,6 +13,7 @@ const circlesCss = read("components/rolodex/circles-board.module.css");
 const calendarCss = read("components/rolodex/calendar-month.module.css");
 const todayPage = read("app/(authenticated)/rolodex/page.tsx");
 const peoplePage = read("app/(authenticated)/rolodex/people/page.tsx");
+const calendarMonth = read("components/rolodex/calendar-month.tsx");
 
 describe("Rolodex subnav", () => {
   it("uses inline SVG glyphs and the shared subtab classes", () => {
@@ -77,5 +78,27 @@ describe("section pages", () => {
   it("carry the shared pagetitle", () => {
     expect(todayPage).toContain("atrium-pagetitle");
     expect(peoplePage).toContain("atrium-pagetitle");
+  });
+});
+
+// 10.5 extends the 5.5 contract: the four KPI tiles read the cadence palette,
+// the single primary comes from the shared button layer, and the calendar page
+// hands its today marker down instead of the month grid computing one.
+describe("PNW continuity (10.5)", () => {
+  it("keeps the tiles on the shared KPI chrome with the module's accent map", () => {
+    expect(todayTsx).toContain("atrium-kpi");
+    expect(todayTsx).toContain("atrium-label");
+    expect(todayTsx).toContain("--kpi-c");
+    expect(todayTsx).toContain("--stat-c");
+  });
+
+  it("takes the one primary button from the shared layer", () => {
+    expect(todayTsx).toContain("atrium-btn-primary");
+    expect(todayTsx).toContain("atrium-btn");
+    expect(todayTsx).not.toContain("brass-deep");
+  });
+
+  it("hands the calendar page's today into the month grid", () => {
+    expect(calendarMonth).toContain("today");
   });
 });

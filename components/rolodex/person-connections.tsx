@@ -79,6 +79,7 @@ export function PersonConnections({
               </Link>
               <button
                 type="button"
+                className="atrium-btn"
                 aria-label={`Delete connection to ${row.otherName}`}
                 onClick={async () => {
                   await deleteConnectionAction(row.id);
@@ -144,7 +145,11 @@ export function PersonConnections({
           Note
           <input name="note" />
         </label>
-        <button type="submit" disabled={pending || others.length === 0}>
+        <button
+          type="submit"
+          className="atrium-btn"
+          disabled={pending || others.length === 0}
+        >
           Add connection
         </button>
       </form>

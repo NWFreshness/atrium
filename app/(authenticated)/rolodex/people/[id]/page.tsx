@@ -44,72 +44,74 @@ export default async function PersonDetailPage({
 
   return (
     <main className={pageStyles["rolodex-page"]}>
-      <div className={styles["rolodex-person-head"]}>
-        <Initials name={person.name} large />
-        <h1>{person.name}</h1>
-        <EditPersonButton person={person} />
+      <div className={styles["rolodex-person"]}>
+        <div className={styles["rolodex-person-head"]}>
+          <Initials name={person.name} large />
+          <h1>{person.name}</h1>
+          <EditPersonButton person={person} />
+        </div>
+        <dl className={styles["rolodex-detail"]}>
+          <dt>Email</dt>
+          <dd>{person.email ?? ""}</dd>
+          <dt>Phone</dt>
+          <dd>{person.phone ?? ""}</dd>
+          <dt>Job title</dt>
+          <dd>{person.jobTitle ?? ""}</dd>
+          <dt>Company</dt>
+          <dd>{person.company ?? ""}</dd>
+          <dt>City</dt>
+          <dd>{person.city ?? ""}</dd>
+          <dt>Time zone</dt>
+          <dd>{person.timezone ?? ""}</dd>
+          <dt>Circle</dt>
+          <dd>{CIRCLE_META[person.circle].label}</dd>
+          <dt>Last contacted</dt>
+          <dd>{person.lastContacted ?? ""}</dd>
+          <dt>Status</dt>
+          <dd>{STATUS_LABEL[person.status]}</dd>
+          <dt>Cadence override</dt>
+          <dd>
+            {person.cadenceOverrideDays != null
+              ? `${person.cadenceOverrideDays} days`
+              : ""}
+          </dd>
+          <dt>Check-ins</dt>
+          <dd>{person.checkinsOff ? "Off" : "On"}</dd>
+          <dt>Snooze until</dt>
+          <dd>{person.snoozedUntil ?? ""}</dd>
+          <dt>How we met</dt>
+          <dd>{person.howMet ?? ""}</dd>
+          <dt>Where we met</dt>
+          <dd>{person.metWhere ?? ""}</dd>
+          <dt>Met on</dt>
+          <dd>{person.metOn ?? ""}</dd>
+          <dt>Tags</dt>
+          <dd>{person.tags.join(", ")}</dd>
+          <dt>Notes</dt>
+          <dd>{person.notes ?? ""}</dd>
+          <dt>Latest news</dt>
+          <dd>{person.latestNews?.text ?? ""}</dd>
+        </dl>
+        <PersonDates personId={person.id} dates={dates} today={todayISO()} />
+        <PersonGifts
+          personId={person.id}
+          gifts={gifts}
+          dates={dates}
+          today={todayISO()}
+        />
+        <PersonConnections
+          personId={person.id}
+          connections={connections}
+          people={people.map((row) => ({ id: row.id, name: row.name }))}
+        />
+        <PersonLog
+          personId={person.id}
+          facts={log.facts}
+          reminders={log.reminders}
+          timeline={log.timeline}
+          today={todayISO()}
+        />
       </div>
-      <dl className={styles["rolodex-detail"]}>
-        <dt>Email</dt>
-        <dd>{person.email ?? ""}</dd>
-        <dt>Phone</dt>
-        <dd>{person.phone ?? ""}</dd>
-        <dt>Job title</dt>
-        <dd>{person.jobTitle ?? ""}</dd>
-        <dt>Company</dt>
-        <dd>{person.company ?? ""}</dd>
-        <dt>City</dt>
-        <dd>{person.city ?? ""}</dd>
-        <dt>Time zone</dt>
-        <dd>{person.timezone ?? ""}</dd>
-        <dt>Circle</dt>
-        <dd>{CIRCLE_META[person.circle].label}</dd>
-        <dt>Last contacted</dt>
-        <dd>{person.lastContacted ?? ""}</dd>
-        <dt>Status</dt>
-        <dd>{STATUS_LABEL[person.status]}</dd>
-        <dt>Cadence override</dt>
-        <dd>
-          {person.cadenceOverrideDays != null
-            ? `${person.cadenceOverrideDays} days`
-            : ""}
-        </dd>
-        <dt>Check-ins</dt>
-        <dd>{person.checkinsOff ? "Off" : "On"}</dd>
-        <dt>Snooze until</dt>
-        <dd>{person.snoozedUntil ?? ""}</dd>
-        <dt>How we met</dt>
-        <dd>{person.howMet ?? ""}</dd>
-        <dt>Where we met</dt>
-        <dd>{person.metWhere ?? ""}</dd>
-        <dt>Met on</dt>
-        <dd>{person.metOn ?? ""}</dd>
-        <dt>Tags</dt>
-        <dd>{person.tags.join(", ")}</dd>
-        <dt>Notes</dt>
-        <dd>{person.notes ?? ""}</dd>
-        <dt>Latest news</dt>
-        <dd>{person.latestNews?.text ?? ""}</dd>
-      </dl>
-      <PersonDates personId={person.id} dates={dates} today={todayISO()} />
-      <PersonGifts
-        personId={person.id}
-        gifts={gifts}
-        dates={dates}
-        today={todayISO()}
-      />
-      <PersonConnections
-        personId={person.id}
-        connections={connections}
-        people={people.map((row) => ({ id: row.id, name: row.name }))}
-      />
-      <PersonLog
-        personId={person.id}
-        facts={log.facts}
-        reminders={log.reminders}
-        timeline={log.timeline}
-        today={todayISO()}
-      />
     </main>
   );
 }

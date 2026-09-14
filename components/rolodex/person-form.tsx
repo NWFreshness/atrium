@@ -302,10 +302,19 @@ export function PersonForm({
             />
           </div>
           <div className={styles["rolodex-form-actions"]}>
-            <button type="button" onClick={onClose} disabled={pending}>
+            <button
+              type="button"
+              className="atrium-btn"
+              onClick={onClose}
+              disabled={pending}
+            >
               Cancel
             </button>
-            <button type="submit" disabled={pending}>
+            <button
+              type="submit"
+              className="atrium-btn atrium-btn-primary"
+              disabled={pending}
+            >
               Save
             </button>
           </div>
@@ -320,7 +329,11 @@ export function AddPersonButton() {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        className="atrium-btn"
+        onClick={() => setOpen(true)}
+      >
         Add person
       </button>
       {open ? <PersonForm onClose={() => setOpen(false)} /> : null}
@@ -333,7 +346,11 @@ export function EditPersonButton({ person }: { person: Person }) {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        className="atrium-btn"
+        onClick={() => setOpen(true)}
+      >
         Edit
       </button>
       {open ? (

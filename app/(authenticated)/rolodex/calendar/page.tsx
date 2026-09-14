@@ -54,7 +54,12 @@ export default async function RolodexCalendarPage({
           Next
         </Link>
       </div>
-      <CalendarMonth year={year} month={month} entries={entries} />
+      <CalendarMonth
+        year={year}
+        month={month}
+        entries={entries}
+        today={today}
+      />
     </main>
   );
 }

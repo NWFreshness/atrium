@@ -90,6 +90,7 @@ export function PersonDates({
                 {next.milestone ? " · milestone" : ""}
                 <button
                   type="button"
+                  className="atrium-btn"
                   aria-label={`Edit ${TYPE_LABEL[row.type]}`}
                   onClick={() => setEditing(row)}
                 >
@@ -97,6 +98,7 @@ export function PersonDates({
                 </button>
                 <button
                   type="button"
+                  className="atrium-btn"
                   aria-label={`Delete ${TYPE_LABEL[row.type]}`}
                   onClick={async () => {
                     await deleteImportantDateAction(row.id);
@@ -173,11 +175,15 @@ export function PersonDates({
             key={`${editing?.id ?? "new"}-label`}
           />
         </div>
-        <button type="submit" disabled={pending}>
+        <button type="submit" className="atrium-btn" disabled={pending}>
           Save
         </button>
         {editing ? (
-          <button type="button" onClick={() => setEditing(null)}>
+          <button
+            type="button"
+            className="atrium-btn"
+            onClick={() => setEditing(null)}
+          >
             Cancel
           </button>
         ) : null}

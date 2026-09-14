@@ -1,4 +1,4 @@
-import { colorFromName, initialsFromName } from "@/lib/rolodex/initials";
+import { initialsFromName } from "@/lib/rolodex/initials";
 import styles from "./people.module.css";
 
 export function Initials({
@@ -15,7 +15,6 @@ export function Initials({
           ? `${styles["rolodex-initials"]} ${styles["rolodex-initials-lg"]}`
           : styles["rolodex-initials"]
       }
-      style={{ background: colorFromName(name) }}
       aria-hidden="true"
     >
       {initialsFromName(name)}

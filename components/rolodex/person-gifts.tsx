@@ -68,6 +68,7 @@ export function PersonGifts({
               {row.occasion ? ` · ${row.occasion}` : ""} · {row.date}
               <button
                 type="button"
+                className="atrium-btn"
                 aria-label={`Delete gift ${row.name}`}
                 onClick={async () => {
                   await deleteGiftAction(row.id);
@@ -103,7 +104,7 @@ export function PersonGifts({
           Date
           <input name="date" type="date" required />
         </label>
-        <button type="submit" disabled={pending}>
+        <button type="submit" className="atrium-btn" disabled={pending}>
           Add gift
         </button>
       </form>
