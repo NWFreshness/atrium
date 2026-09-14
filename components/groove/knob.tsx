@@ -70,7 +70,7 @@ export function Knob({ spec, value, onChange, onTouch, testId }: KnobProps) {
           d={arcPath(20, START, Math.max(START + 0.01, angle))}
           className="groove-knob-value"
           fill="none"
-          stroke="var(--groove-accent, #ecad0a)"
+          stroke="var(--groove-accent, #eef1f2)"
           strokeWidth="3"
           strokeLinecap="round"
         />

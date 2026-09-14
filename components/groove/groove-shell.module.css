@@ -1,5 +1,5 @@
 /*
- * Groove desk — Workroom instrument panel (5.6).
+ * Groove desk — Workroom instrument panel (5.6), recast to the PNW palette (10.6).
  *
  * Every class name here is a *tested DOM contract*: e2e/groove.spec.ts selects
  * `.groove-master-leds .groove-led` and asserts the lit class contains "on", so the
@@ -7,9 +7,12 @@
  * (this file still ships in the Groove route chunk, being a CSS Module import)
  * instead of being hashed for `styles[...]` lookup. See groove-pass.test.ts.
  *
- * Groove is instrument-dark by design: the tokens below are local and are NOT
- * re-declared under [data-theme="light"], so the desk keeps its panel colours on a
- * paper-coloured page. Shared faces (--font-display, --font-mono) come from 5.1.
+ * Groove is instrument-dark by design: the tokens below are local basalt/cool-metal
+ * values and are NOT re-declared under [data-theme="light"], so the desk keeps its
+ * panel colours on a paper-coloured page. They never fall back to the app's
+ * --bg-* / --ink* tokens: the instrument scope is nested, not a re-skin
+ * (see groove-pnw.test.ts).
+ * Shared faces (--font-display, --font-mono) come from 5.1/10.1.
  */
 
 :global(.groove-page) {
@@ -26,22 +29,23 @@
 }
 
 :global(.groove-chassis) {
-  --inst-deep: #0c0a07;
-  --inst-bg: #131009;
-  --inst-panel: #1a1510;
-  --inst-panel-hi: #231d14;
-  --inst-line: #3a3325;
-  --inst-line-soft: #2b2419;
-  --inst-ink: #f4ecdc;
-  --inst-dim: #ab9c81;
-  --inst-faint: #7d7159;
-  --inst-brass: #dfa33c;
-  --inst-brass-bright: #f3c168;
-  --inst-brass-deep: #7d5713;
-  --inst-brass-glow: rgba(223, 163, 60, 0.55);
-  --inst-moss: #8fae83;
-  --inst-clay: #cd7258;
-  --groove-accent: var(--inst-brass);
+  --inst-deep: #14181a;
+  --inst-bg: #1b1f21;
+  --inst-panel: #23282a;
+  --inst-panel-hi: #2c3234;
+  --inst-line: #3c4344;
+  --inst-line-soft: #2b3133;
+  --inst-ink: #eef1f2;
+  --inst-dim: #b3bfa9;
+  --inst-faint: #a3b19b;
+  --inst-brass: #dfa84a;
+  --inst-brass-bright: #efc272;
+  --inst-brass-deep: #8a6320;
+  --inst-brass-glow: rgba(223, 168, 74, 0.55);
+  --inst-moss: #a3b19b;
+  --inst-clay: #b87355;
+  --inst-clay-deep: #8f5138;
+  --groove-accent: var(--inst-ink);
 
   position: relative;
   display: flex;
@@ -50,9 +54,14 @@
   padding: 1.1rem 1.15rem 1.25rem;
   border: 1px solid var(--inst-line);
   border-radius: 12px;
-  background: linear-gradient(180deg, #221c13 0%, #17130d 42%, #100d08 100%);
+  background: linear-gradient(
+    180deg,
+    var(--inst-panel-hi) 0%,
+    var(--inst-bg) 42%,
+    var(--inst-deep) 100%
+  );
   box-shadow:
-    inset 0 1px 0 rgba(244, 236, 220, 0.06),
+    inset 0 1px 0 rgba(238, 241, 242, 0.06),
     inset 0 -1px 0 rgba(0, 0, 0, 0.5),
     0 26px 60px -34px rgba(0, 0, 0, 0.95);
   color: var(--inst-ink);
@@ -75,9 +84,13 @@
   width: 0.6rem;
   height: 0.6rem;
   border-radius: 50%;
-  background: radial-gradient(circle at 34% 28%, #6f5f42, #221c13 72%);
+  background: radial-gradient(
+    circle at 34% 28%,
+    var(--inst-line),
+    var(--inst-panel) 72%
+  );
   box-shadow:
-    inset 0 1px 0 rgba(244, 236, 220, 0.2),
+    inset 0 1px 0 rgba(238, 241, 242, 0.2),
     0 1px 2px rgba(0, 0, 0, 0.65);
 }
 
@@ -88,7 +101,7 @@
   margin: auto;
   width: 68%;
   height: 1px;
-  background: rgba(12, 10, 7, 0.9);
+  background: rgba(20, 24, 26, 0.9);
   transform: rotate(32deg);
 }
 
@@ -123,7 +136,7 @@
   border: 1px solid var(--inst-line-soft);
   border-radius: 8px;
   background: linear-gradient(180deg, var(--inst-panel-hi), var(--inst-panel));
-  box-shadow: inset 0 1px 0 rgba(244, 236, 220, 0.05);
+  box-shadow: inset 0 1px 0 rgba(238, 241, 242, 0.05);
 }
 
 :global(.groove-brand) {
@@ -152,7 +165,7 @@
   padding: 0.4rem 0.9rem 0.4rem 0.75rem;
   border: 1px solid var(--inst-line);
   border-radius: 999px;
-  background: linear-gradient(180deg, #2a2318, #1b1610);
+  background: linear-gradient(180deg, var(--inst-panel-hi), var(--inst-panel));
   color: var(--inst-brass-bright);
   font: inherit;
   font-family: var(--font-mono);
@@ -170,10 +183,10 @@
 }
 
 :global(.groove-play-btn-active) {
-  color: #ffe9c2;
+  color: var(--inst-ink);
   border-color: var(--inst-brass);
   box-shadow:
-    0 0 0 1px rgba(223, 163, 60, 0.25),
+    0 0 0 1px rgba(223, 168, 74, 0.25),
     0 0 18px -4px var(--inst-brass-glow);
 }
 
@@ -181,16 +194,16 @@
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: #2c2517;
+  background: var(--inst-line);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
   transition: background 0.12s ease;
 }
 
 :global(.groove-play-led-on) {
-  background: var(--inst-clay);
+  background: var(--inst-brass);
   box-shadow:
-    0 0 6px rgba(205, 114, 88, 0.85),
-    inset 0 0 0 1px rgba(255, 233, 194, 0.35);
+    0 0 6px var(--inst-brass-glow),
+    inset 0 0 0 1px rgba(238, 241, 242, 0.35);
 }
 
 :global(.groove-play-glyph) {
@@ -221,7 +234,7 @@
   height: 1.4rem;
   border: 1px solid var(--inst-line);
   border-radius: 4px;
-  background: linear-gradient(180deg, #2a2318, #1b1610);
+  background: linear-gradient(180deg, var(--inst-panel-hi), var(--inst-panel));
   color: var(--inst-dim);
   font: inherit;
   font-size: 0.7rem;
@@ -289,7 +302,7 @@
   padding: 0.3rem 0.55rem;
   border: 1px solid var(--inst-line-soft);
   border-radius: 6px;
-  background: linear-gradient(180deg, #241e15, #18140e);
+  background: linear-gradient(180deg, var(--inst-panel-hi), var(--inst-panel));
   color: var(--inst-dim);
   font: inherit;
   text-align: left;
@@ -307,7 +320,7 @@
 :global(.groove-patch-btn-active) {
   border-color: var(--inst-brass);
   color: var(--inst-brass-bright);
-  box-shadow: inset 0 0 0 1px rgba(223, 163, 60, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(223, 168, 74, 0.2);
 }
 
 :global(.groove-patch-slot) {
@@ -341,7 +354,7 @@
   padding: 0.3rem 0.6rem;
   border: 1px solid var(--inst-line);
   border-radius: 6px;
-  background: linear-gradient(180deg, #2a2318, #1b1610);
+  background: linear-gradient(180deg, var(--inst-panel-hi), var(--inst-panel));
   color: var(--inst-dim);
   font: inherit;
   font-family: var(--font-mono);
@@ -372,9 +385,9 @@
   gap: 0;
   border: 1px solid var(--inst-line-soft);
   border-radius: 9px;
-  background: linear-gradient(180deg, var(--inst-panel-hi), #16120c);
+  background: linear-gradient(180deg, var(--inst-panel-hi), var(--inst-deep));
   box-shadow:
-    inset 0 1px 0 rgba(244, 236, 220, 0.05),
+    inset 0 1px 0 rgba(238, 241, 242, 0.05),
     0 12px 26px -20px rgba(0, 0, 0, 0.9);
   overflow: hidden;
   transition: opacity 0.15s ease;
@@ -391,15 +404,15 @@
   gap: 0.5rem;
   padding: 0.55rem 0.7rem;
   border-bottom: 1px solid var(--inst-line-soft);
-  background: linear-gradient(180deg, #262017, #1c1710);
-  box-shadow: inset 0 1px 0 rgba(244, 236, 220, 0.05);
+  background: linear-gradient(180deg, var(--inst-panel), var(--inst-bg));
+  box-shadow: inset 0 1px 0 rgba(238, 241, 242, 0.05);
 }
 
 :global(.groove-sig-led) {
   width: 0.6rem;
   height: 0.6rem;
   border-radius: 50%;
-  background: #2c2517;
+  background: var(--inst-line);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
 }
 
@@ -453,7 +466,7 @@
   padding: 0.3rem 0.6rem;
   border: 1px solid var(--inst-line);
   border-radius: 5px;
-  background: linear-gradient(180deg, #2a2318, #1b1610);
+  background: linear-gradient(180deg, var(--inst-panel-hi), var(--inst-panel));
   color: var(--inst-dim);
   font: inherit;
   font-family: var(--font-mono);
@@ -472,10 +485,10 @@
 }
 
 :global(.groove-mute-btn-active) {
-  background: linear-gradient(180deg, #c25a3d, #8f3f28);
-  color: #fff3e4;
+  background: linear-gradient(180deg, var(--inst-clay), var(--inst-clay-deep));
+  color: var(--inst-ink);
   border-color: var(--inst-clay);
-  box-shadow: 0 0 12px -3px rgba(205, 114, 88, 0.9);
+  box-shadow: 0 0 12px -3px rgba(184, 115, 85, 0.9);
 }
 
 :global(.groove-unit-controls) {
@@ -573,7 +586,7 @@
   right: -3px;
   height: 9px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #f2e9d6, #a89a80);
+  background: linear-gradient(180deg, var(--inst-ink), var(--inst-dim));
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
@@ -595,7 +608,7 @@
 
 :global(.groove-led) {
   border-radius: 1px;
-  background: #2b2417;
+  background: var(--inst-line);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
   transition: background 0.1s ease;
 }
@@ -606,7 +619,7 @@
 }
 
 :global(.groove-led-beat) {
-  outline: 1px solid rgba(223, 163, 60, 0.28);
+  outline: 1px solid rgba(223, 168, 74, 0.28);
   outline-offset: 0;
 }
 
@@ -655,13 +668,13 @@
   padding: 0;
   border: 1px solid var(--inst-line-soft);
   border-radius: 4px;
-  background: linear-gradient(180deg, #262019, #1a1610);
+  background: linear-gradient(180deg, var(--inst-panel-hi), var(--inst-panel));
   color: inherit;
   font: inherit;
   cursor: pointer;
   user-select: none;
   touch-action: none;
-  box-shadow: inset 0 1px 0 rgba(244, 236, 220, 0.04);
+  box-shadow: inset 0 1px 0 rgba(238, 241, 242, 0.04);
   transition:
     background 0.1s ease,
     border-color 0.1s ease;
@@ -672,24 +685,36 @@
 }
 
 :global(.groove-pad-v0) {
-  background: linear-gradient(180deg, #241f18, #191510);
+  background: linear-gradient(180deg, var(--inst-panel), var(--inst-bg));
 }
 
 :global(.groove-pad-v1) {
-  background: linear-gradient(180deg, #4a3a1c, #2f2513);
+  background: linear-gradient(
+    180deg,
+    rgba(223, 168, 74, 0.3),
+    rgba(223, 168, 74, 0.16)
+  );
   border-color: var(--inst-brass-deep);
 }
 
 :global(.groove-pad-v2) {
-  background: linear-gradient(180deg, #7a5618, #4d360f);
+  background: linear-gradient(
+    180deg,
+    rgba(223, 168, 74, 0.62),
+    rgba(223, 168, 74, 0.34)
+  );
   border-color: var(--inst-brass);
   box-shadow:
-    inset 0 1px 0 rgba(255, 233, 194, 0.2),
+    inset 0 1px 0 rgba(238, 241, 242, 0.2),
     0 0 10px -3px var(--inst-brass-glow);
 }
 
 :global(.groove-pad-on) {
-  background: linear-gradient(180deg, #4a3a1c, #2f2513);
+  background: linear-gradient(
+    180deg,
+    rgba(223, 168, 74, 0.3),
+    rgba(223, 168, 74, 0.16)
+  );
   border-color: var(--inst-brass-deep);
 }
 
@@ -751,7 +776,7 @@
 }
 
 :global(.groove-vel-slot-beat) {
-  border-left: 1px solid rgba(223, 163, 60, 0.22);
+  border-left: 1px solid rgba(223, 168, 74, 0.22);
 }
 
 :global(.groove-vel-bar) {
@@ -783,7 +808,7 @@
   border: 1px solid var(--inst-line-soft);
   border-radius: 8px;
   background: linear-gradient(180deg, var(--inst-panel-hi), var(--inst-panel));
-  box-shadow: inset 0 1px 0 rgba(244, 236, 220, 0.05);
+  box-shadow: inset 0 1px 0 rgba(238, 241, 242, 0.05);
   font-size: 0.78rem;
 }
 
@@ -853,13 +878,13 @@
   width: 0.6rem;
   height: 0.42rem;
   border-radius: 1px;
-  background: #2b2417;
+  background: var(--inst-line);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
   overflow: hidden;
 }
 
 :global(.groove-sweep-seg-on) {
-  background: #3e3016;
+  background: rgba(223, 168, 74, 0.24);
 }
 
 :global(.groove-sweep-fill) {
@@ -894,7 +919,7 @@
   background:
     radial-gradient(
       120% 90% at 50% 0%,
-      rgba(223, 163, 60, 0.06),
+      rgba(223, 168, 74, 0.06),
       transparent 70%
     ),
     var(--inst-deep);
@@ -946,7 +971,7 @@
   padding: 2px;
   border: 1px solid var(--inst-line-soft);
   border-radius: 3px;
-  background: #0a0806;
+  background: var(--inst-deep);
 }
 
 :global(.groove-tube) {
@@ -968,7 +993,7 @@
   position: absolute;
   inset: 0 0 auto 0;
   height: 100%;
-  background: #0a0806;
+  background: var(--inst-deep);
 }
 
 :global(.groove-vu-labels) {
@@ -985,7 +1010,7 @@
 /* ------------------------------------------------------------ unit accents -- */
 
 :global(.groove-unit-drums) {
-  --unit-accent: #dfa33c;
+  --unit-accent: #dfa84a;
 }
 
 :global(.groove-unit-bass) {
@@ -993,11 +1018,11 @@
 }
 
 :global(.groove-unit-pads) {
-  --unit-accent: #8fae83;
+  --unit-accent: #a3b19b;
 }
 
 :global(.groove-unit-lead) {
-  --unit-accent: #a88fc0;
+  --unit-accent: var(--inst-clay);
 }
 
 /* -------------------------------------------------------------- responsive -- */
