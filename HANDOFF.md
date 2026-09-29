@@ -2,17 +2,17 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 10 is complete.** Nothing is in progress. Do not push to `main`. Do not merge unless asked.
+**Stop. Phase 11 is specced. 11.1 is in progress.** Do not implement anything but 11.1 until its PR merges. Do not push to `main`. Do not merge unless asked.
 
-## Where we are (2026-09-11)
+## Where we are (2026-09-29)
 
-Phases 0–9 are complete and merged. Phase 10 (10.1–10.7) closes with this PR. Nothing further is queued.
+Phases 0–10 are complete and merged. Phase 11 is specced (ten features; 11.3 absorbs former activity-11.8; **11.8 is Deal filters**). 11.1 is the next implementable unit after this docs PR merges.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
 Board: `features/INDEX.md` (source of truth for done vs not).
 Pointer + log: `CURRENT_FEATURE.md`.
-Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phases 5, 9, and 10). Architecture: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Integrity: `docs/superpowers/specs/2026-09-11-integrity-design.md`. Security: `docs/superpowers/specs/2026-09-11-security-design.md`. Decisions: `docs/adr/` (ADR-0001 … ADR-0006 + a C4 context/container view; the design doc wins if an ADR and it disagree). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. PNW (Phase 10): `docs/superpowers/specs/2026-09-14-pnw-design.md` + studies `docs/prototypes/2026-09-14-pnw/`. If a spec and the design disagree, update the design first.
+Product design: `docs/superpowers/specs/2026-09-06-atrium-design.md` (amended for Phases 5, 9, 10, and 11). Architecture: `docs/superpowers/specs/2026-09-11-architecture-design.md`. Integrity: `docs/superpowers/specs/2026-09-11-integrity-design.md`. Security: `docs/superpowers/specs/2026-09-11-security-design.md`. Decisions: `docs/adr/` (ADR-0001 … ADR-0006 + a C4 context/container view; the design doc wins if an ADR and it disagree). Accounts: `docs/superpowers/specs/2026-09-11-accounts-design.md`. Rolodex: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Groove: `docs/superpowers/specs/2026-09-09-groove-design.md`. Workroom prototype: `docs/prototypes/2026-09-10-workroom/`. PNW (Phase 10): `docs/superpowers/specs/2026-09-14-pnw-design.md` + studies `docs/prototypes/2026-09-14-pnw/`. CRM integrity (Phase 11): `docs/superpowers/specs/2026-09-29-crm-integrity-design.md`. If a spec and the design disagree, update the design first.
 
 Open decisions carried forward: Session revocation was decided in 6.3: passwords can be changed, but existing JWTs stay valid — no revocation list, no `passwordChangedAt` claim, by spec. RLS is deferred: neon-http cannot persist `SET LOCAL`. 8.1 closed the case-sensitive `users_email_unique` index — uniqueness is now `users_email_lower_idx` on `lower(email)`. 8.2 closed the UTF-16 password floor. Deliberately still open, and not to be reopened without a spec: RLS (neon-http cannot persist `SET LOCAL`), session revocation, OAuth, a mailer, `tenants.name` moving to `lower(name)`, `Intl.Segmenter` grapheme counting, and Next 16's `middleware.ts` → `proxy` rename (it stays out until a feature has to touch that file).
 
@@ -23,7 +23,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Phase 10 is complete (10.7 is this PR). Nothing is queued.
+6. Phase 11 is specced. Next implementable unit is 11.1 (`features/phase-11-crm-integrity/11.1-crm-e2e-coverage.md`) after this docs PR merges.
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Phase 9 is complete and merged; the Neon **dev** branch carries migrations `0000`–`0007` (`auth_throttles` live). 10.1–10.6 are on `main`. 10.7 (this branch) is the Phase 10 gate.
+Phase 10 is complete and merged. Phase 11 CRM integrity is specced; next implementable unit is 11.1 after the docs PR merges. Neon **dev** carries migrations `0000`–`0007`. 11.6 is the next migration (expression unique index on `contacts.email`).

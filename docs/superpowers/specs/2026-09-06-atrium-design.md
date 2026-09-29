@@ -49,6 +49,7 @@ The reference implementation's `docs/<app>/REQUIREMENTS.md` and `IMPLEMENTATION.
 - TanStack Router (Next.js owns routing)
 - TanStack Query in v1 (RSC + server actions; add later only if client cache becomes a real problem)
 - A third theme: Phase 10 retires the espresso/brass values rather than keeping them behind a flag, and no component library or CSS framework arrives with the redesign
+- Phase 11 refuses: deal stage history / velocity (Phase 12 candidate, C4 won/lost reasons as a rider), tags and CSV import/export (Phase 13), a CRM↔Rolodex link (needs its own ADR before it is specced), bounded lists / pagination, pipeline board filtering or column collapse, multi-currency, email or calendar integration, per-tenant custom fields, configurable pipeline stages, AI features, soft deletes, and anything touching RLS / session revocation / OAuth / a mailer
 
 OAuth is deferred, not forbidden. Credentials signup is Phase 6, behind `AUTH_SIGNUP_ENABLED`. The user/session schema must not block adding Google later (`accounts` / `sessions` tables stay).
 
@@ -85,6 +86,7 @@ Routes:
 - `/signup` flag-gated member signup
 - `/settings` change password (behind login)
 - `/crm/*` CRM
+- `/crm/tasks` Tasks section (11.9; the only new route in Phase 11)
 - `/space/*` Space
 - `/rolodex/*` Rolodex
 - `/groove/*` Groove (no DB; still behind login so the suite is one product)
@@ -152,7 +154,7 @@ Owner tenant: empty. No welcome records.
 
 Each of the four applications is a phase. Foundation is phase 0 because auth, tenancy, and the shell must exist first.
 
-Build order is 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9. One feature at a time. No parallel features that touch the same files.
+Build order is 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11. One feature at a time. No parallel features that touch the same files. Phase 11 long pole: 11.1 → 11.4 → 11.5, then 11.3 → 11.9.
 
 ### Phase 0 — Atrium platform
 
@@ -237,6 +239,12 @@ Replace the theme's warmth and the type stack with a Pacific Northwest palette (
 
 Feature specs: `features/phase-10-pnw/` (10.1–10.7). Board: `features/INDEX.md`.
 
+### Phase 11 — CRM integrity
+
+Close CRM dead-ends and the missing list/task surface without a new data model (one unique index): a pipeline+activities e2e net, deal number validation, activity edit/delete/backdate plus last-contacted, table sort, detail-page edit, unique contact email, delete-consequence preview, deal filters, a Tasks section, and ⌘K QuickFind. Ten features; 11.3 absorbs A2+B4 (former activity-11.8). 11.8 is Deal filters. 11.1 is test-only. Exactly one new route (`/crm/tasks`). Design: [2026-09-29-crm-integrity-design.md](./2026-09-29-crm-integrity-design.md).
+
+Feature specs: `features/phase-11-crm-integrity/` (11.1–11.10). Board: `features/INDEX.md`.
+
 ---
 
 ## Testing and quality
@@ -313,4 +321,4 @@ Do not add TanStack packages until the feature that uses them.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-Progress: `features/INDEX.md`. Phases 0–9 complete and merged. Phase 10 PNW specs 10.1–10.7 exist. Next implementable unit is 10.1, after the Phase 10 docs PR merges.
+Progress: `features/INDEX.md`. Phases 0–10 complete and merged. Phase 11 CRM integrity specs exist (ten features, 11.1–11.10). Next implementable unit is 11.1, after the Phase 11 docs PR merges.

@@ -1,6 +1,6 @@
 # Current feature
 
-**None in progress.** Phase 10 is complete (10.1–10.7). Nothing is queued.
+**11.1 — CRM e2e coverage (pipeline + activities)** — `in_progress`. Spec: [11.1-crm-e2e-coverage.md](./features/phase-11-crm-integrity/11.1-crm-e2e-coverage.md). Design: [2026-09-29-crm-integrity-design.md](./docs/superpowers/specs/2026-09-29-crm-integrity-design.md). Do not start 11.2 until 11.1's implementation PR merges.
 
 Session decision, made in 6.3: **no revocation, by design.** Phase 9 does not reopen it. RLS is deferred: neon-http cannot persist `SET LOCAL`. A `script-src` CSP stays out until a feature has to touch `middleware.ts`.
 
@@ -435,3 +435,7 @@ Four probes, each reversed byte-identically: (1) dark `--ink-faint` → `rgba(16
 Espresso hexes added to the 5.7 retired list. e2e grounds are basalt `rgb(37, 40, 42)` / mist `rgb(238, 241, 242)`. Type stack asserted in source (10.1) and computed on `/login` (Outfit / Archivo / Geist Mono). Reduced-motion: `.reveal` and `body::after` `animation-name: none`.
 
 Controller: `env -u DATABASE_URL npm test` 932 passed (114 files); `AUTH_SECRET=ci-build-placeholder npm run build` exit 0; `npx playwright test e2e/workroom.spec.ts` 3 passed / 4 skipped. Limits: `.env` has no `AUTH_OWNER_*` / `AUTH_DEMO_*`, so theme-toggle, Groove-on-mist, link-walk, and the thirteen-screen no-console walk did not run here — they skip locally and will run in CI when those secrets exist. "One golden element per screen" stays a review criterion.
+
+### Phase 11 specs (written, not implemented)
+
+Ten features in `features/phase-11-crm-integrity/`. Design: `docs/superpowers/specs/2026-09-29-crm-integrity-design.md`. Cut: Tier A (A1–A6) plus named Tier B (B1 QuickFind, B2 deal filters, B3 Tasks, B4 absorbed into 11.3). 11.3 merges A2+B4; 11.8 is Deal filters; 11.9 is Tasks; 11.10 is QuickFind and depends on 11.9. Long pole `11.1 → 11.4 → 11.5`, then `11.3 → 11.9`. 11.1 is test-only and is `in_progress` on the board; 11.2–11.10 are `specced`. Implementation of 11.1 starts only after this docs PR merges. `.seed-snapshots/` is gitignored, not committed.
