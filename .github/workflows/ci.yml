@@ -43,11 +43,11 @@ jobs:
       - name: Detect e2e secrets
         id: e2e
         run: |
-          if [ -n "$DATABASE_URL" ] && [ -n "$AUTH_SECRET" ] && [ -n "$AUTH_OWNER_EMAIL" ] && [ -n "$AUTH_OWNER_PASSWORD" ]; then
+          if [ -n "$DATABASE_URL" ] && [ -n "$AUTH_SECRET" ] && [ -n "$AUTH_OWNER_EMAIL" ] && [ -n "$AUTH_OWNER_PASSWORD" ] && [ -n "$AUTH_DEMO_EMAIL" ] && [ -n "$AUTH_DEMO_PASSWORD" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping e2e; DATABASE_URL, AUTH_SECRET, AUTH_OWNER_EMAIL, and AUTH_OWNER_PASSWORD are required."
+            echo "Skipping e2e; DATABASE_URL, AUTH_SECRET, AUTH_OWNER_EMAIL, AUTH_OWNER_PASSWORD, AUTH_DEMO_EMAIL, and AUTH_DEMO_PASSWORD are required."
           fi
       - name: Install Playwright Chromium
         if: steps.e2e.outputs.ready == 'true'
