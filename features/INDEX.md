@@ -10,13 +10,14 @@ Architecture: [docs/superpowers/specs/2026-09-11-architecture-design.md](../docs
 Integrity: [docs/superpowers/specs/2026-09-11-integrity-design.md](../docs/superpowers/specs/2026-09-11-integrity-design.md)
 | Security: [2026-09-11-security-design.md](../docs/superpowers/specs/2026-09-11-security-design.md)
 | PNW (Phase 10): [2026-09-14-pnw-design.md](../docs/superpowers/specs/2026-09-14-pnw-design.md) · studies in [docs/prototypes/2026-09-14-pnw/](../docs/prototypes/2026-09-14-pnw/README.md)
+| Phase 11 (CRM integrity): [2026-09-29-crm-integrity-design.md](../docs/superpowers/specs/2026-09-29-crm-integrity-design.md)
 | In progress: [CURRENT_FEATURE.md](../CURRENT_FEATURE.md)
 
 Only one feature `in_progress`. Later phases get specs when that phase starts.
 
 ## Build order
 
-Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7 → 6.1 → 6.2 → 6.3 → 6.4 → 7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 8.1 → 8.2 → 8.3 → 9.1 → 9.2 → 9.3 → 9.4 → 9.5 → 9.6 → 10.1 → 10.2 → 10.7 (10.3–10.6 in any order after 10.2).
+Critical path: 0.1 → … → 0.5 → 1.1 → … → 1.9 → 2.1 → … → 2.8 → 3.1 → 3.2 → 3.3 → 3.5 → 3.9 → 3.10 → 4.1 → … → 4.8 → 5.1 → 5.2 → 5.7 → 6.1 → 6.2 → 6.3 → 6.4 → 7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 8.1 → 8.2 → 8.3 → 9.1 → 9.2 → 9.3 → 9.4 → 9.5 → 9.6 → 10.1 → 10.2 → 10.7 (10.3–10.6 in any order after 10.2) → 11.1 → 11.4 → 11.5, and 11.3 → 11.9.
 3.4 / 3.6 / 3.7 start after 3.3 (same person page — do not parallel). 3.8 after 3.7.
 Phase 3 is sequential. Phase 4 is sequential. Do not run two Groove features in parallel.
 Phase 5 is sequential through 5.2 and the QA gate 5.7; the per-app passes 5.3–5.6 may run in any order after 5.2 (disjoint CSS module sets), but must all land before 5.7.
@@ -25,6 +26,7 @@ Phase 7 is sequential. Do not run two Architecture features in parallel. Do not 
 Phase 8 is sequential. Do not run two Integrity features in parallel. Do not add RLS, OAuth, a mailer, or rename `middleware.ts`.
 Phase 9 is sequential. Do not run two Security features in parallel. Do not add RLS, OAuth, a mailer, MFA, a `script-src` CSP, or rename `middleware.ts`.
 Phase 10 is sequential through 10.2 and the gate 10.7; the per-app passes 10.3–10.6 may run in any order after 10.2 (disjoint CSS module sets) but all must land before 10.7. Do not add a third theme, a component library, or a CSS framework; espresso/brass is retired, not kept behind a flag.
+Phase 11 is sequential. One feature `in_progress`. Long pole `11.1 → 11.4 → 11.5`, then `11.3 → 11.9`. Do not parallel 11.4 and 11.5. Do not parallel 11.7 and 11.8 (shared deal table/actions). Do not add RLS, OAuth, a mailer, a third theme, or a CRM↔Rolodex link without an ADR.
 
 ### Phase 0 — Atrium platform
 
@@ -202,3 +204,22 @@ Replace the theme's warmth and the type stack with a Pacific Northwest palette (
 Long pole: 10.1 → 10.2 → 10.7. 10.3–10.6 may run in any order after 10.2 (disjoint CSS module sets) but all must land before 10.7. Do not parallel two features that touch the same files. Preserve the `crm-`/`space-`/`rolodex-`/`groove-`/`atrium-nav-` namespaces and the shared `atrium-` layer.
 
 **Phase 10 is complete** — 10.1–10.7 shipped: PNW tokens and type stack, shared chrome, four app passes, Groove instrument recast, contrast gate and theme QA.
+
+### Phase 11 — CRM integrity
+
+Close CRM dead-ends and the missing list/task surface. Ten features; 11.3 absorbs A2+B4 (former activity-11.8). 11.8 is Deal filters. 11.1 is test-only. One new route (`/crm/tasks`). One new index (11.6). Design: [2026-09-29-crm-integrity-design.md](../docs/superpowers/specs/2026-09-29-crm-integrity-design.md). Ideas: [docs/crm-feature-ideas.md](../docs/crm-feature-ideas.md).
+
+| ID    | Feature                                                                                          | Status      | Depends on |
+| ----- | ------------------------------------------------------------------------------------------------ | ----------- | ---------- |
+| 11.1  | [CRM e2e coverage (pipeline + activities)](./phase-11-crm-integrity/11.1-crm-e2e-coverage.md)     | in_progress | nothing    |
+| 11.2  | [Deal number validation](./phase-11-crm-integrity/11.2-deal-number-validation.md)                 | specced     | 11.1       |
+| 11.3  | [Activity correct-and-complete](./phase-11-crm-integrity/11.3-activity-correct-and-complete.md)   | specced     | 11.1       |
+| 11.4  | [Table column sorting](./phase-11-crm-integrity/11.4-table-column-sorting.md)                     | specced     | 11.1       |
+| 11.5  | [Edit from detail pages](./phase-11-crm-integrity/11.5-edit-from-detail-pages.md)                 | specced     | 11.4       |
+| 11.6  | [Contact email uniqueness](./phase-11-crm-integrity/11.6-contact-email-uniqueness.md)             | specced     | nothing    |
+| 11.7  | [Delete-consequence preview](./phase-11-crm-integrity/11.7-delete-consequence-preview.md)         | specced     | nothing    |
+| 11.8  | [Deal filters](./phase-11-crm-integrity/11.8-deal-filters.md)                                     | specced     | nothing    |
+| 11.9  | [Follow-ups / Tasks section](./phase-11-crm-integrity/11.9-follow-ups-section.md)                 | specced     | 11.3       |
+| 11.10 | [CRM QuickFind](./phase-11-crm-integrity/11.10-crm-quickfind.md)                                  | specced     | 11.9       |
+
+Long pole: 11.1 → 11.4 → 11.5, then 11.3 → 11.9. The rest are order-free (disjoint file sets) but do not parallel 11.4/11.5 or 11.7/11.8. One feature `in_progress` at a time. Sequential: do not start 11.2 until 11.1's PR merges.

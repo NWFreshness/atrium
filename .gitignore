@@ -44,3 +44,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local psql dumps of a Neon branch — not schema, not seed
+.seed-snapshots/
