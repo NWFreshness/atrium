@@ -191,8 +191,8 @@ Phase 9 is sequential. Do not run two Security features in parallel. Do not add 
 
 Replace the theme's warmth and the type stack with a Pacific Northwest palette (basalt, mist, moss, lichen, cedar, golden) and a sturdier stack (Outfit headings, Archivo body, Geist Mono data). Values only: no new route, table, migration, dependency, or behaviour. Groove keeps its `--inst-*` scope and stays dark under the light theme. The phase closes with a gate that computes WCAG contrast from the shipped tokens. Design: [2026-09-14-pnw-design.md](../docs/superpowers/specs/2026-09-14-pnw-design.md). Studies: [docs/prototypes/2026-09-14-pnw/](../docs/prototypes/2026-09-14-pnw/README.md).
 
-| ID   | Feature                                                                               | Status  | Depends on |
-| ---- | ------------------------------------------------------------------------------------- | ------- | ---------- |
+| ID   | Feature                                                                               | Status    | Depends on |
+| ---- | ------------------------------------------------------------------------------------- | --------- | ---------- |
 | 10.1 | [PNW tokens, type stack, theme scaffold](./phase-10-pnw/10.1-pnw-tokens-and-type.md)  | completed | nothing    |
 | 10.2 | [Shared chrome, launcher, login](./phase-10-pnw/10.2-shared-chrome-launcher-login.md) | completed | 10.1       |
 | 10.3 | [CRM pass](./phase-10-pnw/10.3-crm-pass.md)                                           | completed | 10.1, 10.2 |
@@ -209,17 +209,17 @@ Long pole: 10.1 → 10.2 → 10.7. 10.3–10.6 may run in any order after 10.2 (
 
 Close CRM dead-ends and the missing list/task surface. Ten features; 11.3 absorbs A2+B4 (former activity-11.8). 11.8 is Deal filters. 11.1 is test-only. One new route (`/crm/tasks`). One new index (11.6). Design: [2026-09-29-crm-integrity-design.md](../docs/superpowers/specs/2026-09-29-crm-integrity-design.md). Ideas: [docs/crm-feature-ideas.md](../docs/crm-feature-ideas.md).
 
-| ID    | Feature                                                                                          | Status      | Depends on |
-| ----- | ------------------------------------------------------------------------------------------------ | ----------- | ---------- |
-| 11.1  | [CRM e2e coverage (pipeline + activities)](./phase-11-crm-integrity/11.1-crm-e2e-coverage.md)     | in_progress | nothing    |
-| 11.2  | [Deal number validation](./phase-11-crm-integrity/11.2-deal-number-validation.md)                 | specced     | 11.1       |
-| 11.3  | [Activity correct-and-complete](./phase-11-crm-integrity/11.3-activity-correct-and-complete.md)   | specced     | 11.1       |
-| 11.4  | [Table column sorting](./phase-11-crm-integrity/11.4-table-column-sorting.md)                     | specced     | 11.1       |
-| 11.5  | [Edit from detail pages](./phase-11-crm-integrity/11.5-edit-from-detail-pages.md)                 | specced     | 11.4       |
-| 11.6  | [Contact email uniqueness](./phase-11-crm-integrity/11.6-contact-email-uniqueness.md)             | specced     | nothing    |
-| 11.7  | [Delete-consequence preview](./phase-11-crm-integrity/11.7-delete-consequence-preview.md)         | specced     | nothing    |
-| 11.8  | [Deal filters](./phase-11-crm-integrity/11.8-deal-filters.md)                                     | specced     | nothing    |
-| 11.9  | [Follow-ups / Tasks section](./phase-11-crm-integrity/11.9-follow-ups-section.md)                 | specced     | 11.3       |
-| 11.10 | [CRM QuickFind](./phase-11-crm-integrity/11.10-crm-quickfind.md)                                  | specced     | 11.9       |
+| ID    | Feature                                                                                         | Status    | Depends on |
+| ----- | ----------------------------------------------------------------------------------------------- | --------- | ---------- |
+| 11.1  | [CRM e2e coverage (pipeline + activities)](./phase-11-crm-integrity/11.1-crm-e2e-coverage.md)   | completed | nothing    |
+| 11.2  | [Deal number validation](./phase-11-crm-integrity/11.2-deal-number-validation.md)               | specced   | 11.1       |
+| 11.3  | [Activity correct-and-complete](./phase-11-crm-integrity/11.3-activity-correct-and-complete.md) | specced   | 11.1       |
+| 11.4  | [Table column sorting](./phase-11-crm-integrity/11.4-table-column-sorting.md)                   | specced   | 11.1       |
+| 11.5  | [Edit from detail pages](./phase-11-crm-integrity/11.5-edit-from-detail-pages.md)               | specced   | 11.4       |
+| 11.6  | [Contact email uniqueness](./phase-11-crm-integrity/11.6-contact-email-uniqueness.md)           | specced   | nothing    |
+| 11.7  | [Delete-consequence preview](./phase-11-crm-integrity/11.7-delete-consequence-preview.md)       | specced   | nothing    |
+| 11.8  | [Deal filters](./phase-11-crm-integrity/11.8-deal-filters.md)                                   | specced   | nothing    |
+| 11.9  | [Follow-ups / Tasks section](./phase-11-crm-integrity/11.9-follow-ups-section.md)               | specced   | 11.3       |
+| 11.10 | [CRM QuickFind](./phase-11-crm-integrity/11.10-crm-quickfind.md)                                | specced   | 11.9       |
 
 Long pole: 11.1 → 11.4 → 11.5, then 11.3 → 11.9. The rest are order-free (disjoint file sets) but do not parallel 11.4/11.5 or 11.7/11.8. One feature `in_progress` at a time. Sequential: do not start 11.2 until 11.1's PR merges.

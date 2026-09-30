@@ -8,6 +8,11 @@ try {
 
 export default defineConfig({
   testDir: "e2e",
+  // Every spec here runs against one shared demo tenant, and several of them
+  // write to it under a `Date.now()`-suffixed name and clean up after
+  // themselves — so the tests inside a file must not run concurrently, and a
+  // raise of `workers` would need the same treatment across files. The 60 s
+  // journey budgets and the no-exact-count rule both assume a quiet tenant.
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
