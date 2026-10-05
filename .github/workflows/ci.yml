@@ -4,6 +4,18 @@ on:
   push:
   pull_request:
 
+# Every push to a branch that has an open PR fires BOTH a `push` and a
+# `pull_request` event, so without this each commit ran the suite twice and
+# the redundant run's jobs sat in GitHub's runner queue until Actions
+# cancelled them at the 15-minute limit — which surfaced as a red X on a
+# branch whose other run was green. Observed on 2026-10-05 across three PRs:
+# jobs with `steps: []`, no runner assigned, cancelled at exactly 15m.
+# Grouping by workflow+ref keeps the newest run and cancels the older, so a
+# commit costs one run instead of two.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ci:
     runs-on: ubuntu-latest
