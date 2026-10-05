@@ -1,6 +1,6 @@
 ## Current Verified State
 
-- Last updated: 2026-10-05 (session 8)
+- Last updated: 2026-10-05 (session 7)
 - Active feature: none — `activeFeatureId: null`. `feat-001` is `passing`; `feat-002`…`feat-010` are `not_started`
 - Verification last run: `feat-001`'s gate, **exit 0** at 2026-10-05T12:47:00Z — `env -u DATABASE_URL npm test` → `Test Files 114 passed (114)` / `Tests 932 passed (932)`; `AUTH_SECRET=*** npm run build` → exit 0 (`✓ Compiled successfully in 1117ms`); `AUTH_SECRET=*** npx playwright test e2e/crm.spec.ts e2e/crm-pipeline.spec.ts e2e/crm-activities.spec.ts` → `Running 9 tests using 3 workers`, **`9 passed (17.9s)`, 0 skipped**. Re-measured on merged `main` (`b777ffa`) four times: `9 passed` every run (15.0s / 16.4s / 19.3s / 19.1s).
 - Highest-priority unfinished feature: none active. Next card is **`feat-003`** (11.4 table column sorting, `inbox/JOB-003-table-column-sorting.md`) — first on the Phase 11 long pole `11.4 → 11.5 → 11.3 → 11.9`, and 11.4/11.5 must not run in parallel.
@@ -109,7 +109,7 @@
 - Still broken, deliberately: `crm.spec.ts`'s 5 s login default (needs its own card); `vitest.config.ts` missing `.worktrees` in its exclude list; the 3-orphan-per-run activity leak (11.3's). All three are recorded in Current Verified State above.
 - Next session should: commit and push the four worktree files to update PR #92 — **do not merge it**. Then `/factory-intake` on `inbox/JOB-003-table-column-sorting.md` to promote `feat-003` (11.4).
 
-### 2026-10-05 — session 8 (PR #92 merged; correction to a session-2 claim; two follow-up PRs)
+### 2026-10-05 — session 7 (PR #92 merged; correction to a session-2 claim; two follow-up PRs)
 
 - Goal: reconcile the factory state with the fact that PR #92 was merged without session 6's work
 - **The merge took `2552beb` only.** My four session-6 files were never committed, so `main` had
@@ -154,6 +154,8 @@
 - Still broken, all recorded and none blocking: 3 orphaned activities per `crm-activities.spec.ts`
   run (11.3's to fix); the 5 s login default in three CRM spec files — an inconsistency, now
   correctly labelled untested rather than broken; `vitest.config.ts` not excluding `.worktrees`.
+- Session numbering: sessions 0–6 ran the factory loop; the turn in which PR #92 was merged wrote
+  no block, so this reconciliation session is numbered 7. The gap is real history, not a lost block.
 - Next session should: `/factory-intake` on `inbox/JOB-003-table-column-sorting.md` to promote
   `feat-003` (11.4 table column sorting) — first on the long pole, and 11.4/11.5 must not run in
   parallel. PRs #93 and #94 are open and awaiting the user; do not merge them.
