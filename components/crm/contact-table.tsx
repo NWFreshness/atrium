@@ -1,7 +1,11 @@
 "use client";
 
 import {
+  constructSortFn,
   createColumnHelper,
+  createSortedRowModel,
+  rowSortingFeature,
+  sortFn_alphanumeric,
   tableFeatures,
   useTable,
 } from "@tanstack/react-table";
@@ -13,8 +17,49 @@ import type { Contact, Organization } from "@/lib/crm/queries";
 import { ContactForm } from "./contact-form";
 import styles from "./org.module.css";
 
-const features = tableFeatures({});
+/** 11.4 — v9 sorting; see `org-table.tsx` for why the feature precedes its slot. */
+const features = tableFeatures({
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+});
 const columnHelper = createColumnHelper<typeof features, Contact>();
+
+/**
+ * The built-in text comparator, case-folded and natural-numeric. Pinned on
+ * every text column instead of leaving it to `"auto"` — measured in v9.2.4,
+ * auto picks a comparator by sampling the first ten rows, so an empty or
+ * narrow page resolves a different one and the column's order changes with
+ * the data. `org-table.tsx` has the longer note.
+ */
+const sortText = sortFn_alphanumeric;
+
+/**
+ * **The accessorFn trap, avoided** (spec §2).
+ *
+ * The accessor stays `organizationId`. The alternative — `accessorFn: (row)
+ * => orgNames.get(row.organizationId ?? "")` — would sort by a name resolved
+ * from a `useMemo` map, and TanStack memoizes its core row model on `data`
+ * alone, so a changed map with unchanged `data` sorts stale names.
+ *
+ * Instead the comparator resolves the id to its visible name at compare
+ * time. `resolveDataValue` is the v9 seam for that: it runs on both sides
+ * immediately before the comparison, inside the sort, so it always reads the
+ * map captured when the columns were built. It is only consulted by
+ * `constructSortFn`-built comparators, which every built-in is.
+ *
+ * The comparator is the built-in's, unchanged: it still returns ascending
+ * only, because the sorted row model applies `desc` itself.
+ *
+ * A function, not a module constant, because the map is per-component state.
+ * Called from inside the `columns` `useMemo` so the comparator is rebuilt
+ * with the map and can never outlive it.
+ */
+function sortByOrgName(names: Map<string, string>) {
+  return constructSortFn({
+    ...sortFn_alphanumeric,
+    resolveDataValue: (value) => names.get(String(value ?? "")) ?? "",
+  });
+}
 
 export function ContactTable({
   contacts,
@@ -38,6 +83,7 @@ export function ContactTable({
       columnHelper.columns([
         columnHelper.accessor("name", {
           header: "Name",
+          sortFn: sortText,
           cell: (info) => (
             <Link
               className={styles["crm-table-link"]}
@@ -49,14 +95,17 @@ export function ContactTable({
         }),
         columnHelper.accessor("email", {
           header: "Email",
+          sortFn: sortText,
           cell: (info) => info.getValue() ?? "",
         }),
         columnHelper.accessor("status", {
           header: "Status",
+          sortFn: sortText,
           cell: (info) => info.getValue(),
         }),
         columnHelper.accessor("organizationId", {
           header: "Organization",
+          sortFn: sortByOrgName(orgNames),
           cell: (info) => {
             const organizationId = info.getValue();
             if (!organizationId) {
@@ -68,6 +117,7 @@ export function ContactTable({
         columnHelper.display({
           id: "actions",
           header: "Actions",
+          enableSorting: false,
           cell: ({ row }) => {
             const contact = row.original;
             return (
@@ -104,6 +154,7 @@ export function ContactTable({
     features,
     columns,
     data: contacts,
+    enableMultiSort: false,
   });
 
   return (
@@ -116,13 +167,51 @@ export function ContactTable({
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id}>
-                      {header.isPlaceholder ? null : (
-                        <table.FlexRender header={header} />
-                      )}
-                    </th>
-                  ))}
+                  {headerGroup.headers.map((header) => {
+                    const sorted = header.column.getIsSorted();
+                    const sortable = header.column.getCanSort();
+                    return (
+                      <th
+                        key={header.id}
+                        scope="col"
+                        // See `org-table.tsx`: `aria-sort` lives on the cell,
+                        // is always one of the three values on a sortable
+                        // column, and is absent on one that cannot sort.
+                        aria-sort={
+                          sortable
+                            ? sorted === "asc"
+                              ? "ascending"
+                              : sorted === "desc"
+                                ? "descending"
+                                : "none"
+                            : undefined
+                        }
+                      >
+                        {header.isPlaceholder ? null : sortable ? (
+                          <button
+                            type="button"
+                            className={styles["crm-sort-button"]}
+                            aria-label={String(header.column.columnDef.header)}
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            <table.FlexRender header={header} />
+                            <span
+                              className={styles["crm-sort-caret"]}
+                              aria-hidden="true"
+                            >
+                              {sorted === "asc"
+                                ? "▲"
+                                : sorted === "desc"
+                                  ? "▼"
+                                  : ""}
+                            </span>
+                          </button>
+                        ) : (
+                          <table.FlexRender header={header} />
+                        )}
+                      </th>
+                    );
+                  })}
                 </tr>
               ))}
             </thead>
