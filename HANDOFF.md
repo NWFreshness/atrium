@@ -2,11 +2,11 @@
 
 Read this first if you did not write the previous session.
 
-**Stop. Phase 11 is specced. 11.1 is in progress.** Do not implement anything but 11.1 until its PR merges. Do not push to `main`. Do not merge unless asked.
+**Stop. Phase 11 is specced. 11.1 is implemented and awaiting merge.** Do not push to `main`. Do not merge unless asked. The next implementable unit is whatever the board names — currently the 11.4 → 11.5 → 11.3 → 11.9 long pole.
 
-## Where we are (2026-09-29)
+## Where we are (2026-10-05)
 
-Phases 0–10 are complete and merged. Phase 11 is specced (ten features; 11.3 absorbs former activity-11.8; **11.8 is Deal filters**). 11.1 is the next implementable unit after this docs PR merges.
+Phases 0–10 are complete and merged. Phase 11 is specced (ten features; 11.3 absorbs former activity-11.8; **11.8 is Deal filters**). **11.1 is implemented on `feat/11.1-crm-e2e-coverage` (PR #92, open, not merged)** — five browser journeys for the pipeline board and the activity timeline, all asserting persistence after a reload. Its suite is verified locally only: the repo holds zero Actions secrets, so CI's `e2e` job reports `ready=false` and skips Playwright, and a green `e2e` badge does **not** mean the suite ran.
 
 Repo: https://github.com/NWFreshness/atrium.git
 
@@ -23,7 +23,7 @@ Open decisions carried forward: Session revocation was decided in 6.3: passwords
 3. `README.md`
 4. Design docs above
 5. `features/INDEX.md` and `CURRENT_FEATURE.md`
-6. Phase 11 is specced. Next implementable unit is 11.1 (`features/phase-11-crm-integrity/11.1-crm-e2e-coverage.md`) after this docs PR merges.
+6. Phase 11 is specced. 11.1 is implemented and awaiting merge. Next implementable unit is the 11.4 → 11.5 → 11.3 → 11.9 long pole; 11.4/11.5 must be serial, and so must 11.7/11.8.
 
 ## How we ship
 
@@ -62,4 +62,4 @@ npm test
 npm run build
 ```
 
-Phase 10 is complete and merged. Phase 11 CRM integrity is specced; next implementable unit is 11.1 after the docs PR merges. Neon **dev** carries migrations `0000`–`0007`. 11.6 is the next migration (expression unique index on `contacts.email`).
+Phase 10 is complete and merged. Phase 11 CRM integrity is specced; 11.1 is implemented and awaiting merge, and the next implementable unit is the 11.4 → 11.5 → 11.3 → 11.9 long pole. Neon **dev** carries migrations `0000`–`0007`. 11.6 is the next migration (expression unique index on `contacts.email`).
