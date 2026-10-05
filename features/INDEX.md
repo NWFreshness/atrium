@@ -214,7 +214,7 @@ Close CRM dead-ends and the missing list/task surface. Ten features; 11.3 absorb
 | 11.1  | [CRM e2e coverage (pipeline + activities)](./phase-11-crm-integrity/11.1-crm-e2e-coverage.md)   | completed | nothing    |
 | 11.2  | [Deal number validation](./phase-11-crm-integrity/11.2-deal-number-validation.md)               | specced   | 11.1       |
 | 11.3  | [Activity correct-and-complete](./phase-11-crm-integrity/11.3-activity-correct-and-complete.md) | specced   | 11.1       |
-| 11.4  | [Table column sorting](./phase-11-crm-integrity/11.4-table-column-sorting.md)                   | specced   | 11.1       |
+| 11.4  | [Table column sorting](./phase-11-crm-integrity/11.4-table-column-sorting.md)                   | in progress | 11.1     |
 | 11.5  | [Edit from detail pages](./phase-11-crm-integrity/11.5-edit-from-detail-pages.md)               | specced   | 11.4       |
 | 11.6  | [Contact email uniqueness](./phase-11-crm-integrity/11.6-contact-email-uniqueness.md)           | specced   | nothing    |
 | 11.7  | [Delete-consequence preview](./phase-11-crm-integrity/11.7-delete-consequence-preview.md)       | specced   | nothing    |

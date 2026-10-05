@@ -172,6 +172,45 @@
   border-radius: var(--r-sm);
 }
 
+/* 11.4 sort affordance. The `<th>` keeps the label styling; the button is
+   transparent and inherits it, so a header reads identically sorted or not
+   except for the caret. `text-transform` and the mono label size stay on the
+   `<th>`, so the button must not reset them. */
+.crm-sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.crm-sort-button:hover {
+  color: var(--ink);
+}
+
+.crm-sort-button:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Fixed-width so the label does not shift horizontally when the caret
+   appears and disappears across the three-click cycle. The character is
+   `aria-hidden`, so it is never announced. */
+.crm-sort-caret {
+  display: inline-block;
+  width: 0.7em;
+  font-size: 0.7em;
+  line-height: 1;
+  color: var(--brass);
+}
+
 /* Row actions reveal on hover/focus with opacity — never `display`, which
    would take them out of Playwright's reach. Focus-within keeps them
    reachable by keyboard too. */

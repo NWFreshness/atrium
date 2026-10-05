@@ -265,6 +265,230 @@ test("a created deal appears on the deals table and the pipeline board, and can 
   await expect(card).toHaveCount(0, NAV_TIMEOUT);
 });
 
+/**
+ * 11.4 — sorting, in the browser.
+ *
+ * Client-side only, on the rows the server already returned: the whole
+ * surface is three header buttons per table and `?q=` still filtering. So
+ * the assertions are structural — `aria-sort` cycles, cells are monotone in
+ * the stated direction, the URL never changes — and never a fixed row order,
+ * because the demo tenant accumulates rows from every e2e run and a list
+ * assertion would pin a database, not a feature.
+ *
+ * The two directions are **pinned, not discovered**: Value and Close date
+ * are `sortDescFirst`, so their first click is `"descending"`, and every
+ * text column's first click is `"ascending"`. A test that accepted either
+ * would pass if the pinning silently flipped.
+ */
+const SORT_TIMEOUT = 60_000;
+
+/** `$75,000.00` -> `75000`. The cells are `formatMoney`, so strip the rest. */
+function money(text: string): number {
+  return Number(text.replace(/[^0-9.-]/g, ""));
+}
+
+/**
+ * Reads one column's body cells as text. Indexed by header position, not by
+ * class, because the card forbids asserting on CSS-module class names.
+ */
+async function columnCells(page: Page, columnName: string): Promise<string[]> {
+  const cells = page
+    .locator("tbody tr")
+    .locator(`td:nth-child(${await columnIndex(page, columnName)})`);
+  return (await cells.allInnerTexts()).map((t) => t.trim());
+}
+
+/**
+ * The 1-based `<td>` position for a column, found by its header's DOM text.
+ *
+ * `textContent`, **not** `innerText`: `.crm-table th` sets
+ * `text-transform: uppercase`, and `innerText` returns the *rendered* text,
+ * so it reads `"VALUE"` and `"CLOSE DATE"`. Measured in the browser, which
+ * is how that was found — the first run of this suite failed every column
+ * lookup while the `aria-sort` assertions above it passed.
+ *
+ * Header text also carries the caret when a column is sorted, so the match
+ * is a prefix test against the label.
+ */
+async function columnIndex(page: Page, columnName: string): Promise<number> {
+  const headers = page.getByRole("columnheader");
+  const count = await headers.count();
+  for (let i = 0; i < count; i += 1) {
+    const text = ((await headers.nth(i).textContent()) ?? "").trim();
+    if (text.startsWith(columnName)) {
+      return i + 1;
+    }
+  }
+  throw new Error(
+    `crm-deals: no columnheader starting with "${columnName}" (saw ${count})`,
+  );
+}
+
+/**
+ * The `<th>` for a column, by its button's accessible name. The name is the
+ * label alone (the caret is `aria-hidden`), so this matches exactly — which
+ * is itself part of what AC3 pins.
+ */
+function sortHeader(page: Page, name: string) {
+  return page
+    .getByRole("columnheader")
+    .filter({ has: page.getByRole("button", { name, exact: true }) });
+}
+
+test("a deals header cycles aria-sort through descending, ascending, and none while the URL holds", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+  test.setTimeout(SORT_TIMEOUT);
+  await login(page, demoEmail!, demoPassword!);
+  await page.goto("/crm/deals");
+  await expect(
+    page.getByRole("heading", { name: "Deals", level: 1, exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+
+  const urlBefore = page.url();
+  const header = sortHeader(page, "Value");
+  await expect(header).toHaveAttribute("aria-sort", "none", NAV_TIMEOUT);
+
+  // Click 1: `sortDescFirst: true` on Value, so descending first.
+  await header.getByRole("button", { name: "Value", exact: true }).click();
+  await expect(header).toHaveAttribute("aria-sort", "descending");
+  const desc = (await columnCells(page, "Value")).map(money);
+  expect(desc.length).toBeGreaterThan(1);
+  for (let i = 1; i < desc.length; i += 1) {
+    expect(desc[i - 1]).toBeGreaterThanOrEqual(desc[i]);
+  }
+
+  // Click 2: the other direction.
+  await header.getByRole("button", { name: "Value", exact: true }).click();
+  await expect(header).toHaveAttribute("aria-sort", "ascending");
+  const asc = (await columnCells(page, "Value")).map(money);
+  for (let i = 1; i < asc.length; i += 1) {
+    expect(asc[i - 1]).toBeLessThanOrEqual(asc[i]);
+  }
+
+  // Click 3: back to the server's own order, which is what "none" means
+  // here — no `ORDER BY` is added by 11.4.
+  await header.getByRole("button", { name: "Value", exact: true }).click();
+  await expect(header).toHaveAttribute("aria-sort", "none");
+
+  // AC5: sorting is client-side. Nothing navigated, nothing re-queried.
+  expect(page.url()).toBe(urlBefore);
+});
+
+test("a text header cycles ascending first and Actions has no sort affordance at all", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+  test.setTimeout(SORT_TIMEOUT);
+  await login(page, demoEmail!, demoPassword!);
+  await page.goto("/crm/deals");
+  await expect(
+    page.getByRole("heading", { name: "Deals", level: 1, exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+
+  const nameHeader = sortHeader(page, "Name");
+  await expect(nameHeader).toHaveAttribute("aria-sort", "none", NAV_TIMEOUT);
+  await nameHeader.getByRole("button", { name: "Name", exact: true }).click();
+  await expect(nameHeader).toHaveAttribute("aria-sort", "ascending");
+  const names = (await columnCells(page, "Name")).filter(Boolean);
+  expect(names.length).toBeGreaterThan(1);
+  const sorted = [...names].sort((a, b) =>
+    a.toLowerCase().localeCompare(b.toLowerCase(), "en"),
+  );
+  expect(names).toEqual(sorted);
+
+  // AC4: `aria-sort` belongs to the header **cell**, never the button.
+  await expect(
+    nameHeader.getByRole("button", { name: "Name", exact: true }),
+  ).not.toHaveAttribute("aria-sort", /.*/);
+
+  // AC4: the Actions column carries no `aria-sort` and no button.
+  const actions = sortHeader(page, "Actions");
+  await expect(actions).toHaveCount(0);
+  const actionsHeader = page
+    .getByRole("columnheader")
+    .filter({ hasText: "Actions" });
+  await expect(actionsHeader).toHaveAttribute("scope", "col");
+  expect(await actionsHeader.getAttribute("aria-sort")).toBeNull();
+  await expect(
+    actionsHeader.getByRole("button", { name: "Actions", exact: true }),
+  ).toHaveCount(0);
+});
+
+test("contacts sort by the visible organization name, not by the raw id", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+  test.setTimeout(SORT_TIMEOUT);
+  await login(page, demoEmail!, demoPassword!);
+  await page.goto("/crm/contacts");
+  await expect(
+    page.getByRole("heading", { name: "Contacts", level: 1, exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+
+  const header = sortHeader(page, "Organization");
+  await header.getByRole("button", { name: "Organization", exact: true }).click();
+  await expect(header).toHaveAttribute("aria-sort", "ascending");
+
+  // The seed's org names (Bluepeak / Harbor & Lane / Northwind) sort in a
+  // different order than their uuids do, which is what makes this assertion
+  // bite if the comparator regresses to the raw id. No fixed list is
+  // asserted — the demo tenant accumulates contacts across runs.
+  const orgs = (await columnCells(page, "Organization")).filter(Boolean);
+  expect(orgs.length).toBeGreaterThan(1);
+  const sorted = [...orgs].sort((a, b) =>
+    a.toLowerCase().localeCompare(b.toLowerCase(), "en"),
+  );
+  expect(orgs).toEqual(sorted);
+});
+
+test("q= still narrows and sorting still orders the narrowed rows", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+  test.setTimeout(SORT_TIMEOUT);
+  await login(page, demoEmail!, demoPassword!);
+
+  // AC7: the empty state still renders, and sorting did not replace the
+  // `length === 0` branch with a headers-only table.
+  await page.goto("/crm/organizations?q=zzzz-no-such-org");
+  await expect(page.getByText("No organizations")).toBeVisible(NAV_TIMEOUT);
+
+  // AC5: `?q=` filters on the server; the browser sorts what came back.
+  await page.goto("/crm/organizations?q=e");
+  await expect(
+    page.getByRole("heading", { name: "Organizations", level: 1, exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+  const urlBefore = page.url();
+  expect(urlBefore).toContain("q=e");
+
+  const header = sortHeader(page, "Name");
+  await header.getByRole("button", { name: "Name", exact: true }).click();
+  await expect(header).toHaveAttribute("aria-sort", "ascending");
+  const names = (await columnCells(page, "Name")).filter(Boolean);
+  expect(names.length).toBeGreaterThan(1);
+  const sorted = [...names].sort((a, b) =>
+    a.toLowerCase().localeCompare(b.toLowerCase(), "en"),
+  );
+  expect(names).toEqual(sorted);
+  // The filter param survives the sort click untouched — no `?sort=` was
+  // added, and none was removed.
+  expect(page.url()).toBe(urlBefore);
+});
+
 test("deleting an organization sets the deal's organization cell to null without deleting the deal", async ({
   page,
 }) => {
