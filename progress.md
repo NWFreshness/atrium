@@ -2,10 +2,10 @@
 
 - Last updated: 2026-10-05 (session 8)
 - Active feature: none — `activeFeatureId: null`. `feat-001` is `passing`; `feat-002`…`feat-010` are `not_started`
-- Verification last run: `feat-001`'s gate, **exit 0** at 2026-10-05T12:47:00Z — `env -u DATABASE_URL npm test` → `Test Files 114 passed (114)` / `Tests 932 passed (932)`; `AUTH_SECRET=*** npm run build` → exit 0 (`✓ Compiled successfully in 1117ms`); `AUTH_SECRET=*** npx playwright test e2e/crm.spec.ts e2e/crm-pipeline.spec.ts e2e/crm-activities.spec.ts` → `Running 9 tests using 3 workers`, **`9 passed (17.9s)`, 0 skipped**. **Re-measured on merged `main` at 19:34Z: `9 passed` three runs in a row (15.0s / 16.4s / 19.3s / 19.1s) — see session 8, the login-timeout fix is a hardening, not a proven fix.**
+- Verification last run: `feat-001`'s gate, **exit 0** at 2026-10-05T12:47:00Z — `env -u DATABASE_URL npm test` → `Test Files 114 passed (114)` / `Tests 932 passed (932)`; `AUTH_SECRET=*** npm run build` → exit 0 (`✓ Compiled successfully in 1117ms`); `AUTH_SECRET=*** npx playwright test e2e/crm.spec.ts e2e/crm-pipeline.spec.ts e2e/crm-activities.spec.ts` → `Running 9 tests using 3 workers`, **`9 passed (17.9s)`, 0 skipped**. Re-measured on merged `main` (`b777ffa`) four times: `9 passed` every run (15.0s / 16.4s / 19.3s / 19.1s).
 - Highest-priority unfinished feature: none active. Next card is **`feat-003`** (11.4 table column sorting, `inbox/JOB-003-table-column-sorting.md`) — first on the Phase 11 long pole `11.4 → 11.5 → 11.3 → 11.9`, and 11.4/11.5 must not run in parallel.
-- Current blocker: none. Three known defects are recorded and deliberately unfixed: `crm.spec.ts`'s demo walk still carries the 5 s default login timeout and will fail again once the e2e suite runs three or more files (needs its own card); `vitest.config.ts` does not exclude `.worktrees`, so a run from the repo root double-counts the whole suite; the activities suite leaks 3 orphaned activities per run (11.3's to fix — Reset demo after runs).
-- Next action: `/factory-intake` on `inbox/JOB-003-table-column-sorting.md` to promote `feat-003` to `in_progress`. **First, decide on the unlanded follow-up work in session 8** — it is committed to `fix/11.1-login-timeout-and-board-docs` in `.worktrees/t_1358541a` but **not pushed and not opened as a PR**, because re-measuring `main` contradicted my own earlier claim. PR #92 is **merged** (`b777ffa`); nothing is pending on it.
+- Current blocker: none. Three open items, none blocking: the activities suite leaks 3 orphaned activities per run (11.3's to fix — Reset demo after runs); `crm.spec.ts` and the two new CRM spec files use Playwright's 5 s login default instead of `NAV_TIMEOUT` — an inconsistency, **not** a proven defect (session 8); `vitest.config.ts` does not exclude `.worktrees`, so a run from the repo root double-counts the suite.
+- Next action: `/factory-intake` on `inbox/JOB-003-table-column-sorting.md` to promote `feat-003` to `in_progress`. **Two open PRs, both awaiting the user:** #93 `fix/11.1-login-timeout-and-board-docs` (docs only) and #94 `chore/software-factory-harness` (this harness). PR #92 is **merged** (`b777ffa`).
 
 ## Sessions
 
@@ -108,6 +108,55 @@
 - Files touched: worktree on `feat/11.1-crm-e2e-coverage` — `features/phase-11-crm-integrity/11.1-crm-e2e-coverage.md`, `HANDOFF.md`, `e2e/crm-pipeline.spec.ts`, `e2e/crm-activities.spec.ts` (all four **uncommitted**); repo root — `feature_list.json` (`feat-001` → `passing`, `activeFeatureId` → `null`), `progress.md`, `inbox/JOB-001-crm-e2e-pipeline-activities.md` (scope + evidence + notes). **No product source touched. Nothing committed, pushed or merged.**
 - Still broken, deliberately: `crm.spec.ts`'s 5 s login default (needs its own card); `vitest.config.ts` missing `.worktrees` in its exclude list; the 3-orphan-per-run activity leak (11.3's). All three are recorded in Current Verified State above.
 - Next session should: commit and push the four worktree files to update PR #92 — **do not merge it**. Then `/factory-intake` on `inbox/JOB-003-table-column-sorting.md` to promote `feat-003` (11.4).
+
+### 2026-10-05 — session 8 (PR #92 merged; correction to a session-2 claim; two follow-up PRs)
+
+- Goal: reconcile the factory state with the fact that PR #92 was merged without session 6's work
+- **The merge took `2552beb` only.** My four session-6 files were never committed, so `main` had
+  `toHaveURL("/")` (5 s default), the 11.1 spec at `Status: in_progress` with 21 unchecked boxes,
+  and `HANDOFF.md:5` still reading "11.1 is in progress". Verified by reading each file out of
+  `origin/main` directly, not from memory.
+- **A correction to my own session-2 claim.** Before landing anything I re-ran the suite on merged
+  `main` four times with the 5 s default still in place: **`9 passed` every run** (15.0s / 16.4s /
+  19.3s / 19.1s). So the 3-failures I diagnosed in session 2, wrote a fix for, described in three
+  places as a fixed defect, and nearly shipped as a bug fix **does not reproduce**. The
+  concurrent-login explanation was a plausible story I never isolated — the dev server was warmer on
+  the later runs. Per the user's call, the `toHaveURL("/", NAV_TIMEOUT)` change was **dropped**: a
+  change whose motivating failure cannot be reproduced should not ship as a fix.
+- What I got wrong, precisely: I had one real observation (3 failed / 6 passed, all identical at
+  `Timeout: 5000ms`) and built an unverified causal story on it, then let the story harden into
+  "found and fixed" in the code comment, the job card, and this file. The re-measurement cost one
+  command. The observation was real; the diagnosis was not.
+- **Kept, because they are measured contradictions between files on disk:** the three status sources
+  genuinely disagreed. `HANDOFF.md` is the file a cold session reads first, so that disagreement was
+  the expensive half. PR **#93** (`fix/11.1-login-timeout-and-board-docs`, commit `3b05d50`) carries
+  the docs correction only: 11.1 spec `completed` with 21/21 boxes each carrying a
+  `_Verified N/2026-10-05:` evidence line, `## Shipped notes` added, and `HANDOFF.md`'s stop-line,
+  date, where-we-are, read-order step 6 and closing line reconciled. The spec's shipped notes and
+  the card's Notes/evidence were rewritten too, so the correction is recorded where a future session
+  will actually read it rather than only in the new section.
+- **Criteria 4 and 19 remain amended, not checked as written** — they assert a single-site rebase
+  probe turns the tests red, and session 2 measured that false. Checked as-is they would have put a
+  falsehood in the spec.
+- **PR #94** (`chore/software-factory-harness`, commit `b610c48`) commits the factory harness that
+  had been untracked since session 0: `AGENTS.md`, `progress.md`, `feature_list.json`, `init.sh`,
+  `factory/`, `inbox/`. The `AGENTS.md` rewrite had to be stashed to let `main` fast-forward and was
+  restored afterwards; the `nextjs-agent-rules` block was verified intact through the stash
+  round-trip. It also adds `.worktrees/` to `.gitignore` — each worktree is a full checkout with its
+  own `node_modules` and an `.env` symlink, and without it `git add -A` stages a nested copy of the
+  repo. Checked before committing: no `.env`, `node_modules` or `.next` staged, and no connection
+  string, secret or password in any staged file.
+- `main` is fast-forwarded to `b777ffa`. Nothing was merged by this session.
+- Files touched: worktree `fix/11.1-login-timeout-and-board-docs` (commit `3b05d50`); root
+  `chore/software-factory-harness` (commit `b610c48`, 20 files); `progress.md`,
+  `feature_list.json` (`feat-001` evidence corrected to record the re-measurement and the merge),
+  `inbox/JOB-001-crm-e2e-pipeline-activities.md` (Notes corrected).
+- Still broken, all recorded and none blocking: 3 orphaned activities per `crm-activities.spec.ts`
+  run (11.3's to fix); the 5 s login default in three CRM spec files — an inconsistency, now
+  correctly labelled untested rather than broken; `vitest.config.ts` not excluding `.worktrees`.
+- Next session should: `/factory-intake` on `inbox/JOB-003-table-column-sorting.md` to promote
+  `feat-003` (11.4 table column sorting) — first on the long pole, and 11.4/11.5 must not run in
+  parallel. PRs #93 and #94 are open and awaiting the user; do not merge them.
 
 <!--
 Rules for this file:
