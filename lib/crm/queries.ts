@@ -1,4 +1,5 @@
 import type { WriteOpts } from "../db/batch-transaction";
+import { assertMoney, assertPercent, MAX_MONEY } from "../input/numbers";
 import { assertText, MAX_LONG_TEXT, MAX_SHORT_TEXT } from "../input/text";
 import { STAGE_PROBABILITY } from "./constants";
 import {
@@ -293,6 +294,11 @@ export async function createDeal(
       "createDeal needs an explicit `boardOrder` when its writes are collected into a batch",
     );
   }
+  const value = assertMoney(input.value, { min: 0, max: MAX_MONEY });
+  const probability = assertPercent(
+    input.probability ?? STAGE_PROBABILITY[input.stage],
+    { min: 0, max: 100 },
+  );
   const row: Deal = {
     id: newId(),
     tenantId: scoped,
@@ -300,8 +306,8 @@ export async function createDeal(
     organizationId: input.organizationId ?? null,
     contactId: input.contactId ?? null,
     stage: input.stage,
-    value: input.value,
-    probability: input.probability ?? STAGE_PROBABILITY[input.stage],
+    value,
+    probability,
     closeDate: input.closeDate ?? null,
     boardOrder:
       input.boardOrder ??
@@ -324,6 +330,12 @@ export async function updateDeal(
 ): Promise<Deal | null> {
   const scoped = requireTenantId(tenantId);
   if (input.name !== undefined) short(input.name);
+  if (input.value !== undefined) {
+    assertMoney(input.value, { min: 0, max: MAX_MONEY });
+  }
+  if (input.probability !== undefined) {
+    assertPercent(input.probability, { min: 0, max: 100 });
+  }
   if (repo) {
     return updateDealInMemory(repo, scoped, id, input);
   }

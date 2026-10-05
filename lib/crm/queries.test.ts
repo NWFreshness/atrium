@@ -1,6 +1,11 @@
 import { getTableColumns } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { ACTIVITY_TYPES, CONTACT_STATUSES, DEAL_STAGES } from "./constants";
+import {
+  ACTIVITY_TYPES,
+  CONTACT_STATUSES,
+  DEAL_STAGES,
+  STAGE_PROBABILITY,
+} from "./constants";
 import {
   createActivity,
   createContact,
@@ -1100,6 +1105,151 @@ describe("a batched createDeal", () => {
       ),
     ).rejects.toThrow(/explicit `boardOrder`/);
     expect(batches).toHaveLength(0);
+  });
+});
+
+describe("createDeal rejects out-of-range numbers", () => {
+  it("throws on a negative value", async () => {
+    const memory = repo();
+    await expect(
+      createDeal(
+        tenantA,
+        { name: "Widget", stage: "New", value: -1, boardOrder: 0 },
+        memory,
+      ),
+    ).rejects.toThrow("invalid money");
+  });
+
+  it("throws on probability over 100", async () => {
+    const memory = repo();
+    await expect(
+      createDeal(
+        tenantA,
+        { name: "Widget", stage: "New", value: 1000, probability: 101 },
+        memory,
+      ),
+    ).rejects.toThrow("invalid percent");
+  });
+
+  it("throws on a non-integer probability", async () => {
+    const memory = repo();
+    await expect(
+      createDeal(
+        tenantA,
+        { name: "Widget", stage: "New", value: 1000, probability: 10.5 },
+        memory,
+      ),
+    ).rejects.toThrow("invalid percent");
+  });
+
+  it("leaves the memory repo empty when create throws", async () => {
+    const memory = repo();
+    await expect(
+      createDeal(
+        tenantA,
+        { name: "Widget", stage: "New", value: -1, boardOrder: 0 },
+        memory,
+      ),
+    ).rejects.toThrow();
+    expect(await listDeals(tenantA, memory)).toEqual([]);
+  });
+});
+
+describe("updateDeal rejects out-of-range numbers", () => {
+  it("throws on a negative value and leaves the row unchanged", async () => {
+    const memory = repo();
+    const created = await createDeal(
+      tenantA,
+      { name: "Widget", stage: "New", value: 1000, boardOrder: 0 },
+      memory,
+    );
+    await expect(
+      updateDeal(tenantA, created.id, { value: -1 }, memory),
+    ).rejects.toThrow("invalid money");
+    expect(await getDeal(tenantA, created.id, memory)).toMatchObject({
+      value: 1000,
+    });
+  });
+
+  it("throws on probability over 100", async () => {
+    const memory = repo();
+    const created = await createDeal(
+      tenantA,
+      { name: "Widget", stage: "New", value: 1000, boardOrder: 0 },
+      memory,
+    );
+    await expect(
+      updateDeal(tenantA, created.id, { probability: 101 }, memory),
+    ).rejects.toThrow("invalid percent");
+    expect(await getDeal(tenantA, created.id, memory)).toMatchObject({
+      probability: 10,
+    });
+  });
+
+  it("accepts an update that does not touch value or probability", async () => {
+    const memory = repo();
+    const created = await createDeal(
+      tenantA,
+      { name: "Widget", stage: "New", value: 1000, boardOrder: 0 },
+      memory,
+    );
+    const updated = await updateDeal(
+      tenantA,
+      created.id,
+      { name: "Widget v2" },
+      memory,
+    );
+    expect(updated?.name).toBe("Widget v2");
+  });
+});
+
+describe("STAGE_PROBABILITY values still pass create and update", () => {
+  it("createDeal accepts every value in the map", async () => {
+    const memory = repo();
+    for (const probability of Object.values(STAGE_PROBABILITY)) {
+      const created = await createDeal(
+        tenantA,
+        {
+          name: `Widget ${probability}`,
+          stage: "New",
+          value: 1000,
+          probability,
+          boardOrder: 0,
+        },
+        memory,
+      );
+      expect(created.probability).toBe(probability);
+    }
+  });
+
+  it("createDeal accepts every stage's omitted-probability default", async () => {
+    const memory = repo();
+    for (const stage of DEAL_STAGES) {
+      const created = await createDeal(
+        tenantA,
+        { name: `Default ${stage}`, stage, value: 1000 },
+        memory,
+      );
+      expect(created.probability).toBe(STAGE_PROBABILITY[stage]);
+    }
+  });
+
+  it("updateDeal accepts every value in the map", async () => {
+    const memory = repo();
+    const created = await createDeal(
+      tenantA,
+      { name: "Widget", stage: "New", value: 1000, boardOrder: 0 },
+      memory,
+    );
+    for (const probability of Object.values(STAGE_PROBABILITY)) {
+      const updated = await updateDeal(
+        tenantA,
+        created.id,
+        { probability },
+        memory,
+      );
+      expect(updated?.probability).toBe(probability);
+    }
   });
 });
 
