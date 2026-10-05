@@ -40,7 +40,7 @@ export default async function DealDetailPage({
         <dt>Value</dt>
         <dd>{formatMoney(deal.value)}</dd>
         <dt>Probability</dt>
-        <dd>{deal.probability}</dd>
+        <dd>{deal.probability}%</dd>
         <dt>Close date</dt>
         <dd>{formatDate(deal.closeDate)}</dd>
         <dt>Organization</dt>
