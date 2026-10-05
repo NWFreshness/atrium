@@ -158,31 +158,31 @@ Build order is 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 �
 
 ### Phase 0 — Atrium platform
 
-Next.js app, AGENTS.md, Drizzle/Postgres, Auth.js two accounts, launcher, shared nav + theme, tenant helper, Reset demo (no-op until an app has tables). Tracking files: `features/INDEX.md`, `CURRENT_FEATURE.md`, feature specs.
+Next.js app, AGENTS.md, Drizzle/Postgres, Auth.js two accounts, launcher, shared nav + theme, tenant helper, Reset demo (no-op until an app has tables). Tracking: `feature_list.json` and `inbox/`.
 
 ### Phase 1 — CRM
 
 Organizations, contacts, deals, drag-and-drop pipeline, activities, dashboard. Tenant-scoped. Demo seed included.
 
-Feature specs: `features/phase-1-crm/` (1.1–1.9). Board: `features/INDEX.md`.
+Phase 1.1–1.9 shipped. Tracking: `feature_list.json`.
 
 ### Phase 2 — Space
 
 Pages + blocks, databases with table / board / list views, search. Tenant-scoped.
 
-Feature specs: `features/phase-2-space/` (2.1–2.8). Board: `features/INDEX.md`.
+Phase 2.1–2.8 shipped. Tracking: `feature_list.json`.
 
 ### Phase 3 — Rolodex
 
 People, circles, cadences, birthdays, conversation timeline, CSV and vCard import. Tenant-scoped. Initials only in v1 (no photo column). Last contacted and check-in status are derived, never stored.
 
-Feature specs: `features/phase-3-rolodex/` (3.1–3.10). Design: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Board: `features/INDEX.md`.
+Phase 3.1–3.10 shipped. Design: `docs/superpowers/specs/2026-09-09-rolodex-design.md`. Tracking: `feature_list.json`.
 
 ### Phase 4 — Groove
 
 Four synths, one transport, master DJ filter, Web Audio only. No DB. Behind login.
 
-Feature specs: `features/phase-4-groove/` (4.1–4.8). Design: `docs/superpowers/specs/2026-09-09-groove-design.md`. Board: `features/INDEX.md`.
+Phase 4.1–4.8 shipped. Design: `docs/superpowers/specs/2026-09-09-groove-design.md`. Tracking: `feature_list.json`.
 
 ### Phase 5 — Workroom (redesign)
 
@@ -205,31 +205,31 @@ The direction, “the Workroom”: warm editorial rather than a generic dark das
 
 Shared presentational classes (buttons, fields, panels, KPI cards, chips, avatars, subnav, page titles) and the design tokens land in the foundation features 5.1–5.2; per-app passes (5.3–5.6) apply them to each app’s own components. The per-app CSS namespaces (`crm-`, `space-`, `rolodex-`, `groove-`) and the `atrium-nav-` prefix rule from `AGENTS.md` still hold — the prototype uses unprefixed classes because it never ships into the app.
 
-Feature specs: `features/phase-5-workroom/` (5.1–5.7). Board: `features/INDEX.md`.
+Phase 5.1–5.7 shipped. Tracking: `feature_list.json`.
 
 ### Phase 6 — Accounts (self-serve)
 
 Public credentials signup behind `AUTH_SIGNUP_ENABLED`, a `member` role with an empty personal tenant, and logged-in change-password. Owner and demo stay env-seeded. No mailer, OAuth, forgot-password, or extra members on a tenant.
 
-Feature specs: `features/phase-6-accounts/` (6.1–6.4). Design: [2026-09-11-accounts-design.md](./2026-09-11-accounts-design.md). Board: `features/INDEX.md`.
+Phase 6.1–6.4 shipped. Design: [2026-09-11-accounts-design.md](./2026-09-11-accounts-design.md). Tracking: `feature_list.json`.
 
 ### Phase 7 — Architecture (modular monolith)
 
 Harden the structure Phases 0–6 already chose. No new product. ADRs in `docs/adr/`, demo reset as one Neon `db.batch`, `tenantId` indexes, split query modules, a client/server import fitness function. Stay one Next.js deployable on one Neon database. No RLS (neon-http cannot hold `SET LOCAL`), no session revocation (6.3), no extracting Groove, no unifying drag libraries, no TanStack Query.
 
-Feature specs: `features/phase-7-architecture/` (7.1–7.5). Design: [2026-09-11-architecture-design.md](./2026-09-11-architecture-design.md). Board: `features/INDEX.md`.
+Phase 7.1–7.5 shipped. Design: [2026-09-11-architecture-design.md](./2026-09-11-architecture-design.md). Tracking: `feature_list.json`.
 
 ### Phase 8 — Integrity
 
 Close three claimed interfaces that are still shallow: email uniqueness is case-insensitive in application code and byte-exact in Postgres; the password minimum counts UTF-16 units so six emoji pass as 12; Rolodex import keeps two `PERSON_FIELDS` lists that have already drifted. No new app, no RLS, no OAuth. Design: [2026-09-11-integrity-design.md](./2026-09-11-integrity-design.md).
 
-Feature specs: `features/phase-8-integrity/` (8.1–8.3). Board: `features/INDEX.md`.
+Phase 8.1–8.3 shipped. Tracking: `feature_list.json`.
 
 ### Phase 9 — Security
 
 Close six AppSec holes the live tree still leaves shallow: a known HIGH in `drizzle-orm`, missing isolation headers, a login timing oracle, no auth throttle (Phase 6 residual), unbounded Rolodex import, unbounded stored text and raw LIKE metacharacters. No new app, no RLS, no session revocation, no `script-src` CSP. Design: [2026-09-11-security-design.md](./2026-09-11-security-design.md).
 
-Feature specs: `features/phase-9-security/` (9.1–9.6). Board: `features/INDEX.md`.
+Phase 9.1–9.6 shipped. Tracking: `feature_list.json`.
 
 ---
 
@@ -237,13 +237,13 @@ Feature specs: `features/phase-9-security/` (9.1–9.6). Board: `features/INDEX.
 
 Replace the theme's warmth and the type stack with a Pacific Northwest palette (basalt, mist, moss, lichen, cedar, golden) and a sturdier stack (Outfit headings, Archivo body, Geist Mono data), then prove it with a gate that computes WCAG contrast from the shipped tokens. Values-only change: no new app, route, table, migration, dependency, or behaviour. Groove keeps its own instrument scope and stays dark under the light theme. Design: [2026-09-14-pnw-design.md](./2026-09-14-pnw-design.md). Studies: `docs/prototypes/2026-09-14-pnw/`.
 
-Feature specs: `features/phase-10-pnw/` (10.1–10.7). Board: `features/INDEX.md`.
+Phase 10.1–10.7 shipped. Tracking: `feature_list.json`.
 
 ### Phase 11 — CRM integrity
 
 Close CRM dead-ends and the missing list/task surface without a new data model (one unique index): a pipeline+activities e2e net, deal number validation, activity edit/delete/backdate plus last-contacted, table sort, detail-page edit, unique contact email, delete-consequence preview, deal filters, a Tasks section, and ⌘K QuickFind. Ten features; 11.3 absorbs A2+B4 (former activity-11.8). 11.8 is Deal filters. 11.1 is test-only. Exactly one new route (`/crm/tasks`). Design: [2026-09-29-crm-integrity-design.md](./2026-09-29-crm-integrity-design.md).
 
-Feature specs: `features/phase-11-crm-integrity/` (11.1–11.10). Board: `features/INDEX.md`.
+Phase 11 open work is in `inbox/`. Tracking: `feature_list.json`.
 
 ---
 
@@ -265,19 +265,21 @@ Coverage is a signal, not an 80% gate.
 
 ## Process files
 
-| File                                                 | Role                                                                                                                                                        |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `features/INDEX.md`                                  | The board. Phases, feature ids, status, one-line summary, link to spec. This is how you see what is done. No second progress file.                          |
-| `CURRENT_FEATURE.md`                                 | Top: the single in-progress feature (id, link, status). Bottom: append-only log. When a feature finishes, add a short summary. Never delete old summaries.  |
-| `features/phase-N-name/N.M-feature-name.md`          | One spec per feature. writing-plans template: Goal, Scope, Files, Acceptance criteria, Verification, Commit. Status updated in the same commit as the work. |
-| `AGENTS.md`                                          | Stack, tenancy rule (no query without tenant_id from session), CSS scoping, TDD, do not copy the reference implementation's Express/SQLite.                 |
-| `docs/superpowers/specs/2026-09-06-atrium-design.md` | This design. Frozen after review; amend deliberately if the product changes.                                                                                |
+Work tracking is the software-factory harness. There is no second board.
+
+| File | Role |
+| --- | --- |
+| `feature_list.json` | Machine state. One feature `in_progress` at a time. Only `/factory-verify` sets `passing`. |
+| `inbox/JOB-*.md` | The scoped job. Acceptance criteria live here. |
+| `progress.md` | Session diary and current verified state. |
+| `AGENTS.md` | Operating contract: stack, tenancy, CSS scoping, the station loop. |
+| `docs/superpowers/specs/2026-09-06-atrium-design.md` | This design. Frozen after review; amend deliberately if the product changes. |
 
 Rules:
 
-- Only one feature `in_progress`
-- Specs exist before subagent-driven-development implementers run
-- Finish feature → check acceptance → update spec status, INDEX, CURRENT_FEATURE log → next spec
+- Only one feature `in_progress`, and `feature_list.json` is the only board.
+- Do not recreate `features/`, `CURRENT_FEATURE.md`, or `HANDOFF.md`.
+- New work starts at `/factory-intake`.
 
 Feature granularity: independently shippable, hours to a couple of days, numbered `phase.feature`.
 
@@ -317,8 +319,8 @@ Do not add TanStack packages until the feature that uses them.
 
 ## Implementation sequence after this file is approved
 
-1. writing-plans (feature spec mode): INDEX + CURRENT_FEATURE + phase 0 specs only. Later phases get specs when that phase starts, not a 40-file dump up front.
+1. New work is a factory job card in `inbox/`, not a `features/` spec dump.
 2. User confirms the phase 0 backlog.
 3. subagent-driven-development: one feature at a time, spec review then quality review, controller verifies test + build.
 
-Progress: `features/INDEX.md`. Phases 0–10 complete and merged. Phase 11 CRM integrity specs exist (ten features, 11.1–11.10). Next implementable unit is 11.1, after the Phase 11 docs PR merges.
+Progress: `feature_list.json`. Phases 0–10 shipped. Phase 11 open jobs are `inbox/JOB-004` through `JOB-010`.

@@ -148,4 +148,4 @@ Playwright in 3.10. Login is owner/demo email+password.
 
 ## Board
 
-`features/INDEX.md`. Specs: `features/phase-3-rolodex/`. Next implementable unit after this file: 3.1. Do not invent Groove specs.
+Phase 3 shipped. Tracking: `feature_list.json`. Do not invent Groove specs. Do not recreate `features/`.

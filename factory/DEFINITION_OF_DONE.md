@@ -23,12 +23,6 @@ If the verify command exits 0 but the acceptance criteria are obviously unmet, t
 **not** passing. Set `blockedReason` to `verify green but acceptance unmet` and hand back to
 `/factory-implement`.
 
-## Product status lives elsewhere
-
-`feature_list.json` tracks factory jobs. Product feature status (`specced` → `in_progress` →
-`completed`) is owned by `features/INDEX.md` and `CURRENT_FEATURE.md`. A job card that
-implements a product feature must update those in the same change, or say in its Notes that
-they are updated at handoff.
 
 ## Status vocabulary
 

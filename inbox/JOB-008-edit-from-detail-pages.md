@@ -25,9 +25,6 @@ app/(authenticated)/crm/contacts/[id]/page.tsx       # wrapper + DetailEdit + Co
 app/(authenticated)/crm/deals/[id]/page.tsx          # wrapper + DetailEdit + DealForm child, **plus** listOrganizationsAction + listContactsAction
 components/crm/crm-pnw.test.ts                      # one new describe("detail pages carry one Edit control")
 e2e/crm-deals.spec.ts                               # appended; file owned by JOB-002
-features/phase-11-crm-integrity/11.5-edit-from-detail-pages.md
-features/INDEX.md
-CURRENT_FEATURE.md
 ```
 
 Branch convention: ship on `feat/11.5-edit-from-detail-pages`. Never commit
@@ -60,56 +57,86 @@ or push to `main`. Never merge unless the user asks.
 
 ## Acceptance criteria
 
-The full criteria are in `features/phase-11-crm-integrity/11.5-edit-from-detail-pages.md`
-§"Acceptance criteria" (18 items). The card defends every item.
+
+Numbered criteria below are the contract for this job. They were lifted from the retired phase-11 spec when that board was removed.
 
 1. All three `[id]` pages render exactly one `DetailEdit`, inside a
    `styles["crm-detail-title"]` wrapper that also contains the existing
    `<div className="atrium-pagetitle">` with its `<h1>` and
-   `<p className="atrium-sub">` **unchanged**.
-2. The Edit control's accessible name is `Edit {name}` — the same template
-   literal as the list row (`org-table.tsx:54`).
-3. Clicking Edit opens the **existing** form component as
-   `role="dialog" aria-modal="true"`. `getByRole("dialog", { name: \`Edit ${name}\` })`
-   resolves to exactly one element on the detail page.
+   `<p className="atrium-sub">` **unchanged**. A read of the three files confirms
+2. The Edit control's accessible name is `Edit {name}` — the same template literal as
+   the list row (`org-table.tsx:54`). `components/crm/detail-edit.test.ts` asserts
+   `aria-label={\`Edit ${` is present and that the visible label is the word `Edit`
+3. Clicking Edit opens the **existing** form component, unchanged in its own logic,
+   as `role="dialog" aria-modal="true"`. `getByRole("dialog", { name: \`Edit ${name}\` })`
+   resolves to exactly one element on the detail page
 4. The three `[id]` pages contain **no** `AddOrganizationButton`,
    `AddContactButton`, or `AddDealButton` — asserted by the new
-   `crm-pnw.test.ts` block.
-5. All three forms handle `Escape` on the dialog element: open, `Escape`,
-   dialog hidden, focus on the control that opened it.
-6. Opening a dialog focuses that form's `Name` input. Loading a detail page
-   does not steal focus — the `wasOpen` guard in `DetailEdit` makes this true.
-7. A saved edit is visible in the `<dl>` **after `page.reload()`** for
-   `deal.value`, `organization.industry`, and `contact.jobTitle` — one field
-   per record type, asserted from the server-rendered `<dd>`.
-8. The deal detail page calls `listOrganizationsAction()` and
-   `listContactsAction()`, and the `<dd>` links resolve the organization and
-   contact **from those lists** — the two `get*Action` calls are no longer
-   made by that page.
-9. A deal whose `organizationId` is `null` shows `None` in the form's
-   Organization select.
-11. `components/crm/org.module.css` adds `.crm-detail-title` and
-    `.crm-detail-action` and **no `display: none`** — `crm-pnw.test.ts:221`.
-    `.crm-detail-action` carries `outline: 2px solid var(--brass)` on
-    `:focus-visible`; does **not** carry `opacity: 0`.
-12. The existing gates are green **unchanged**.
-13. Two journeys appended to `e2e/crm-deals.spec.ts`. **If JOB-002 has not
-    landed that file does not exist and this criterion is recorded as unmet**
-    — it is not met by creating a fourth CRM spec file.
-14. Every `getByRole` name derived from a `Date.now()` fixture has
-    `exact: true`; the dialog locator is scoped by `role="dialog"`; no
-    journey asserts an exact row count.
-15. `lib/client-boundary.test.ts` stays green, and `detail-edit.tsx` imports
-    only `react` and `./org.module.css` — no `@/lib/…` import of any kind.
-16. `tests/workroom-namespace.test.ts` stays green. The new wrapper must not
-    define or restate any `.atrium-*` rule.
-17. Build exit 0 **before** `npm test`. `next build` is the only thing that
-    typechecks the render-prop contract.
-18. `npm run format` was run with explicit file paths only.
+   `crm-pnw.test.ts` block. The activity form's `Add activity` submit **is** still on the
+   contact and deal detail pages, unchanged
+5. All three forms handle `Escape` on the dialog element: open, `Escape`, dialog
+   hidden, and focus is on the control that opened it. Asserted for the detail page in
+   Journey O and for the list page by the same code path
+6. Opening a dialog focuses that form's `Name` input
+   (`org-form.tsx:79-81`, `contact-form.tsx:88-90`, `deal-form.tsx:128-141`).
+   **Loading a detail page does not steal focus** — the `wasOpen` guard in `DetailEdit`
+   is what makes this true, and a Playwright assertion that the page's `<h1>` is not
+   focused after navigation is the test
+7. A saved edit is visible in the `<dl>` **after a `page.reload()`**, for
+   `deal.value`, `organization.industry`, and `contact.jobTitle` — one field per record
+   type, asserted from the server-rendered `<dd>`, not from the form
+8. The deal detail page calls `listOrganizationsAction()` and `listContactsAction()`,
+   and the `<dd>` links resolve the organization and contact **from those lists** — the
+   two `get*Action` calls are no longer made by that page. A read of
+   `"app/(authenticated)/crm/deals/[id]/page.tsx"` shows two fetches, not four
+9. A deal whose `organizationId` is `null` shows `None` in the form's Organization
+   select and no link in the `<dd>` — the `onDelete: "set null"` shape
+   (`lib/crm/schema.ts:72-76`), unchanged
+10. **`components/crm/org-table.tsx`, `contact-table.tsx`, and `deal-table.tsx` are
+    byte-unchanged by this feature.** `git diff --stat` over the three files is empty.
+    This is a deliberate consequence of §4.3 and it is the criterion that catches a
+    well-meaning implementer adding a `ref` to the action cell
+11. `components/crm/org.module.css` adds `.crm-detail-title` and `.crm-detail-action`
+    and **no `display: none`** — `crm-pnw.test.ts:221` asserts
+    `expect(orgCss).not.toMatch(/display:\s*none/)` across the whole stylesheet.
+    `.crm-detail-action` carries `outline: 2px solid var(--brass)` on `:focus-visible`
+    (`:201-209` greps for it) and does **not** carry `opacity: 0`
+12. The existing gates are green **unchanged**: `crm-pnw.test.ts:213-218` (44px rows,
+    `--text-label` / `--ink-faint` on `th`, `tabular-nums` on `td`), `:220-227` (the
+    opacity reveal), `:229-235` (the three `aria-label={\`Edit ${` template literals in
+    `TABLE_COMPONENTS`), and `components/crm/crm-pass.test.ts`. No existing assertion in
+    `crm-pnw.test.ts` is edited, and `PAGES` at `:26-32` is **not** extended to the `[id]`
+    pages
+13. Two journeys are appended to `e2e/crm-deals.spec.ts`. **If 11.2 has not landed that
+    file does not exist and this criterion is recorded as unmet with a note in the shipped
+    history** — it is not met by creating a fourth CRM spec file. The journeys cover:
+    save → reload → `<dd>` reflects it (three record types, one field each); Escape
+    closes and focus returns; the autofocus lands on `Name`; the page-load focus is not
+    stolen; and no Add affordance is present
+14. Every `getByRole` name derived from a `Date.now()` fixture is passed with
+    `exact: true`; the dialog locator is scoped by `role="dialog"`, never by `body`; no
+    journey asserts an exact row count; and `afterEach` deletes what the test minted and
+    asserts its own name is gone
+15. `lib/client-boundary.test.ts` stays green, and a read of
+    `components/crm/detail-edit.tsx` shows it imports only `react` and
+    `./org.module.css` — no `@/lib/…` import of any kind, so the boundary walk has nothing
+    new to resolve
+16. `tests/workroom-namespace.test.ts` stays green. `.crm-detail-title` and
+    `.crm-detail-action` are defined in `components/crm/org.module.css` and imported only
+    from `components/crm/` and `"app/(authenticated)/crm/"`. **The new
+    `<div className="crm-detail-title">` wrapper must not define or restate any
+    `.atrium-*` rule** — `:201-211` fails a per-app module that redeclares a shared class
+    name, and the wrapper's job is layout only
+17. `AUTH_SECRET=ci-build-placeholder npm run build` exit 0 **before** `env -u
+    DATABASE_URL npm test`. `next build` is the only thing that typechecks the
+    `children: (onClose: () => void) => ReactNode` render-prop contract and the
+    `import type { ReactNode }` / `ReactKeyboardEvent` imports
+18. `npm run format` was run with **explicit file paths** for the files this feature
+    touched. Do not reformat unrelated files.
 
 ## Verify command
 
-Per the spec.
+Run from the repo root.
 
 ```
 AUTH_SECRET=ci-build-placeholder npm run build \

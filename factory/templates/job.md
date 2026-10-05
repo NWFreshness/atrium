@@ -42,5 +42,4 @@
 ## Notes
 
 <!-- Constraints discovered mid-job, extra files added to scope, review findings,
-     deviations from the original plan. Reason and date. Product board updates
-     (features/INDEX.md, CURRENT_FEATURE.md) get recorded here too. -->
+     deviations from the original plan. Reason and date. -->

@@ -26,9 +26,6 @@ lib/crm/queries-drizzle.ts                           # new branch
 lib/crm/queries.test.ts                              # window edges; STAGE_PROBABILITY-style assertion table
 lib/crm/dashboard.ts                                 # followUps(...) may be widened or replaced — see Spec §"Follow-ups derivation"
 app/(authenticated)/crm/page.tsx                     # the existing follow-up panel "See all" link to /crm/tasks
-features/phase-11-crm-integrity/11.9-follow-ups-section.md
-features/INDEX.md
-CURRENT_FEATURE.md
 ```
 
 Branch convention: ship on `feat/11.9-follow-ups-section`. Never commit or
@@ -54,44 +51,149 @@ push to `main`. Never merge unless the user asks.
 
 ## Acceptance criteria
 
-The full criteria are in `features/phase-11-crm-integrity/11.9-follow-ups-section.md`
-§"Acceptance criteria". The card defends every item.
 
-1. **A sixth `SECTIONS` entry** in `components/crm/crm-subnav.tsx:24-81`:
-   `href: "/crm/tasks"`, `label: "Tasks"`, with an inline SVG glyph in the
-   same shape as the other five. `isCrmSection` (in `lib/crm/nav.ts:1-6`)
-   needs **no change** — it already returns true for an exact path and for
-   anything under it.
-2. **The route** `app/(authenticated)/crm/tasks/page.tsx` exists, is a server
-   component, fetches all undone activities with a `dueDate`, and renders the
-   four windows.
-3. **`lib/crm/tasks.ts`** exports the pure aggregation (overdue, today, next
-   7 days, later) and a per-item "overdue by N days" label. Calendar-day
-   semantics match `utcDateOnly` at `lib/crm/dashboard.ts:86-88`.
-4. `ListActivitiesOpts` extends to `done?: boolean`, `dueBefore?: Date`,
-   `dueAfter?: Date`. Both stores implement the new branches. **No parallel
-   `listActivitiesByWindow` helper.**
-5. A task with **no contact and no deal** renders without a broken link.
-6. Toggling done removes it from the list and persists across a reload.
-7. **The dashboard's two panels** (`components/crm/dashboard-followups.tsx`
-   overdue + upcoming) each gain a "See all" link to `/crm/tasks`.
-   `app/(authenticated)/crm/page.tsx` — same.
-8. **`e2e/crm.spec.ts`'s five-tab subnav walk is not broken by a sixth tab.**
-   The existing walk clicks by name and is unaffected; **this is verified,
-   not assumed.**
-9. **No "follow-ups" rename** in the dashboard. The drift is recorded, not
-   fixed.
-10. `tests/workroom-namespace.test.ts` stays green. The new module lives
-    under `components/crm/` or `app/(authenticated)/crm/`.
-11. The new route passes `npm run build` (`next build` typechecks routes).
-12. **Injection-proven, the relevant probe reverted byte-identically:**
-    removing the `done` filter from `listActivitiesInMemory` makes a unit
-    test that asserts done tasks are excluded go green (vacuous green is the
-    failure mode this exists to catch).
+Numbered criteria below are the contract for this job. They were lifted from the retired phase-11 spec when that board was removed.
+
+1. `components/crm/crm-subnav.tsx`'s `SECTIONS` has a sixth entry with
+   `href: "/crm/tasks"`, `label: "Tasks"`, and an `icon: icon(…)` glyph, and
+   `lib/crm/nav.ts` is **unmodified** — `isCrmSection("/crm/tasks", "/crm/tasks")`
+   and `isCrmSection("/crm/tasks/anything", "/crm/tasks")` are both `true` on the
+   existing implementation
+2. `app/(authenticated)/crm/tasks/page.tsx` exists, renders
+   `atrium-pagetitle` with `<h1>Tasks</h1>` and
+   `<p className="atrium-sub">Everything you owe, across every contact and deal</p>`,
+   and declares no `searchParams`
+3. `lib/crm/tasks.ts` is pure: it imports only `import type { Activity }`
+   from `./queries-shared`, never calls `new Date()` internally, and exports
+   `TASK_WINDOWS`, `TaskWindow`, `Task`, `TaskBucket`, `dayNumber`,
+   `taskBuckets`
+4. `lib/crm/tasks.test.ts` — `taskBuckets` at
+   `now = 2026-09-07T15:00:00.000Z` puts `2026-09-06T23:59:59.000Z` in `overdue`,
+   `2026-09-07T00:00:00.000Z` in `today`, `2026-09-14T00:00:00.000Z` in `next7`
+   (**+7, the inclusive bound**), and `2026-09-15T00:00:00.000Z` in `later`
+5. `lib/crm/tasks.test.ts` — `done: true` and `dueDate: null` activities
+   appear in no bucket, and `taskBuckets([], now)` still returns four buckets in
+   `["overdue", "today", "next7", "later"]` order, each with its own heading and
+   a **distinct** empty string
+6. `lib/crm/tasks.test.ts` — `overdueByDays` is `1` for a task one day past,
+   `7` for one seven days past, and `null` outside the overdue window; and the
+   total item count across the four buckets equals the pending count, so no task
+   appears twice
+7. `lib/crm/tasks.test.ts` — a window with three tied `dueDate`s returns them
+   in ascending `id` order, and `dayNumber(new Date("2026-09-29"))` equals
+   `dayNumber(new Date("2026-09-29T00:00:00.000Z"))` and does **not** equal
+   `dayNumber(new Date("2026-09-29T00:00:00"))`
+8. `lib/crm/tasks.test.ts` — the `agrees with the dashboard's followUps on
+   the overdue boundary` case passes against the same two activities
+   `lib/crm/dashboard.test.ts:378-393` already uses, and
+   `lib/crm/dashboard.test.ts` is **unmodified** and still green
+9. The four window headings render as `<h2>` with accessible names exactly
+   `Overdue`, `Today`, `Next 7 days`, `Later`; the count is a **sibling** of the
+   `<h2>`, not inside it, and is **absent** when the window holds one task
+10. `components/crm/task-list.tsx` is `"use client"`, imports `Activity` as
+     `import type` from `@/lib/crm/queries-shared`, imports `truncate` from
+     `@/lib/crm/activity-labels`, and `lib/client-boundary.test.ts` is green —
+     i.e. it has **no** value import of `lib/crm/queries`, `lib/crm/schema`,
+     `lib/db`, `drizzle-orm`, or `@neondatabase/serverless`
+11. The task row's Done checkbox `aria-label` template is **byte-identical**
+     to the one in `components/crm/activity-timeline.tsx` at implementation
+     time, including its `truncate` call and argument; a reviewer diffing the two
+     files finds no difference, and `task-list.test.ts` asserts the source
+     contains `truncate(activity.description, 60)`
+12. A task with a contact renders exactly one link whose text is the
+     **contact's name** (not `Contact`) and whose `href` is
+     `/crm/contacts/{id}`; a task with no contact but a deal renders one link
+     with the deal's name and `/crm/deals/{id}`; a task with neither renders
+     **no** `<a>`, and the source contains no `href={""}` or `href="#"`
+13. The meta line is `Due {formatDate(dueDate)}`, with
+     ` · Overdue by N day` / ` · Overdue by N days` appended only in the
+     `overdue` window
+14. Toggling the checkbox calls `toggleActivityDoneAction(id, !done)` then
+     `router.refresh()`, disables that row's checkbox while in flight, and the
+     row leaves the list — `onChange` writes `void onToggle(activity)` and the
+     handler `async`, exactly as `activity-timeline.tsx:46-54` does
+15. `components/crm/dashboard-followups.tsx` renders `See all overdue` and
+     `See all upcoming` (two **distinct** strings) as `next/link`s with
+     `href="/crm/tasks"`, placed in each panel's heading row, with both `<h2>`
+     texts byte-identical to today and both empty strings unchanged
+16. `components/crm/crm-pass.test.ts` — the new assertion finds
+     `"/crm/tasks"` and `label: "Tasks"` in the subnav source, and asserts
+     `href:` count `=== 6` `===` `icon: icon(` count; its three existing `it`s
+     are unmodified and green
+17. `components/crm/crm-pnw.test.ts` — `PAGES` has six entries including
+     `app/(authenticated)/crm/tasks/page.tsx`; the new golden-element assertion
+     passes; **`:190-193`'s existing assertions are unmodified** and still pass
+     (`subnav.match(/atrium-subtab-active/g)` is still `toHaveLength(1)`); and
+     the new page satisfies the `atrium-pagetitle` + `className="atrium-sub"`
+     assertion at `:260-265`
+18. `e2e/crm.spec.ts:53` walks five names, `Tasks` last, and its four
+     existing tests are otherwise unmodified; `e2e/workroom.spec.ts` has
+     `{ name: "Tasks", href: "/crm/tasks", url: /\/crm\/tasks$/ }` in
+     `CRM_SUBNAV` and `{ path: "/crm/tasks", h1: "Tasks" }` in `WALK`
+19. `e2e/crm-tasks.spec.ts` has two tests: the read-only one asserts the
+     `<h1>`, the sub-line, `aria-current="page"` on the Tasks tab, all four
+     `<h2>`s, the **seeded** `Intro call scheduled for next week.` inside the
+     `Overdue` section, and `a[href=""], a[href="#"]` count 0; the mutating one
+     mints a `Date.now()`-described task due two days out, finds it in
+     `Next 7 days` and **not** in `Today` or `Later`, checks it off, and asserts
+     it is still gone after a `page.reload()`, then deletes it in `afterEach`
+20. No test in `e2e/crm-tasks.spec.ts` asserts an exact row count, writes in
+     `beforeAll`, or uses `waitForTimeout`; every post-navigation assertion
+     carries `{ timeout: NAV_TIMEOUT }`; both tests start with
+     `test.setTimeout(60_000)`
+21. `lib/crm/nav.test.ts` has cases for `/crm/tasks` exact and against two
+     sibling hrefs, and its existing cases are unmodified
+22. New classes are `.crm-task-head`, `.crm-task-count` (in
+     `components/crm/org.module.css`) and `.feedHead` (in
+     `components/crm/dashboard.module.css`), all `crm-`-prefixed and token-only —
+     no hex, no new token, no brass, no `atrium-*` re-declared;
+     `tests/workroom-namespace.test.ts` is green with **no** edit
+23. The only semantic tone is `--clay-ink` on the `Overdue` heading and the
+     `Overdue by N days` label, matching `.feedTitleLate`'s
+     `var(--clay-ink)` — the words carry the meaning, and
+     `components/crm/crm-pnw.test.ts:117-120` still passes
+24. `components/crm/crm-pnw.test.ts`, `components/crm/crm-pass.test.ts`,
+     `components/crm/activity-timeline.test.ts`, `components/crm/contact-table.test.ts`,
+     `lib/crm/dashboard.test.ts`, `lib/crm/activity-actions.test.ts`,
+     `lib/crm/contact-actions.test.ts`, `lib/client-boundary.test.ts`,
+     `tests/theme-contrast.test.ts`, `tests/workroom-namespace.test.ts`, and
+     `tests/crm-shell.test.ts` are all green with no edits
+25. **Tenant scoping:** 11.9 adds **no** query helper and no server action.
+     Its three data reads are the existing `listActivitiesAction()`,
+     `listContactsAction()`, and `listDealsAction()`, each of which calls
+     `requireTenant` internally (`lib/crm/activity-actions.ts:124-128`,
+     `lib/crm/contact-actions.ts:109-114`, and the `listDealsAction` wrapper).
+     `lib/crm/activity-actions.test.ts` and `lib/crm/contact-actions.test.ts`
+     are green **unmodified**, which is the evidence for tenant scoping here;
+     `taskBuckets` is pure over the array it is handed and has no tenant of its
+     own to scope
+26. **Injection-proven, each probe reversed byte-identically and the result
+     recorded in the shipped notes:**
+     (a) change the `next7` bound to `<` instead of `<=` →
+     `lib/crm/tasks.test.ts` case 4 fails on the `+7` activity moving to `later`;
+     (b) drop the `!activity.done` filter → case 5 fails;
+     (c) drop `excludeId`-style tie-breaking, i.e. make `compareByDueDateThenId`
+     return `0` for a tie → case 5's ordering test fails;
+     (d) render `<Link href="">` in the `null` branch of the link chain →
+     `components/crm/task-list.test.ts` case 12 fails, and the Playwright dead
+     link assertion (`toHaveCount(0)`) fails;
+     (e) remove `Tasks` from `CRM_SUBNAV` in `e2e/workroom.spec.ts` → the
+     `href`/`aria-current` assertions in the new spec's Journey 1 fail.
+     **A gate that cannot be broken by injection is a gate that is not running**
+27. `AUTH_SECRET=ci-build-placeholder npm run build` exit 0 **before**
+     `env -u DATABASE_URL npm test`, because `vitest` does not typecheck and
+     `next build` is what typechecks `e2e/` and the server/client prop boundary
+28. `AUTH_SECRET=local-playwright-secret npx playwright test
+     e2e/crm.spec.ts e2e/workroom.spec.ts e2e/crm-tasks.spec.ts` green with the
+     dev `.env` creds, after confirming nothing foreign owns `:3000`
+     (`playwright.config.ts:31` reuses an existing server)
+29. No new dependency; no table component touched; no `ListActivitiesOpts`
+     field added; no parallel `listTasks*` helper; no Tailwind, shadcn, TanStack
+     Query, or TanStack Router; no pagination; no `confirm()` replacement
 
 ## Verify command
 
-Per the spec.
+Run from the repo root.
 
 ```
 env -u DATABASE_URL npm test \

@@ -87,7 +87,7 @@ Fail closed on the flag. Do not log passwords. Residual risk: when the flag is o
 
 ## Phases
 
-Feature specs: `features/phase-6-accounts/` (6.1–6.4). Board: `features/INDEX.md`.
+Phase 6.1–6.4 shipped. Tracking: `feature_list.json`.
 
 | ID | Feature |
 | --- | --- |

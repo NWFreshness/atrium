@@ -124,7 +124,7 @@ Residual risk unchanged from Phase 9: 30-day JWT with no revocation; no MFA; no 
 
 ## Phase table
 
-Feature specs: `features/phase-11-crm-integrity/` (11.1–11.10). Board: `features/INDEX.md`.
+Phase 11 open work is in `inbox/`. Tracking: `feature_list.json`. Do not recreate `features/`.
 
 | ID | Feature | Depends on | Effort |
 | --- | --- | --- | --- |

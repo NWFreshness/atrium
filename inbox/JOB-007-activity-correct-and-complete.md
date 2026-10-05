@@ -23,9 +23,6 @@ components/crm/contact-table.tsx                    # Last contacted column (dis
 app/(authenticated)/crm/contacts/[id]/page.tsx     # Last contacted <dt>/<dd>
 components/crm/activity-timeline.test.ts            # extend from one assertion to a real source gate
 e2e/crm-activities.spec.ts                          # appended; file owned by JOB-001. Three new journeys (H backdate, I edit-and-re-sort, J delete) + 11.1 Journey E locator update
-features/phase-11-crm-integrity/11.3-activity-correct-and-complete.md
-features/INDEX.md
-CURRENT_FEATURE.md
 ```
 
 Branch convention: ship on `feat/11.3-activity-correct-and-complete`. Never
@@ -54,9 +51,6 @@ commit or push to `main`. Never merge unless the user asks.
 - **Linting.**
 
 ## Acceptance criteria
-
-The full criteria are in `features/phase-11-crm-integrity/11.3-activity-correct-and-complete.md`
-§"Acceptance criteria" (22 items). The card defends every item.
 
 1. `lib/crm/activity-actions.ts` exports `updateActivityForSession`,
    `updateActivityAction`, `deleteActivityForSession`,
@@ -116,12 +110,11 @@ The full criteria are in `features/phase-11-crm-integrity/11.3-activity-correct-
     on the label-flip; with `last-contacted.ts` returning the first array
     element instead of scanning, the unit test in AC5 goes red.
 21. Three-part verify (build → vitest → Playwright) green.
-22. `npm run format` was run with explicit paths; `features/INDEX.md` and
-    `CURRENT_FEATURE.md` are not reflowed.
+22. `npm run format` was run with explicit paths. Do not reformat unrelated files.
 
 ## Verify command
 
-Per the spec §"Verification". Build before test.
+Build before test.
 
 ```
 AUTH_SECRET=ci-build-placeholder npm run build \

@@ -17,7 +17,7 @@ Phases 0–6 shipped four apps in one Next.js deployable on one Neon database. T
 - Every CRM, Space, and Rolodex table has `tenantId`. None of those columns are indexed. Isolation is “every helper remembered to AND `tenantId`.”
 - `lib/crm/queries.ts`, `lib/space/queries.ts`, and `lib/rolodex/queries.ts` are 900–1200 line files that mix types, the memory store, and Drizzle.
 - Client components can pull Drizzle into the browser by value-importing those query modules. `/rolodex/circles` already does, via `move-person.ts` → `queries.ts`.
-- Expensive decisions live in HANDOFF, shipped notes, and chat. There are no ADRs.
+- Expensive decisions lived in session notes and chat. There were no ADRs yet.
 
 This phase hardens the modular monolith. It does not add a product, a service, or a new auth library.
 
@@ -42,7 +42,7 @@ Make the architecture we already chose observable and true: one deployable, four
 | RLS | Out | neon-http does not keep `SET LOCAL` / GUC across requests; RLS with `current_setting('app.tenant_id')` needs a connection that survives, which this driver does not |
 | Query files | Split memory vs Drizzle inside each app; `queries.ts` stays the public barrel | Callers (`*-actions`, tests) must not churn; a 1.2k-line file is how a module becomes mud |
 | Client boundary | Source-grep: `components/` must not value-import `queries.ts`, `schema.ts`, `lib/db`, seed, or reset | `import type` is fine; `"use server"` actions are fine; the circles-board leak is the proof |
-| ADRs | `docs/adr/NNNN-slug.md`, six accepted records of decisions already shipped | Why is the asset; HANDOFF is not a decision log |
+| ADRs | `docs/adr/NNNN-slug.md`, six accepted records of decisions already shipped | Why is the asset; chat history is not a decision log |
 | Session revocation | Out | Locked in 6.3; other devices keep the 30-day JWT |
 | Extract Groove / unify dnd / TanStack Query | Out | No user outcome; AGENTS.md already says copy the spec’s drag library |
 
@@ -105,7 +105,7 @@ Tenant isolation stays application-enforced (`requireTenant` + `tenantId` on eve
 
 ## Phases
 
-Feature specs: `features/phase-7-architecture/` (7.1–7.5). Board: `features/INDEX.md`.
+Phase 7.1–7.5 shipped. Tracking: `feature_list.json`.
 
 | ID | Feature |
 | --- | --- |

@@ -108,7 +108,7 @@ Residual risk: 30-day JWT with no revocation (ADR-0003); no MFA; `trustHost: tru
 
 ## Phases
 
-Feature specs: `features/phase-9-security/` (9.1–9.6). Board: `features/INDEX.md`.
+Phase 9.1–9.6 shipped. Tracking: `feature_list.json`.
 
 | ID | Feature |
 | --- | --- |

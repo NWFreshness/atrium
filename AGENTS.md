@@ -44,7 +44,7 @@ not a gate: 10 pre-existing `react-hooks/refs` findings and no CI lint step.
 - `lib/db/` — schema, migrations entry, seed; all SQL goes through Drizzle here. `lib/{auth,tenancy,input}/` shared; `lib/{crm,space,rolodex}/queries*.ts` per-app (barrel / shared / memory / drizzle).
 - `tests/` — repo-wide gates: theme contrast, CSS namespace, shell smoke. `lib/client-boundary.test.ts` gates the server/client import edge.
 - `e2e/` — Playwright specs; needs all six `AUTH_*` / `DATABASE_URL` values, skips without them.
-- `features/` — feature specs and `features/INDEX.md`, the board of record for done vs not. `CURRENT_FEATURE.md` is the pointer + log.
+- `docs/superpowers/specs/` — product design. If a design doc still names the retired board, `feature_list.json` wins.
 - `docs/adr/` — six accepted decisions plus a C4 view. The design doc wins if the two disagree.
 - `inbox/` — one factory job card per scoped job. `factory/` — verify hook, job template, done rule.
 - `progress.md` — factory session diary and current verified state. `feature_list.json` — factory machine state.
@@ -85,7 +85,7 @@ A feature is passing only when all four are true:
 - Keep CSS scoped per app. Prefixes: `crm-`, `space-`, `rolodex-`, `groove-`; shared nav is `atrium-nav-`. Shared nav classes must not rely on app theme variables.
 - No Tailwind, shadcn, TanStack Router, or TanStack Query without a feature spec. TanStack Table only in CRM/Space table features.
 - Write tests first on domain logic. Never weaken or delete a test to get a green run.
-- One feature at a time — never start the next while one is in progress. `features/INDEX.md` and `CURRENT_FEATURE.md` govern that.
+- One feature at a time — never start the next while one is in progress. `feature_list.json` governs that. Do not recreate `features/`, `CURRENT_FEATURE.md`, or `HANDOFF.md`.
 - Ship on a `feat/` branch with a GitHub PR. Never commit or push to `main`. Never merge unless the user asks.
 - Never commit secrets, tokens, `.env` values, or private URLs. `.env` is gitignored.
 - Never edit files outside a job card's scope paths.
@@ -98,7 +98,6 @@ A feature is passing only when all four are true:
 | `progress.md` | factory session diary + `## Current Verified State` |
 | `feature_list.json` | factory machine state: statuses, scope, verify, evidence |
 | `inbox/JOB-NNN-slug.md` | one job card: goal, scope, acceptance criteria, verify command |
-| `features/INDEX.md` + `CURRENT_FEATURE.md` | the product board: what is specced, in progress, done |
 | `factory/scripts/verify.sh` | the single verify hook |
 | `factory/DEFINITION_OF_DONE.md` | the done rule |
 
