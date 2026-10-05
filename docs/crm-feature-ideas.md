@@ -9,14 +9,12 @@
 ## What this document is
 
 Sixteen candidate features for the CRM, each grounded in a specific gap in the shipped code,
-ordered by value-per-hour. It is an **ideas document, not a spec set**. Nothing here touches
-`features/INDEX.md`, `CURRENT_FEATURE.md`, or `HANDOFF.md`, and no feature is marked
-`in_progress`.
+ordered by value-per-hour. It is an **ideas document, not a spec set**. It does not start work.
+Path citations below to `features/` or `HANDOFF.md` are historical; those files were removed.
 
-If you pick one from this list, the correct next step is the docs PR described in
-`references/phase-spec-authoring.md`: a Phase 11 design doc, a `features/phase-11-*/N.M-*.md`
-set, and the three tracking files moved together. That is a separate, deliberate act — this file
-does not start it.
+If you pick one from this list, the next step is `/factory-intake`: one job card in `inbox/`
+and one `feature_list.json` entry. Do not recreate `features/`, `CURRENT_FEATURE.md`, or
+`HANDOFF.md`.
 
 The repo's own rules shape everything below. `AGENTS.md` forbids Tailwind/shadcn/TanStack
 Query/TanStack Router; TanStack **Table** is already allowed in CRM table features. All SQL goes
@@ -62,8 +60,8 @@ session; the line references are the evidence.
 | G10 | **Deal numbers are unvalidated.** `createDeal` asserts nothing on `value`/`probability` beyond being a number; `updateDeal` asserts only `name`. A negative value or a 400% probability is accepted and poisons every total, the funnel, and the expected-revenue tile.                                 | `lib/crm/queries.ts:291-331`; `deal-form.tsx:88-92` checks `isFinite` client-side only.                                                                                                          |
 | G11 | **Deletes silently orphan rows.** `onDelete: "set null"` means deleting an organization nulls its contacts' and deals' `organizationId`, and they render as a blank `<dd>`. The confirm dialog says only "Delete {name}?" with no consequence preview.                                                  | `lib/crm/schema.ts:51,65,76`; `components/crm/org-table.tsx:62-66`.                                                                                                                              |
 | G12 | **No deal stage history.** Every pipeline metric is derived from a deal's _current_ stage. Days-in-stage, stage conversion, and forecast-vs-actual are not computable — the reference implementation documents this exact limitation and works around it by making the funnel cumulative.               | `lib/crm/dashboard.ts:131-153`; `lib/crm/constants.ts:14-20`.                                                                                                                                    |
-| G13 | **No tags or custom fields** on CRM records. Explicitly excluded in 1.3. Rolodex already has `tags jsonb` as a precedent.                                                                                                                                                                               | `features/phase-1-crm/1.3-organizations.md` Exclude; `lib/rolodex/schema.ts:59`.                                                                                                                 |
-| G14 | **No import or export.** Explicitly excluded in 1.3 and 1.4. Rolodex has the full machinery already (Papa Parse, `import-limits.ts`, `person-fields.ts`).                                                                                                                                               | `features/phase-1-crm/1.3-organizations.md` and `1.4-contacts.md` Exclude sections.                                                                                                              |
+| G13 | **No tags or custom fields** on CRM records. Explicitly excluded in 1.3. Rolodex already has `tags jsonb` as a precedent.                                                                                                                                                                               | phase 1.3 spec (retired) Exclude; `lib/rolodex/schema.ts:59`.                                                                                                                 |
+| G14 | **No import or export.** Explicitly excluded in 1.3 and 1.4. Rolodex has the full machinery already (Papa Parse, `import-limits.ts`, `person-fields.ts`).                                                                                                                                               | phase 1.3 spec (retired) and `1.4-contacts.md` Exclude sections.                                                                                                              |
 | G15 | **Every list query is unbounded.** No `.limit()` anywhere in the CRM Drizzle module; a tenant with 10k deals transfers all 10k to render a table.                                                                                                                                                       | `lib/crm/queries-drizzle.ts:95-380` — no `limit` call in any list function.                                                                                                                      |
 | G16 | **No cross-entity search.** Each page has its own `q` box; Space already has a ⌘/Ctrl+K QuickFind across pages, databases, and rows.                                                                                                                                                                    | `app/(authenticated)/crm/*/page.tsx`; `components/space/quick-find.tsx` is the in-repo precedent.                                                                                                |
 
@@ -492,7 +490,7 @@ second.
   `Intl.NumberFormat`. Adding a currency column means storing the rate or the FX date to make
   historical totals honest. Enormous, and wrong for a personal CRM.
 - **Email or calendar integration.** Deferred in 1.7, and it needs a mailer — which is a locked
-  non-goal (`HANDOFF.md` "Open decisions carried forward").
+  non-goal (previously carried as an open decision).
 - **Custom fields (user-defined, per-tenant).** 1.3 excluded it for good reason: it is an EAV
   schema, a form builder, a filter builder, and a migration story. Tags (C2) gets 80% of the
   value for 15% of the cost.
@@ -506,7 +504,7 @@ second.
 - **Soft deletes / a recycle bin.** Tempting for G11, but it doubles every list query's filter
   and every seed's wipe. The consequence preview (A6) gets most of the safety for none of that.
 - **Anything touching RLS, session revocation, OAuth, or a mailer.** All named non-goals in
-  `HANDOFF.md` and locked ADRs. Not features; reopening one needs its own reversal trigger.
+  locked ADRs and previously recorded open decisions. Not features; reopening one needs its own reversal trigger.
 
 ---
 

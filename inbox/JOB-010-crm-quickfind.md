@@ -23,9 +23,6 @@ components/crm/crm-subnav.tsx                       # trigger sibling of <ul>, i
 components/crm/crm-subnav.module.css                # margin-left: auto wrapper
 app/(authenticated)/crm/layout.tsx                  # render <CrmQuickFind /> beside <CrmSubnav /> inside .crm-shell
 e2e/crm-quickfind.spec.ts                           # new — opens from every section, grouped, navigates, activity href, no matches, Escape, ⌘K over form ignored, owner isolation
-features/phase-11-crm-integrity/11.10-crm-quickfind.md
-features/INDEX.md
-CURRENT_FEATURE.md
 ```
 
 Branch convention: ship on `feat/11.10-crm-quickfind`. Never commit or push
@@ -56,9 +53,6 @@ to `main`. Never merge unless the user asks.
 - **A `?quickfind=` URL param.**
 
 ## Acceptance criteria
-
-The full criteria are in `features/phase-11-crm-integrity/11.10-crm-quickfind.md`
-§"Acceptance criteria" (28 items). The card defends every item.
 
 1. `lib/crm/search.ts` exports `searchCrm(tenantId, q, repo?)` returning
    `CrmSearchResults` with four arrays, a `totals` record, and
@@ -122,7 +116,7 @@ The full criteria are in `features/phase-11-crm-integrity/11.10-crm-quickfind.md
 
 ## Verify command
 
-Per the spec.
+Run from the repo root.
 
 ```
 env -u DATABASE_URL npm test \

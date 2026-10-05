@@ -18,15 +18,6 @@ e2e/crm-pipeline.spec.ts
 e2e/crm-activities.spec.ts
 e2e/crm.spec.ts                  # read-only unless a fix is required by AC14
 playwright.config.ts             # comment-only, per AC18
-features/phase-11-crm-integrity/11.1-crm-e2e-coverage.md   # acceptance checkboxes + shipped notes
-features/INDEX.md                # 11.1 -> completed, and only after the PR merges
-CURRENT_FEATURE.md               # append one log entry; never delete old entries
-HANDOFF.md                       # ADDED 2026-10-05 (session 6): reconcile the stop-line with
-                                 # features/INDEX.md. Review finding 2 — /factory-review flagged
-                                 # HANDOFF.md:5 as still saying "11.1 is in progress" while INDEX
-                                 # says completed, which fails the done rule's restartability item.
-                                 # One file, one stop-line plus the read-order step; a doc fix, and
-                                 # the alternative was rescoping the whole card for two lines.
 .github/workflows/ci.yml         # READ-ONLY. PR #90 (76e4d35) already gates six secrets. Do not edit.
 ```
 
@@ -164,8 +155,9 @@ Two findings, both state documents already listed in `## Scope paths`, neither p
    11.1 is in progress.` A cold session is instructed to read `HANDOFF.md` first and is therefore
    told the opposite of `INDEX.md`.
 
-`HANDOFF.md` is **not** in `## Scope paths`, so fixing finding 2 either adds it to Scope paths with
-a one-line reason in Notes, or goes back to `/factory-intake` for rescoping.
+Findings 1 and 2 named the retired board. That board was removed. Do not recreate
+`features/`, `CURRENT_FEATURE.md`, or `HANDOFF.md` to close them. Status lives in
+`feature_list.json` only, and feat-001 is already `passing`.
 
 The other 13 criteria were checked against the real files and hold. The code needs no change.
 `/factory-verify` must still run the gate itself before any status becomes `passing`.
@@ -238,6 +230,5 @@ sequence needs revisiting before it is trusted.
 **Demo tenant noise that is not from this feature:** `/crm/deals` carries 6 seeded deals plus one
 pre-existing `Test` deal. Do not treat it as a leftover of this job.
 
-**State coordination.** Product status lives in `features/INDEX.md` and `CURRENT_FEATURE.md`, not in
-`feature_list.json`. Set 11.1 to `completed` in both only after PR #92 merges, and record it in this
-card's Notes at handoff.
+**State coordination.** Status lives in `feature_list.json` only. The old board
+(`features/`, `CURRENT_FEATURE.md`, `HANDOFF.md`) was removed; do not recreate it.

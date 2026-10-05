@@ -20,9 +20,6 @@ lib/crm/contact-form.tsx                            # duplicate-error slot
 lib/crm/queries.test.ts                             # case-variant rejected; null email unaffected; tenant bucket grows
 lib/crm/contact-actions.test.ts                     # tenant-scoping, the typed 23505 code
 lib/db/seed.ts                                      # upsert pattern mirrors 8.1's update (case-insensitive lookup; do NOT use onConflictDoUpdate on table.email)
-features/phase-11-crm-integrity/11.6-contact-email-uniqueness.md
-features/INDEX.md
-CURRENT_FEATURE.md
 ```
 
 Branch convention: ship on `feat/11.6-contact-email-uniqueness`. Never commit
@@ -44,49 +41,138 @@ or push to `main`. Never merge unless the user asks.
 
 ## Acceptance criteria
 
-The full criteria are in `features/phase-11-crm-integrity/11.6-contact-email-uniqueness.md`
-§"Acceptance criteria". The card defends every item.
 
-1. `contacts` declares
-   `uniqueIndex("contacts_email_lower_idx").on(table.tenantId, sql\`lower(${table.email})\`)` —
-   **tenant-composite**, not global. Nullable emails are unaffected (nullable
-   columns are exempt from unique indexes in Postgres).
-2. `drizzle/0008_*.sql` is the hand-edited idempotent migration pair:
-   `DROP CONSTRAINT IF EXISTS <old>` (if any exists) and
-   `CREATE UNIQUE INDEX IF NOT EXISTS contacts_email_lower_idx …`. The
-   0004/0005/0006 precedent applies — IF NOT EXISTS is hand-added, the
-   "name-not-definition" caveat documented in the file.
-3. `lib/crm/queries.ts`'s `createContact` and `updateContact` perform a
-   case-insensitive duplicate pre-check **before** insert/update, and the
-   Drizzle `*.onConflictDoNothing()` twin does not target the column name —
-   Postgres cannot infer an expression index from a column conflict target
-   (the same defect 8.1 fixed for `users`).
-4. A case-variant duplicate at the boundary is refused with the typed code
-   `email_taken`. The action returns it; the dialog surfaces the message and a
-   link to the existing record.
-5. **Memory repository matches Drizzle**: case-insensitive lookup returns the
-   existing contact; a `null` email insert succeeds; the same id with a
-   case-variant email fails.
-6. **`lib/crm/queries-drizzle.ts`** does not contain `assertText` (already true),
-   and the new lookup uses `lower()` exactly as the index does. `escapeIlike`
-   is unaffected.
-7. **Injection-proven, both probes reverted byte-identically:**
-   - removing the pre-check leaves the typed code unreachable, the unit test
-     that asserts it goes green (a vacuous green is the failure mode this
-     exists to catch);
-   - removing the index by hand from the migration re-applied fails the live
-     unique-constraint test (vitest cannot run the live Postgres; the
-     repository test plus the live migration check are the gate).
-8. `lib/db/seed.ts` either runs unchanged or, if the upsert against the new
-   index breaks, mirrors the 8.1 fix exactly: a `lower(email)` lookup, then
-   an update by id or an untargeted `on conflict do nothing`. The seed remains
-   idempotent.
-9. Existing dialogs (`OrgForm`, `DealForm`) are not changed. Only
-   `contact-form.tsx` gains the duplicate-error slot.
+Numbered criteria below are the contract for this job. They were lifted from the retired phase-11 spec when that board was removed.
+
+1. `lib/crm/schema.ts` declares
+   `uniqueIndex("contacts_email_lower_idx").on(table.tenantId, sql\`lower(${table.email})\`)`,
+   and `contacts.email` is still a bare nullable `text("email")` at `:48` with
+   `isUnique === false`
+2. `lib/db/schema.test.ts` — the `contacts lower(email) unique index` block
+   asserts the name, `method === "btree"`, and the rendered column list
+   `["tenantId", 'lower("contacts"."email")']` — **in that order**
+3. `lib/db/schema.test.ts` — the `tenantId indexes` gate at `:104-129` is
+   narrowed to single-column `tenantId` indexes and still asserts one per
+   table, named `<table>_tenantId_idx`; a reader running the suite *before* this
+   edit sees `expected [ 'contacts_tenantId_idx', 'contacts_email_lower_idx' ]
+   to have a length of 1 but got 2`, and that failure is recorded here
+4. `lib/db/schema.test.ts` — the `0008` migration block reads the **real**
+   generated filename, asserts exactly one statement, matches it byte-for-byte
+   as written in the committed file, and asserts the source contains no
+   `DROP TABLE|DROP TYPE|ALTER TYPE|ALTER TABLE|CREATE POLICY|ROW LEVEL
+   SECURITY|DELETE FROM|TRUNCATE`
+5. `drizzle/0008_*.sql` carries `IF NOT EXISTS`, carries the
+   name-not-definition caveat in a comment above the statement, has **no**
+   `ALTER TABLE`, and `env -u DATABASE_URL npm run db:generate` afterwards
+   creates no `0009_*` and leaves `drizzle/meta/_journal.json` at eight entries
+6. `lib/crm/queries.test.ts` — `createContact(tenantA, "Ana@x.test")` then
+   `createContact(tenantA, "ana@x.test")` rejects with a `ContactError` whose
+   `code` is `"duplicate_email"`, and `listContacts(tenantA, memory)` has one row.
+   **Today this is false:** `lib/crm/queries-memory.ts` has no `toLowerCase` /
+   `lower(` and `createContactInMemory` (`:137-143`) is a bare push. This
+   criterion is the work that closes that, not a claim about current code.
+7. `lib/crm/queries.test.ts` — two `createContact` calls with no `email`
+   both succeed in one tenant (the property the seed does not cover, per §7)
+8. `lib/crm/queries.test.ts` — the same address in `tenantA` and `tenantB`
+   both succeed
+9. `lib/crm/queries.test.ts` — `"  ana@x.test  "` is stored as
+   `"ana@x.test"` on create and on update, and `""` is stored as `null`
+10. `lib/crm/queries.test.ts` — `updateContact` onto another contact's
+    address rejects; onto its **own** address with a new job title succeeds and
+    the title changed
+11. `lib/crm/queries.test.ts` — the pre-check's rendered SQL contains
+    `lower("contacts"."email")` **and** `"contacts"."tenantId"`, carries
+    `params === ["tenant-a", "ana@x"]`, and does **not** match
+    `/"contacts"\."email"\s*=/`
+12. `lib/crm/queries-drizzle.ts` exports `isUniqueViolation` and it returns
+    `true` for `{ code: "23505" }` **with any message**, `true` for
+    `{ message: 'duplicate key value violates unique constraint
+    "contacts_tenantId_idx"' }` **with no code**, and `false` for
+    `{ code: "42P10", message: "there is no unique or exclusion constraint
+    matching the ON CONFLICT specification" }` — three cases, because a
+    name-matching implementation fails the first two
+13. `lib/crm/contact-actions.test.ts` — a taken address returns
+    `{ ok: false, code: "duplicate_email", existing: { id, name, email } }`, and
+    the same address in another tenant returns `{ ok: true }` with no `existing`
+    key
+14. `lib/crm/contact-actions.test.ts` — an update the store refuses returns
+    `{ ok: false, code: "duplicate_email" }` with **no** `existing` key (the
+    race-fallback shape), and an update keeping its own address returns
+    `{ ok: true, contact }`
+15. `lib/crm/contact-actions.test.ts` — `createContactForSession` with no
+    session still rejects with `"Unauthenticated"`, and
+    `findContactByEmail("", "x")` rejects with `"tenantId is required"`
+16. `components/crm/contact-form.tsx` renders, inside the dialog,
+    a `role="alert"` paragraph whose text is
+    `{name} already uses {email}.` and a link named `Open {name}` with
+    `href="/crm/contacts/{id}"` and an `onClick` that calls `onClose`; the
+    input carries `aria-invalid` and `aria-describedby`; and on submit
+    `router.refresh()` and `onClose()` do **not** run
+17. The two user-facing sentences are the only strings the feature adds:
+    `{name} already uses {email}.` and
+    `Could not save that contact. That email may already be in use.` — and a
+    grep over `components/crm/contact-form.tsx` finds none of `duplicate`,
+    `unique`, `index`, `constraint`, `23505`, `42P10`, `lower(`,
+    `case-insensitive`, `email_lower_idx`
+18. `lib/client-boundary.test.ts` green; `components/crm/contact-form.tsx`
+    has **no** value import of `ContactError`, `lib/crm/queries.ts`,
+    `lib/crm/schema.ts`, `lib/db`, `drizzle-orm`, or
+    `@neondatabase/serverless` — the error class is imported by the action and
+    the store only, and the client takes `ContactResult` as a type
+19. `components/crm/crm-pnw.test.ts`, `components/crm/crm-pass.test.ts`,
+    `tests/theme-contrast.test.ts`, `tests/workroom-namespace.test.ts`,
+    `tests/crm-shell.test.ts` all green with no edits
+20. `e2e/crm-contacts.spec.ts` has two tests: the duplicate journey asserts
+    the alert text and the `Open {name}` link **inside the dialog** and asserts
+    the dialog is hidden after the link is clicked, and the cross-tenant
+    journey creates the same address in the demo and owner tenants and asserts
+    both rows exist. Both mint their own `Date.now()` addresses inside the test
+    body, `afterEach` deletes what it created, and **no test asserts an exact
+    row count**
+21. **Injection-proven, each probe reversed byte-identically and the result
+    recorded in the shipped notes:**
+    (a) delete the `uniqueIndex` declaration → the schema test fails naming
+    `contacts_email_lower_idx` (`expected [] to deeply equal
+    [ 'contacts_email_lower_idx' ]`);
+    (b) change the index to the data engineer's global
+    `.on(sql\`lower(${table.email})\`)` → the column-order assertion fails
+    showing `['lower("contacts"."email")']` against
+    `['tenantId', 'lower("contacts"."email")']`, **and** the narrowed
+    `tenantId indexes` gate still passes (it no longer sees the composite) —
+    which is why criterion 2 pins the order and not just the set;
+    (c) put `.unique()` back on `contacts.email` → the
+    `isUnique === false` assertion fails;
+    (d) remove the guard from `createContactInMemory` → criterion 6's test fails
+    with two rows instead of a rejection, and criterion 7's test still passes —
+    if **both** pass after the removal, the memory guard is not what CI is
+    actually running;
+    (e) make `isUniqueViolation` match the index name instead of the SQLSTATE
+    → criterion 12's first two cases fail.
+    **A guard that cannot be broken by injection is not a guard; a criterion
+    that cannot fail is not a criterion.**
+22. `AUTH_SECRET=ci-build-placeholder npm run build` exit 0 **before**
+    `env -u DATABASE_URL npm test`, because `vitest` does not typecheck and
+    `next build` is what catches a non-async export from a `"use server"`
+    module (§1.2) and typechecks `e2e/`
+23. `AUTH_SECRET=local-playwright-secret npx playwright test
+    e2e/crm-contacts.spec.ts e2e/crm.spec.ts` green with the dev `.env` creds,
+    after confirming nothing foreign owns `:3000`
+24. §7 steps 1–7 executed and recorded in the shipped notes: generated file
+    read, `IF NOT EXISTS` + caveat added, second generate a no-op, pre-flight
+    returned zero rows, `db:migrate` on **dev** pre-merge, `pg_indexes`
+    read-back showing `contacts_email_lower_idx` UNIQUE over both columns with
+    `contacts_tenantId_idx` still non-unique, and the three live probes
+    (same-tenant case-variant refused; other-tenant same address accepted; two
+    `NULL` emails both inserted)
+25. `lib/db/seed.ts` is **byte-unchanged** (`git diff -- lib/db/seed.ts`
+    empty): its only conflict targets are `tenants.name` at `:150` and the
+    untargeted form at `:202`, and no CRM write uses `onConflict`
+26. No new dependency; no `onConflict` added anywhere in `lib/crm/`; no
+    second list helper; no Tailwind, shadcn, TanStack Query, or TanStack Router
 
 ## Verify command
 
-Per the spec. Build before test.
+Build before test.
 
 ```
 env -u DATABASE_URL npm test \

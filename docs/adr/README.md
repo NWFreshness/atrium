@@ -1,7 +1,7 @@
 # Architecture Decision Records
 
 Why this directory exists: the expensive choices in Atrium were made in chat, in
-`HANDOFF.md`, and in feature "shipped notes" — all of which are history, not
+session notes, and in feature "shipped notes" — all of which are history, not
 decisions. An ADR states one decision, the options that lost, and the evidence
 that would make us change our mind.
 

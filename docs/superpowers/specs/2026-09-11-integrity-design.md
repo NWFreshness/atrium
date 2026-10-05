@@ -97,7 +97,7 @@ The field catalog being client-safe does not expose Papa or `vcf` to the browser
 
 ## Phases
 
-Feature specs: `features/phase-8-integrity/` (8.1–8.3). Board: `features/INDEX.md`.
+Phase 8.1–8.3 shipped. Tracking: `feature_list.json`.
 
 | ID | Feature |
 | --- | --- |

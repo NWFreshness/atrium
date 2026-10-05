@@ -6,12 +6,6 @@ A Next.js + Postgres reimplementation of those jobs-to-be-done, not a fork. Owne
 
 Design: [docs/superpowers/specs/2026-09-06-atrium-design.md](docs/superpowers/specs/2026-09-06-atrium-design.md)
 
-Phase/feature board: [features/INDEX.md](features/INDEX.md)
-
-Current feature: [CURRENT_FEATURE.md](CURRENT_FEATURE.md)
-
-Agent handoff (read this first if you are new): [HANDOFF.md](HANDOFF.md)
-
 ## Setup
 
 ```bash

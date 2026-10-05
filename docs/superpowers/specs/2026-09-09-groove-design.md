@@ -137,4 +137,4 @@ Playwright in 4.8 is deliberately shallow (reference `e2e/groove/instrument.spec
 
 ## Board
 
-`features/INDEX.md`. Specs: `features/phase-4-groove/`. Next implementable unit after this file lands: 4.1.
+Phase 4 shipped. Tracking: `feature_list.json`. Do not recreate `features/`.

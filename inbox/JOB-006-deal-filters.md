@@ -27,9 +27,6 @@ components/crm/org-table.tsx                        # empty-state copy fix
 components/crm/contact-table.tsx                    # empty-state copy fix
 lib/crm/queries.test.ts                             # rejection / acceptance of opts; STAGE_PROBABILITY unchanged
 e2e/crm-deals.spec.ts                               # appended; file owned by JOB-002
-features/phase-11-crm-integrity/11.8-deal-filters.md
-features/INDEX.md
-CURRENT_FEATURE.md
 ```
 
 Branch convention: ship on `feat/11.8-deal-filters`. Never commit or push to
@@ -52,42 +49,146 @@ Branch convention: ship on `feat/11.8-deal-filters`. Never commit or push to
 
 ## Acceptance criteria
 
-The full criteria are in `features/phase-11-crm-integrity/11.8-deal-filters.md`
-§"Acceptance criteria". The card defends every item.
 
-1. `ListDealsOpts` gains `stage?: DealStage`, `closeAfter?: Date`,
-   `closeBefore?: Date`. Both stores implement the new branches. **No
-   parallel `listDealsBy*` helper.**
-2. `lib/crm/deal-params.ts` is a pure module: parses `?stage=`,
-   `?closeAfter=`, `?closeBefore=`. An unknown `stage` value is ignored
-   (returns `undefined`), not 500. **The current `?status=` parse on
-   `app/(authenticated)/crm/contacts/page.tsx:8-19` is the in-repo
-   precedent** for the `parseStatus` shape.
-3. `app/(authenticated)/crm/deals/page.tsx` renders three new GET-form fields
-   matching how `/crm/contacts` does its `status` select — one `<select>` for
-   stage, two `<input type="date">` for the close window.
-4. Filters compose with `?q=`. The two-argument callers of `listDeals` still
-   typecheck (memory + Drizzle paths agree).
-5. **Empty-state copy is honest on all three list pages.** `/crm/deals?q=zzz`
-   reads "No matching deals" rather than "No deals"; same for orgs and
-   contacts when filters narrow the list. The same gate that catches the
-   fix is the gate that catches the lie — a test names the exact strings.
-6. **Default (unfiltered) order is unchanged.** No `ORDER BY` added. Third
-   click in 11.4's sort returns to whatever the list action returned.
-7. The browser gate (in 11.2's `e2e/crm-deals.spec.ts`) covers at least:
-   - each filter narrows the table and survives a reload through the URL;
-   - filters compose with `?q=`;
-   - an unknown `?stage=foo` is ignored, not 500;
-   - the empty-state copy is the "No matching deals" form, not "No deals".
-8. **Injection-proven, both probes reverted byte-identically:**
-   - removing the stage filter from the Drizzle module leaves the
-     `?stage=Negotiation` journey green (a vacuous green is the failure mode);
-   - removing the parser's `unknown → undefined` branch makes a hand-rolled
-     `?stage=foo` 500 the page.
+Numbered criteria below are the contract for this job. They were lifted from the retired phase-11 spec when that board was removed.
+
+1. `lib/crm/queries-shared.ts` — `ListDealsOpts` has `stage?: DealStage`,
+    `closeAfter?: Date`, `closeBefore?: Date` after `contactId`, and **no new
+    import** was added (the file already imports `DealStage` at `:6`)
+2. All six two-argument `listDeals` / `listDealsAction` call sites are
+    unmodified and typecheck: `lib/crm/dashboard.ts:260`,
+    `lib/crm/move-deal.ts:29`, `app/(authenticated)/crm/pipeline/page.tsx:5`,
+    and the three test files. This is proven by
+    `AUTH_SECRET=ci-build-placeholder npm run build` exit 0
+3. `lib/crm/deal-params.ts` exports `parseStage`, `parseCloseDate` and
+    `closeBeforeExclusive`; it imports only from `./constants`, and
+    `lib/deal-params.test.ts`'s source-grep asserts the file contains no
+    `queries`, `schema`, `lib/db` or `drizzle-orm`
+4. `lib/crm/deal-params.test.ts` — `parseCloseDate("2026-09-30")` returns a
+    `Date` whose `toISOString()` is exactly `"2026-09-30T00:00:00.000Z"`, and the
+    file carries a comment naming the missing-`Z` local-time failure
+5. `lib/crm/deal-params.test.ts` — `parseCloseDate("2026-02-31")` is
+    `undefined` (round-trip), `parseCloseDate("2026-2-3")` is `undefined`
+    (shape), `parseStage("Bogus")` is `undefined` (membership), and
+    `closeBeforeExclusive("2026-12-31")` is `"2027-01-01T00:00:00.000Z"`
+6. `lib/crm/queries-memory.ts` — `listDealsInMemory`'s predicate includes
+    the stage equality and both window comparisons with an explicit
+    `closeDate !== null` guard, and the existing tenant / search / id conditions
+    are unmodified
+7. `lib/crm/queries-drizzle.ts` — `listDealsInDrizzle`'s `filters` array
+    gains `eq(deals.stage, …)`, `gte(deals.closeDate, …)` and
+    `lt(deals.closeDate, …)`, each behind an `!== undefined` spread; the
+    no-`q` vs `q`-join branch structure at `:273-293` is byte-identical, and
+    `gte` and `lt` are added to the `drizzle-orm` import at `:1`
+8. `lib/crm/deal-params.test.ts` and `lib/crm/queries.test.ts` pin the
+    **half-open** bound: a deal at exactly `closeAfter` is included, a deal at
+    exactly `closeBefore` is **excluded**, and a deal at `closeBefore - 1ms` is
+    included — each asserted by `id`, not by index
+9. `lib/crm/queries.test.ts` — a deal with a NULL `closeDate` is excluded by
+    an active `closeAfter`, by an active `closeBefore`, and by both; and it is
+    still returned when no window is given (the existing test at `:484-512` is
+    unmodified and green)
+10. `lib/crm/queries.test.ts` — an inverted window
+    (`closeAfter: sep30, closeBefore: sep1`) returns `[]`, and a case combining
+    all five filters returns exactly one row
+11. `lib/crm/deal-actions.ts:61-65` — the re-projection literal lists `q`,
+    `organizationId`, `contactId`, `stage`, `closeAfter`, `closeBefore` in that
+    order. **It is a literal, not a spread of `input`.** `ClientTenantInput`
+    (`:21-23`) is unchanged
+12. `lib/crm/deal-actions.test.ts` — a new case asserts
+    `listDealsForSession(getSessionA, { stage: "Qualified" }, memory)` returns
+    only the `Qualified` deal and
+    `listDealsForSession(getSessionA, { closeAfter, closeBefore }, memory)`
+    returns only the in-window deal, with a comment naming
+    `lib/crm/deal-actions.ts:61-65` as the thing under test
+13. `lib/crm/deal-actions.test.ts` — the existing case at `:120-133` still
+    passes with `{ q, tenantId: tenantB }`, proving the re-projection cannot be
+    widened into a tenant override; `rejects.toThrow("Unauthenticated")` at
+    `:281-290` unmodified
+14. `app/(authenticated)/crm/deals/page.tsx` — the form has five fields with
+    `name` / `id` exactly as §6's table, plus the unchanged `Search` submit;
+    the five `id`s collide with none of the seven in
+    `components/crm/deal-form.tsx:129,144,161,183,201,216,237`
+15. `app/(authenticated)/crm/deals/page.tsx` — every control is
+    uncontrolled with `defaultValue`; there is no `useState`, no `onChange`, and
+    no client component in the file
+16. `app/(authenticated)/crm/deals/page.tsx` — `Organization` is validated
+    against the fetched `organizations` before it reaches `listDealsAction`, so
+    a stale or foreign id renders the unfiltered table with `All` selected, not
+    an empty one
+17. `/crm/deals?stage=Bogus` returns 200, renders the unfiltered table with
+    `All` selected, and renders **no** summary line
+18. The summary line renders only when a filter is active, inside
+    `.crm-toolbar`, in the order `q` → `stage` → window → organization, joined
+    with `, `, with a single `· Clear filters` suffix; the four single-filter
+    strings and the composed string are exactly the ones in §7's table
+19. Dates in the summary are rendered by `formatDate`
+    (`lib/crm/format.ts:8-18`) with its `timeZone: "UTC"`, and the test reads
+    the rendered text rather than hand-typing a date
+20. `Clear filters` is a `<Link href="/crm/deals">` with the exact accessible
+    name `Clear filters`, and clicking it lands on `/crm/deals` with an empty
+    query string
+21. `components/crm/org.module.css` — `.crm-filter-summary` is `crm-`
+    prefixed, sets no new token, contains no `display: none`
+    (`components/crm/crm-pnw.test.ts:220-227`), and the module is otherwise
+    unmodified
+22. `deal-table.tsx`, `contact-table.tsx` and `org-table.tsx` each gain one
+    optional `filtered?: boolean` prop defaulting to `false`; the three
+    no-filter strings `No deals` / `No contacts` / `No organizations` are
+    byte-identical to today's, and the three filtered strings are exactly
+    `No deals match these filters.` / `No contacts match these filters.` /
+    `No organizations match these filters.`
+23. `/crm/contacts?q=zzz` renders `No contacts match these filters.` and
+    `/crm/organizations?q=zzz` renders `No organizations match these
+    filters.` — the pre-existing lie, fixed in the same PR
+24. `e2e/crm-deal-filters.spec.ts` has three tests: stage + organization
+    narrowing surviving a `page.reload()`; the date window with minted rows
+    including the **last** day; and unknown-`stage` tolerance. The second test
+    asserts the window's final day is visible, which an inclusive-`lte` bound
+    would fail
+25. The date-window test mints its own deals with close dates and does not
+    rely on the seed — `lib/crm/seed.ts:107-173` writes no `closeDate`, and
+    `lib/crm/seed.ts` is unmodified
+26. Every mutating test mints `Date.now()`-suffixed names inside the test
+    body; no `beforeAll` writes; **no exact row-count assertion**; `afterEach`
+    re-reads the button list each pass and asserts each name is gone
+27. Every `page.once("dialog", …)` is registered before the click that
+    opens `confirm()`; every role name derived from a fixture is
+    `{ exact: true }`; no CSS-module class selector; no `waitForTimeout`
+28. `lib/client-boundary.test.ts`, `components/crm/crm-pnw.test.ts`,
+    `components/crm/crm-pass.test.ts`, `tests/crm-shell.test.ts`,
+    `tests/workroom-namespace.test.ts` and `tests/theme-contrast.test.ts` are
+    green and unmodified
+29. **Injection-proven.** Three probes, each reversed byte-identically,
+    results recorded in the shipped notes:
+    1. remove `stage: input.stage` from the literal at
+       `lib/crm/deal-actions.ts:62-66` → `lib/crm/deal-actions.test.ts` fails
+       on the `{ stage: "Qualified" }` case. **This is the probe that matters
+       most** — the type still compiles with the field removed, which is why
+       this bug ships silently
+    2. change `lt(deals.closeDate, …)` to `lte(deals.closeDate, …)` in
+       `queries-drizzle.ts` → the **unit** test at criterion 8 still passes
+       (it runs the memory store) and the **e2e** date-window test fails on the
+       last-day assertion. A unit-only suite cannot catch this; that is the
+       recorded limit
+    3. set `closeBefore: closeToDate` instead of
+       `closeBeforeExclusive(closeTo)` in the page → the e2e date-window test
+       fails on the last-day assertion
+30. `env -u DATABASE_URL npm test` green;
+    `AUTH_SECRET=ci-build-placeholder npm run build` exit 0 **before** the test
+    command (`vitest` does not typecheck; `next build` typechecks `e2e/`); then
+    `AUTH_SECRET=local-playwright-secret npx playwright test
+    e2e/crm-deal-filters.spec.ts e2e/crm.spec.ts` green against the dev `.env`
+    creds
+31. The shipped notes record: what job `ci` ran (vitest against the memory
+    repo, **no** Postgres, **no** Playwright), that the Drizzle `gte` / `lt`
+    fragments are proven by the browser journey and a source read rather than
+    by a unit test, and that 11.4's client-side sort is not covered by this
+    feature and dies on reload
 
 ## Verify command
 
-Per the spec.
+Run from the repo root.
 
 ```
 env -u DATABASE_URL npm test \

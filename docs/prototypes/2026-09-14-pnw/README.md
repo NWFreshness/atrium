@@ -7,7 +7,7 @@ Two standalone HTML studies, kept as the source of record for the values Phase 1
 | `palette.html`    | The six PNW colours applied to Atrium's chrome, with a basalt/mist theme toggle. Prints the WCAG ratio of every pair it uses and renders the three naive combinations (moss on basalt, golden on mist, lichen on mist) as they would actually ship.                                      |
 | `typography.html` | Ten faces — the brief's candidates plus Atrium's current Fraunces/Geist — with a live heading × body picker that re-sets the applied mock, and metrics measured from the loaded outlines (x-height, cap height, average lowercase advance, the width a 72-character line needs at 16px). |
 
-Both pages measure themselves in the browser rather than quoting a specimen sheet: contrast from WCAG 2.1 relative luminance, type metrics from canvas `TextMetrics` against the loaded webfont. The numbers they print are the numbers quoted in `docs/superpowers/specs/2026-09-14-pnw-design.md` and in the `features/phase-10-pnw/` specs.
+Both pages measure themselves in the browser rather than quoting a specimen sheet: contrast from WCAG 2.1 relative luminance, type metrics from canvas `TextMetrics` against the loaded webfont. The numbers they print are the numbers quoted in `docs/superpowers/specs/2026-09-14-pnw-design.md`.
 
 Rules for anyone changing a value:
 

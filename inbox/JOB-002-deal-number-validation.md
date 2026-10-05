@@ -17,9 +17,7 @@ lib/input/numbers.test.ts
 e2e/crm-deals.spec.ts                              # 11.2 owns this file; 11.4 and 11.5 append
 lib/crm/queries.ts                                  # barrel calls in createDeal + updateDeal
 lib/crm/queries.test.ts                             # rejection cases + STAGE_PROBABILITY still passes
-features/phase-11-crm-integrity/11.2-deal-number-validation.md
-features/INDEX.md                                   # 11.2 -> completed only after the PR merges
-CURRENT_FEATURE.md                                  # append one log entry; never delete old entries
+app/(authenticated)/crm/deals/[id]/page.tsx         # 11.2 owns the Probability % suffix on the <dd> (one-token)
 ```
 
 Branch convention: ship on a `feat/11.2-deal-number-validation` branch with a
@@ -38,18 +36,17 @@ GitHub PR. Never commit or push to `main`. Never merge unless the user asks.
 - **Sorting assertions, edit-from-detail journeys, QuickFind, the deals
   `?stage=` form.** Those are 11.4, 11.5, 11.10, 11.8.
 - **The `Probability` `%` suffix on `app/(authenticated)/crm/deals/[id]/page.tsx:43`.**
-  Per 11.5's Controller notes #1, that line is **11.2's** — this card owns it,
-  but as a one-token change to the `<dd>` text only.
+  This card owns it (see the line above in `## Scope paths`); the heading
+  here is mislabelled, kept for the audit trail. Per 11.5's Controller
+  notes #1, the line is **11.2's** — the spec's own Recorded Limit #6
+  ("Not this feature") is stale. The change is one token (`{deal.probability}`
+  → `{deal.probability}%`); 11.5 must not take it.
 - **Editing the `e2e/crm-deals.spec.ts` file later.** 11.4 appends sorting;
   11.5 appends edit-from-detail. This card ships the file with Journeys F and G
   only.
 - **Linting.**
 
 ## Acceptance criteria
-
-The full criteria are in `features/phase-11-crm-integrity/11.2-deal-number-validation.md`
-§"Acceptance criteria" (9 items). Every item below is a check this card
-defends; the spec is the source of truth and may have more.
 
 1. `lib/input/numbers.ts` exists, imports nothing from `lib/crm`, exports
    `MAX_MONEY`, `assertMoney`, `assertPercent`. `assertPercent` uses
@@ -78,7 +75,7 @@ defends; the spec is the source of truth and may have more.
 
 ## Verify command
 
-Per the spec §"Verification". Build before Playwright — `vitest` does not
+Build before Playwright — `vitest` does not
 typecheck; `next build` typechecks `e2e/`. `AUTH_SECRET=local-playwright-secret`
 is a placeholder name, not a literal; `.env` has no `AUTH_SECRET`.
 
@@ -99,6 +96,14 @@ makes a foreign `next-server` hijack the run silently. Kill by PID.
 
 ## Notes
 
+**Implementer addition (session 9).** One path added to `## Scope paths`:
+`app/(authenticated)/crm/deals/[id]/page.tsx`. The card's `## Out of scope`
+heading mis-labels the `Probability` `%` suffix on line 43 as out of scope
+but the body says "this card owns it" — 11.5's Controller notes
+(recorded when 11.5 was specced) confirm the line is **11.2's**, and 11.5 must not take it. The
+spec's Recorded Limit #6 ("Not this feature") is stale; the change is
+one token (`{deal.probability}` → `{deal.probability}%`).
+
 **Spec citations verified at intake (paths and lines from the working tree).**
 `lib/crm/queries.ts:284-317` is `createDeal`; `:319-331` is `updateDeal`.
 `lib/crm/schema.ts:79-80` is the `doublePrecision` `value` / `integer`
@@ -113,8 +118,7 @@ passes, the order-free features are 11.2, 11.4, 11.6, 11.7, 11.8. **11.4 and
 run in parallel** (shared `deal-actions.ts`). 11.2 itself is independent and
 may start first.
 
-**Product status lives in `features/INDEX.md` and `CURRENT_FEATURE.md`.** Set
-11.2 to `completed` only after the PR merges, and record it here at handoff.
+**Status lives in `feature_list.json` only.** The old board was removed; do not recreate it.
 
 **Carried from session 1 (`progress.md`):** PR #92's `e2e/crm-activities.spec.ts`
 leaks 3 orphaned activities per run — that's a 11.3 defect, not this card's.
