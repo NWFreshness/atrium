@@ -47,3 +47,6 @@ next-env.d.ts
 
 # local psql dumps of a Neon branch — not schema, not seed
 .seed-snapshots/
+
+# git worktrees — full checkouts, each with its own node_modules and .env symlink
+.worktrees/
