@@ -1,6 +1,7 @@
 import { AddContactButton } from "@/components/crm/contact-form";
 import { ContactTable } from "@/components/crm/contact-table";
 import styles from "@/components/crm/org.module.css";
+import { listActivitiesAction } from "@/lib/crm/activity-actions";
 import { CONTACT_STATUSES, type ContactStatus } from "@/lib/crm/constants";
 import { listContactsAction } from "@/lib/crm/contact-actions";
 import { listOrganizationsAction } from "@/lib/crm/org-actions";
@@ -24,10 +25,23 @@ export default async function ContactsPage({
   const { q: rawQ, status: rawStatus } = await searchParams;
   const q = Array.isArray(rawQ) ? rawQ[0] : rawQ;
   const status = parseStatus(rawStatus);
-  const [contacts, organizations] = await Promise.all([
+  const [contacts, organizations, activities] = await Promise.all([
     listContactsAction({ q, status }),
     listOrganizationsAction(),
+    // 11.3: the contacts table renders a derived "Last contacted" column.
+    // The page is the only place that can fetch the tenant's activities
+    // server-side and group them by contact id without changing the
+    // client-server boundary that the rest of the table relies on.
+    listActivitiesAction({}),
   ]);
+
+  const activitiesByContactId: Record<string, typeof activities> = {};
+  for (const activity of activities) {
+    if (!activity.contactId) {
+      continue;
+    }
+    (activitiesByContactId[activity.contactId] ??= []).push(activity);
+  }
 
   return (
     <main>
@@ -64,7 +78,11 @@ export default async function ContactsPage({
         </form>
         <AddContactButton organizations={organizations} />
       </div>
-      <ContactTable contacts={contacts} organizations={organizations} />
+      <ContactTable
+        contacts={contacts}
+        organizations={organizations}
+        activitiesByContactId={activitiesByContactId}
+      />
     </main>
   );
 }

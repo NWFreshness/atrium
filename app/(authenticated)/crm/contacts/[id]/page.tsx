@@ -6,7 +6,29 @@ import styles from "@/components/crm/org.module.css";
 import { listActivitiesAction } from "@/lib/crm/activity-actions";
 import { getContactAction } from "@/lib/crm/contact-actions";
 import { listDealsAction } from "@/lib/crm/deal-actions";
+import {
+  daysSinceContacted,
+  isStaleContacted,
+  lastContactedAt,
+} from "@/lib/crm/last-contacted";
+import { formatDate } from "@/lib/crm/format";
 import { getOrganizationAction } from "@/lib/crm/org-actions";
+import type { Activity } from "@/lib/crm/queries";
+
+function lastContactedLabel(
+  lastContacted: Activity | null,
+  stale: boolean,
+  daysSince: number | null,
+) {
+  if (!lastContacted) {
+    return "No activity yet";
+  }
+  const date = formatDate(lastContacted.occurredAt);
+  if (stale && daysSince !== null) {
+    return `${date} · ${daysSince} days ago`;
+  }
+  return date;
+}
 
 export default async function ContactDetailPage({
   params,
@@ -26,6 +48,11 @@ export default async function ContactDetailPage({
     listDealsAction({ contactId: id }),
     listActivitiesAction({ contactId: id }),
   ]);
+
+  const lastContacted = lastContactedAt(activities);
+  const lastContactedDate = lastContacted?.occurredAt ?? null;
+  const lastContactedStale = isStaleContacted(lastContactedDate);
+  const lastContactedDays = daysSinceContacted(lastContactedDate);
 
   return (
     <main>
@@ -53,6 +80,14 @@ export default async function ContactDetailPage({
             </Link>
           ) : (
             ""
+          )}
+        </dd>
+        <dt>Last contacted</dt>
+        <dd>
+          {lastContactedLabel(
+            lastContacted,
+            lastContactedStale,
+            lastContactedDays,
           )}
         </dd>
       </dl>

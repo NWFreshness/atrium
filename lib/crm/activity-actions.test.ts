@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   createActivityForSession,
+  deleteActivityForSession,
   getActivityForSession,
   listActivitiesForSession,
   toggleActivityDoneForSession,
+  updateActivityForSession,
 } from "./activity-actions";
 import {
   createActivity,
@@ -120,11 +122,7 @@ describe("activity session actions", () => {
     expect(created!.occurredAt!.getTime()).toBeGreaterThanOrEqual(before);
     expect(created!.occurredAt!.getTime()).toBeLessThanOrEqual(after);
     expect(
-      await listActivitiesForSession(
-        getSessionA,
-        { dealId: deal.id },
-        memory,
-      ),
+      await listActivitiesForSession(getSessionA, { dealId: deal.id }, memory),
     ).toEqual([created]);
   });
 
@@ -153,9 +151,9 @@ describe("activity session actions", () => {
     );
     expect(toggled?.done).toBe(true);
     expect(toggled?.dueDate).toEqual(dueDate);
-    expect(await getActivityForSession(getSessionA, created!.id, memory)).toEqual(
-      toggled,
-    );
+    expect(
+      await getActivityForSession(getSessionA, created!.id, memory),
+    ).toEqual(toggled);
 
     const undone = await toggleActivityDoneForSession(
       getSessionA,
@@ -174,7 +172,9 @@ describe("activity session actions", () => {
       memory,
     );
 
-    expect(await getActivityForSession(getSessionA, other.id, memory)).toBeNull();
+    expect(
+      await getActivityForSession(getSessionA, other.id, memory),
+    ).toBeNull();
     expect(
       await toggleActivityDoneForSession(getSessionA, other.id, false, memory),
     ).toBeNull();
@@ -265,5 +265,118 @@ describe("activity session actions", () => {
         memory,
       ),
     ).rejects.toThrow("Unauthenticated");
+  });
+
+  it("updateActivityForSession updates description and occurredAt for this tenant", async () => {
+    const memory = repo();
+    const created = await createActivity(
+      tenantA,
+      {
+        type: "call",
+        description: "Original",
+        occurredAt: new Date("2026-01-01T00:00:00.000Z"),
+        done: false,
+      },
+      memory,
+    );
+
+    const updated = await updateActivityForSession(
+      getSessionA,
+      created.id,
+      {
+        description: "Edited",
+        occurredAt: new Date("2026-05-01T00:00:00.000Z"),
+        type: "call",
+        done: false,
+      },
+      memory,
+    );
+
+    expect(updated?.description).toBe("Edited");
+    expect(updated?.occurredAt).toEqual(new Date("2026-05-01T00:00:00.000Z"));
+    expect(updated?.type).toBe("call");
+  });
+
+  it("updateActivityForSession returns null for an unknown activity type", async () => {
+    const memory = repo();
+    const created = await createActivity(
+      tenantA,
+      { type: "call", description: "Call me", done: false },
+      memory,
+    );
+
+    // The unknown-type check is between the miss-check and the dispatch:
+    // getActivity succeeds (the row exists), the type guard fails, the call
+    // returns null without dispatching to updateActivity.
+    const result = await updateActivityForSession(
+      getSessionA,
+      created.id,
+      {
+        type: "carrier-pigeon" as unknown as "call",
+        description: "Whatever",
+        done: false,
+      },
+      memory,
+    );
+    expect(result).toBeNull();
+    // The row is unchanged.
+    expect(await getActivity(tenantA, created.id, memory)).toMatchObject({
+      description: "Call me",
+      type: "call",
+    });
+  });
+
+  it("updateActivityForSession returns null for another tenant's id (AC1)", async () => {
+    const memory = repo();
+    const other = await createActivity(
+      tenantB,
+      { type: "email", description: "Other tenant", done: false },
+      memory,
+    );
+
+    expect(
+      await updateActivityForSession(
+        getSessionA,
+        other.id,
+        { type: "call", description: "Hijack", done: false },
+        memory,
+      ),
+    ).toBeNull();
+    expect(await getActivity(tenantB, other.id, memory)).toMatchObject({
+      description: "Other tenant",
+    });
+  });
+
+  it("deleteActivityForSession removes the row for this tenant (AC1)", async () => {
+    const memory = repo();
+    const created = await createActivity(
+      tenantA,
+      { type: "note", description: "Delete me", done: false },
+      memory,
+    );
+
+    const removed = await deleteActivityForSession(
+      getSessionA,
+      created.id,
+      memory,
+    );
+    expect(removed?.id).toBe(created.id);
+    expect(await getActivity(tenantA, created.id, memory)).toBeNull();
+  });
+
+  it("deleteActivityForSession returns null for another tenant's id (AC1)", async () => {
+    const memory = repo();
+    const other = await createActivity(
+      tenantB,
+      { type: "email", description: "Other", done: true },
+      memory,
+    );
+
+    expect(
+      await deleteActivityForSession(getSessionA, other.id, memory),
+    ).toBeNull();
+    expect(await getActivity(tenantB, other.id, memory)).toMatchObject({
+      description: "Other",
+    });
   });
 });

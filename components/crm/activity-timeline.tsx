@@ -2,10 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toggleActivityDoneAction } from "@/lib/crm/activity-actions";
+import {
+  deleteActivityAction,
+  toggleActivityDoneAction,
+} from "@/lib/crm/activity-actions";
+import { truncateActivityLabel } from "@/lib/crm/activity-labels";
 import type { ActivityType } from "@/lib/crm/constants";
 import { formatDate } from "@/lib/crm/format";
 import type { Activity } from "@/lib/crm/queries";
+import { ActivityForm } from "./activity-form";
 import styles from "./org.module.css";
 
 function TypeIcon({ type }: { type: ActivityType }) {
@@ -42,6 +47,11 @@ function TypeIcon({ type }: { type: ActivityType }) {
 export function ActivityTimeline({ activities }: { activities: Activity[] }) {
   const router = useRouter();
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const editing = editingId
+    ? (activities.find((activity) => activity.id === editingId) ?? null)
+    : null;
 
   async function onToggle(activity: Activity) {
     setPendingId(activity.id);
@@ -53,38 +63,85 @@ export function ActivityTimeline({ activities }: { activities: Activity[] }) {
     }
   }
 
+  async function onDelete(activity: Activity) {
+    if (!confirm("Delete this activity?")) {
+      return;
+    }
+    setPendingId(activity.id);
+    try {
+      await deleteActivityAction(activity.id);
+      router.refresh();
+    } finally {
+      setPendingId(null);
+    }
+  }
+
   if (activities.length === 0) {
     return <p className={styles["crm-empty"]}>No activities</p>;
   }
 
   return (
-    <ul>
-      {activities.map((activity) => (
-        <li key={activity.id}>
-          <TypeIcon type={activity.type} /> {activity.type}
-          <p>{activity.description}</p>
-          <p>
-            {formatDate(activity.occurredAt)}
-            {activity.dueDate ? ` · Due ${formatDate(activity.dueDate)}` : ""}
-          </p>
-          <label>
-            <input
-              type="checkbox"
-              checked={activity.done}
-              disabled={pendingId === activity.id}
-              aria-label={
-                activity.done
-                  ? `Mark ${activity.description} not done`
-                  : `Mark ${activity.description} done`
-              }
-              onChange={() => {
-                void onToggle(activity);
-              }}
-            />{" "}
-            Done
-          </label>
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul>
+        {activities.map((activity) => {
+          const label = truncateActivityLabel(activity.description);
+          return (
+            <li key={activity.id}>
+              <TypeIcon type={activity.type} /> {activity.type}
+              <p>{activity.description}</p>
+              <p>
+                {formatDate(activity.occurredAt)}
+                {activity.dueDate
+                  ? ` · Due ${formatDate(activity.dueDate)}`
+                  : ""}
+              </p>
+              <div className={styles["crm-activity-actions"]}>
+                <button
+                  type="button"
+                  aria-label={`Edit activity: ${label}`}
+                  onClick={() => setEditingId(activity.id)}
+                  disabled={pendingId === activity.id}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Delete activity: ${label}`}
+                  onClick={() => {
+                    void onDelete(activity);
+                  }}
+                  disabled={pendingId === activity.id}
+                >
+                  Delete
+                </button>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={activity.done}
+                    disabled={pendingId === activity.id}
+                    aria-label={
+                      activity.done
+                        ? `Mark activity: ${label} not done`
+                        : `Mark activity: ${label} done`
+                    }
+                    onChange={() => {
+                      void onToggle(activity);
+                    }}
+                  />{" "}
+                  Done
+                </label>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      {editing ? (
+        <ActivityForm
+          key={editing.id}
+          activity={editing}
+          onClose={() => setEditingId(null)}
+        />
+      ) : null}
+    </>
   );
 }

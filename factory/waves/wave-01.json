@@ -7,8 +7,12 @@
     "name": "string",
     "phase": "string",
     "status": "needs_spec | spec_draft | spec_ready | not_started | in_progress | blocked | passing | rejected",
-    "scope": ["repo-relative path"],
-    "outOfScope": ["repo-relative path"],
+    "scope": [
+      "repo-relative path"
+    ],
+    "outOfScope": [
+      "repo-relative path"
+    ],
     "doneWhen": "string",
     "verify": "string",
     "evidence": "string",
