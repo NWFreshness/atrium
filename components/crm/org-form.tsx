@@ -1,7 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import {
   createOrganizationAction,
   updateOrganizationAction,
@@ -37,7 +44,21 @@ export function OrgForm({
     notes: organization?.notes ?? "",
   });
   const title = organization ? `Edit ${organization.name}` : "Add organization";
-  const titleId = "org-form-title";
+  const titleId = useId();
+  const nameRef = useRef<HTMLInputElement | null>(null);
+
+  // Dialog behaviour for the 11.5 detail pages (inherited by the list
+  // pages through the same component): focus Name on open, Escape closes.
+  useEffect(() => {
+    nameRef.current?.focus();
+  }, []);
+
+  function onDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+    }
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -72,12 +93,14 @@ export function OrgForm({
         aria-modal="true"
         aria-labelledby={titleId}
         className={styles["crm-dialog"]}
+        onKeyDown={onDialogKeyDown}
       >
         <h2 id={titleId}>{title}</h2>
         <form onSubmit={onSubmit}>
           <div className={styles["crm-field"]}>
             <label htmlFor="org-name">Name</label>
             <input
+              ref={nameRef}
               id="org-name"
               name="name"
               value={values.name}

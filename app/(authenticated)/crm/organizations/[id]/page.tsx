@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { DetailEdit } from "@/components/crm/detail-edit";
+import { OrgForm } from "@/components/crm/org-form";
 import styles from "@/components/crm/org.module.css";
 import { listContactsAction } from "@/lib/crm/contact-actions";
 import { listDealsAction } from "@/lib/crm/deal-actions";
@@ -23,9 +25,16 @@ export default async function OrganizationDetailPage({
 
   return (
     <main>
-      <div className="atrium-pagetitle">
-        <h1>{organization.name}</h1>
-        <p className="atrium-sub">Organization · tenant-scoped</p>
+      <div className={styles["crm-detail-title"]}>
+        <div className="atrium-pagetitle">
+          <h1>{organization.name}</h1>
+          <p className="atrium-sub">Organization · tenant-scoped</p>
+        </div>
+        <DetailEdit
+          form={OrgForm}
+          formProps={{ organization }}
+          name={organization.name}
+        />
       </div>
       <dl className={styles["crm-detail"]}>
         <dt>Website</dt>
