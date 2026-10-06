@@ -13,7 +13,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { deleteContactAction } from "@/lib/crm/contact-actions";
-import type { Contact, Organization } from "@/lib/crm/queries";
+import { formatDate } from "@/lib/crm/format";
+import {
+  daysSinceContacted,
+  isStaleContacted,
+  lastContactedAt,
+} from "@/lib/crm/last-contacted";
+import type { Activity, Contact, Organization } from "@/lib/crm/queries";
 import { ContactForm } from "./contact-form";
 import styles from "./org.module.css";
 
@@ -61,12 +67,41 @@ function sortByOrgName(names: Map<string, string>) {
   });
 }
 
+type ContactActivities = {
+  activities: Activity[];
+  lastContacted: Activity | null;
+  isStale: boolean;
+  daysSince: number | null;
+};
+
+/**
+ * `Last contacted` is a `display` column with no `accessorFn`, so v9 TanStack
+ * Table reports `column.getCanSort() === false` automatically — 11.4's
+ * per-column sort pass is the right place to make it sortable, not here.
+ */
+function LastContactedCell({ data }: { data: ContactActivities | null }) {
+  if (!data || !data.lastContacted) {
+    return <span>Never</span>;
+  }
+  const label = formatDate(data.lastContacted.occurredAt);
+  if (data.isStale && data.daysSince !== null) {
+    return (
+      <span className={styles["crm-stale"]}>
+        {label} · {data.daysSince} days ago
+      </span>
+    );
+  }
+  return <span>{label}</span>;
+}
+
 export function ContactTable({
   contacts,
   organizations,
+  activitiesByContactId = {},
 }: {
   contacts: Contact[];
   organizations: Organization[];
+  activitiesByContactId?: Record<string, Activity[]>;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<Contact | null>(null);
@@ -77,6 +112,23 @@ export function ContactTable({
     }
     return map;
   }, [organizations]);
+
+  // Derived once per render of the columns. `lastContactedAt` and
+  // `isStaleContacted` are pure helpers from `lib/crm/last-contacted.ts` and
+  // can be called server- or client-side; the column is a `display` so the
+  // values must be available before the cell renders, not from a memo
+  // closure that the table could memoize around.
+  const lastContactedByContactId = useMemo(() => {
+    const map = new Map<string, ContactActivities>();
+    for (const contact of contacts) {
+      const activities = activitiesByContactId[contact.id] ?? [];
+      const lastContacted = lastContactedAt(activities);
+      const daysSince = daysSinceContacted(lastContacted?.occurredAt ?? null);
+      const isStale = isStaleContacted(lastContacted?.occurredAt ?? null);
+      map.set(contact.id, { activities, lastContacted, isStale, daysSince });
+    }
+    return map;
+  }, [contacts, activitiesByContactId]);
 
   const columns = useMemo(
     () =>
@@ -102,6 +154,16 @@ export function ContactTable({
           header: "Status",
           sortFn: sortText,
           cell: (info) => info.getValue(),
+        }),
+        columnHelper.display({
+          id: "last-contacted",
+          header: "Last contacted",
+          enableSorting: false,
+          cell: ({ row }) => (
+            <LastContactedCell
+              data={lastContactedByContactId.get(row.original.id) ?? null}
+            />
+          ),
         }),
         columnHelper.accessor("organizationId", {
           header: "Organization",
@@ -147,7 +209,7 @@ export function ContactTable({
           },
         }),
       ]),
-    [orgNames, router],
+    [orgNames, router, lastContactedByContactId],
   );
 
   const table = useTable({

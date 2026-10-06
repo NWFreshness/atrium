@@ -241,16 +241,19 @@ test("the done checkbox's accessible name flips and survives a reload", async ({
   );
 
   // The accessible name is derived from `done`
-  // (`components/crm/activity-timeline.tsx:75-79`), so a flip is an assertion
+  // (`components/crm/activity-timeline.tsx:88-93`), so a flip is an assertion
   // about persisted state rather than about markup: it can only render
   // `not done` if the server returned `done: true`. `exact: true` because the
   // name is built from a `Date.now()` fixture and is a substring-shaped string.
+  // 11.3 renamed the prefix from `Mark ${activity}` to `Mark activity:
+  // ${truncateActivityLabel(activity)}`; the new label is shorter than 60
+  // characters so no ellipsis is appended.
   const undone = page.getByRole("checkbox", {
-    name: `Mark ${activity} done`,
+    name: `Mark activity: ${activity} done`,
     exact: true,
   });
   const done = page.getByRole("checkbox", {
-    name: `Mark ${activity} not done`,
+    name: `Mark activity: ${activity} not done`,
     exact: true,
   });
   await expect(undone).toHaveCount(1, NAV_TIMEOUT);
@@ -270,4 +273,160 @@ test("the done checkbox's accessible name flips and survives a reload", async ({
 
   await page.reload();
   await expect(done).toBeChecked(NAV_TIMEOUT);
+});
+
+/**
+ * 11.3 — three new journeys (H, I, J) and the Journey E rename above. The
+ * shared helper does the form fill + post-action reset dance that Journey A
+ * already documents, so each journey is a short setup + the one assertion
+ * the card cares about. Cleanup is the same `afterEach` that scrubs the
+ * minted deal; the activity-delete button the timeline gained in this card
+ * is what finally lets that scrub be total.
+ */
+async function addActivity(page: Page, text: string) {
+  await page.getByLabel("Type", { exact: true }).selectOption("call");
+  const description = page.getByLabel("Description", { exact: true });
+  await description.fill(text);
+  await page.getByRole("button", { name: "Add activity", exact: true }).click();
+  await expect(page.getByText(text, { exact: true })).toBeVisible(NAV_TIMEOUT);
+  await expect(description).toHaveValue("", NAV_TIMEOUT);
+}
+
+test("an activity created with a past Date renders formatDate(occurredAt) after a reload (11.3 Journey H)", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+  test.setTimeout(JOURNEY_TIMEOUT);
+  await login(page, demoEmail!, demoPassword!);
+
+  const name = `E2E Backdate Deal ${Date.now()} ${crypto.randomUUID()}`;
+  minted = name;
+  await createDeal(page, name);
+
+  await page.getByRole("link", { name, exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Activities", level: 2, exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+
+  const activity = `E2E backdate ${Date.now()}`;
+  await page.getByLabel("Type", { exact: true }).selectOption("note");
+  const description = page.getByLabel("Description", { exact: true });
+  await description.fill(activity);
+  // AC12: the inline form has the new Date field; the input is `type="date"`
+  // and accepts YYYY-MM-DD.
+  await page.getByLabel("Date", { exact: true }).fill("2025-08-15");
+  await page.getByRole("button", { name: "Add activity", exact: true }).click();
+  await expect(page.getByText(activity, { exact: true })).toBeVisible(
+    NAV_TIMEOUT,
+  );
+
+  await page.reload();
+  await expect(page.getByText(activity, { exact: true })).toBeVisible(
+    NAV_TIMEOUT,
+  );
+  // The Aug 15 2025 date rendered by `formatDate` is locale-stable: it
+  // formats the UTC midnight Date as "Aug 15, 2025".
+  await expect(timelineItems(page).filter({ hasText: activity })).toContainText(
+    "Aug 15, 2025",
+  );
+});
+
+test("editing an activity's Date to a later day moves it to the first timeline row (11.3 Journey I)", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+  test.setTimeout(JOURNEY_TIMEOUT);
+  await login(page, demoEmail!, demoPassword!);
+
+  const name = `E2E Resort Deal ${Date.now()} ${crypto.randomUUID()}`;
+  minted = name;
+  await createDeal(page, name);
+
+  await page.getByRole("link", { name, exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Activities", level: 2, exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+
+  // Two activities on the same default day; the older one will be edited
+  // forward in time so the new order (newer date first) puts the edited row
+  // on top.
+  const older = `E2E resort older ${Date.now()}`;
+  const newer = `E2E resort newer ${Date.now()}`;
+  for (const text of [older, newer]) {
+    await addActivity(page, text);
+  }
+  await expect(timelineItems(page).first()).toContainText(newer, NAV_TIMEOUT);
+
+  // AC13: open the older row's Edit dialog, push its Date a year out, save,
+  // reload, and assert it is the first <li> now.
+  await page
+    .getByRole("button", { name: `Edit activity: ${older}`, exact: true })
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Edit activity" });
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  // The edit dialog's Date field is the *only* Date field on the page
+  // (AC11): the inline form below is hidden behind the dialog's backdrop.
+  await dialog.getByLabel("Date", { exact: true }).fill("2027-01-01");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+
+  await page.reload();
+  await expect(timelineItems(page).first()).toContainText(older, NAV_TIMEOUT);
+  await expect(timelineItems(page).nth(1)).toContainText(newer, NAV_TIMEOUT);
+});
+
+test("deleting an activity removes it from the timeline after a reload (11.3 Journey J)", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+  test.setTimeout(JOURNEY_TIMEOUT);
+  // The `confirm()` handler must be registered **before** the click so the
+  // auto-accept is in place when the dialog opens. AC14 names this.
+  // `page.once` (not `page.on`) so the handler auto-removes after the first
+  // fire; otherwise the `afterEach`'s `deleteMintedDeal` confirm at line
+  // 113 would trigger the same handler a second time and fail the message
+  // assertion (the deal-table confirm reads `Delete ${deal.name}?`, not
+  // `Delete this activity?`). `deleteMintedDeal` registers its own
+  // accept-only handler.
+  page.once("dialog", (dialog) => {
+    expect(dialog.message()).toBe("Delete this activity?");
+    void dialog.accept();
+  });
+  await login(page, demoEmail!, demoPassword!);
+
+  const name = `E2E Delete Deal ${Date.now()} ${crypto.randomUUID()}`;
+  minted = name;
+  await createDeal(page, name);
+
+  await page.getByRole("link", { name, exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Activities", level: 2, exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+
+  const activity = `E2E delete ${Date.now()}`;
+  await addActivity(page, activity);
+  await expect(timelineItems(page).filter({ hasText: activity })).toHaveCount(
+    1,
+    NAV_TIMEOUT,
+  );
+
+  await page
+    .getByRole("button", { name: `Delete activity: ${activity}`, exact: true })
+    .click();
+  // The handler runs before the row is gone; the assertion below is the
+  // post-reload absence proof.
+  await page.reload();
+  await expect(timelineItems(page).filter({ hasText: activity })).toHaveCount(
+    0,
+    NAV_TIMEOUT,
+  );
 });

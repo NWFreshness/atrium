@@ -4,6 +4,7 @@ import { requireTenant, type GetSession } from "../tenancy";
 import { ACTIVITY_TYPES, type ActivityType } from "./constants";
 import {
   createActivity,
+  deleteActivity,
   getActivity,
   getContact,
   getDeal,
@@ -13,6 +14,7 @@ import {
   type CreateActivityInput,
   type CrmRepository,
   type ListActivitiesOpts,
+  type UpdateActivityInput,
 } from "./queries";
 
 type ClientTenantInput = {
@@ -121,6 +123,45 @@ export async function toggleActivityDoneForSession(
   return updateActivity(tenantId, id, { done }, repo);
 }
 
+type UpdateActivitySessionInput = UpdateActivityInput;
+
+/**
+ * Update an activity under the session's tenant. Returns `null` for any of:
+ *  - a different tenant's id (the existing `getActivity` miss-check),
+ *  - an unknown activity type (e.g. a value the constants module does not list),
+ *  - a `null` from the underlying `updateActivity` (row gone between read and write).
+ *
+ * The unknown-type check is between the miss-check and the dispatch so that a
+ * bad value cannot reach the update path even if the row exists. Note the
+ * signature does NOT pass `input` to `requireTenant` — the session's
+ * `tenantId` is the only source of the scoping key. See `requireTenant`.
+ */
+export async function updateActivityForSession(
+  getSession: GetSession,
+  id: string,
+  input: UpdateActivitySessionInput,
+  repo?: CrmRepository,
+): Promise<Activity | null> {
+  const { tenantId } = await requireTenant(getSession);
+  const existing = await getActivity(tenantId, id, repo);
+  if (!existing) {
+    return null;
+  }
+  if (!isActivityType(input.type ?? existing.type)) {
+    return null;
+  }
+  return updateActivity(tenantId, id, input, repo);
+}
+
+export async function deleteActivityForSession(
+  getSession: GetSession,
+  id: string,
+  repo?: CrmRepository,
+): Promise<Activity | null> {
+  const { tenantId } = await requireTenant(getSession);
+  return deleteActivity(tenantId, id, repo);
+}
+
 export async function listActivitiesAction(
   opts?: ListActivitiesOpts,
 ): Promise<Activity[]> {
@@ -146,4 +187,19 @@ export async function toggleActivityDoneAction(
 ): Promise<Activity | null> {
   const { auth } = await import("@/auth");
   return toggleActivityDoneForSession(auth, id, done);
+}
+
+export async function updateActivityAction(
+  id: string,
+  input: UpdateActivityInput,
+): Promise<Activity | null> {
+  const { auth } = await import("@/auth");
+  return updateActivityForSession(auth, id, input);
+}
+
+export async function deleteActivityAction(
+  id: string,
+): Promise<Activity | null> {
+  const { auth } = await import("@/auth");
+  return deleteActivityForSession(auth, id);
 }

@@ -66,9 +66,11 @@ describe("contact-table", () => {
     expect(codeOnly).toContain("resolveDataValue");
     expect(codeOnly).toContain('names.get(String(value ?? "")) ?? ""');
     // Built inside the columns memo, so it cannot outlive the map it closes
-    // over.
+    // over. 11.3 added `lastContactedByContactId` so the Last contacted
+    // display column re-reads the derived per-contact values on every
+    // re-render of the table.
     expect(codeOnly).toContain("sortFn: sortByOrgName(orgNames)");
-    expect(codeOnly).toContain("[orgNames, router]");
+    expect(codeOnly).toContain("[orgNames, router, lastContactedByContactId]");
   });
 
   it("carries the aria-sort / Actions contracts (AC3, AC4, AC7)", () => {
