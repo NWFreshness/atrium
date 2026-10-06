@@ -1,0 +1,21 @@
+{
+  "wave": 1,
+  "activeFeatureId": null,
+  "maxJobs": 15,
+  "schema": {
+    "id": "string",
+    "name": "string",
+    "phase": "string",
+    "status": "needs_spec | spec_draft | spec_ready | not_started | in_progress | blocked | passing | rejected",
+    "scope": ["repo-relative path"],
+    "outOfScope": ["repo-relative path"],
+    "doneWhen": "string",
+    "verify": "string",
+    "evidence": "string",
+    "blockedReason": "string | null",
+    "testedAt": "ISO-8601 timestamp | null",
+    "jobFile": "inbox/JOB-NNN-slug.md | null",
+    "specFile": "specs/<id>-<slug>.md | null"
+  },
+  "jobs": []
+}

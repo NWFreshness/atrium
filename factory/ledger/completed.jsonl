@@ -1,0 +1,1 @@
+{"schema": "one JSON object per line, append-only; never rewrite old lines", "fields": ["id", "name", "phase", "branch", "commit", "prUrl", "mergeSha", "passedAt", "verifyCommand", "verifyExit", "specFile", "jobFile"]}
