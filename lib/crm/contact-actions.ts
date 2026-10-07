@@ -5,15 +5,26 @@ import { CONTACT_STATUSES, type ContactStatus } from "./constants";
 import {
   createContact,
   deleteContact,
+  DuplicateContactEmailError,
+  duplicateEmailFailure,
   getContact,
   getOrganization,
   listContacts,
   updateContact,
+  type ContactCreateResult,
+  type ContactUpdateResult,
   type CreateContactInput,
   type CrmRepository,
   type Contact,
   type ListContactsOpts,
   type UpdateContactInput,
+} from "./queries";
+
+export type {
+  ContactCreateResult,
+  ContactUpdateResult,
+  DuplicateEmailFailure,
+  TakenContactRef,
 } from "./queries";
 
 type ClientTenantInput = {
@@ -65,7 +76,7 @@ export async function createContactForSession(
   getSession: GetSession,
   input: CreateContactInput & ClientTenantInput,
   repo?: CrmRepository,
-): Promise<Contact | null> {
+): Promise<ContactCreateResult | null> {
   const { tenantId } = await requireTenant(getSession, input);
   if (!isContactStatus(input.status)) {
     return null;
@@ -75,7 +86,15 @@ export async function createContactForSession(
   ) {
     return null;
   }
-  return createContact(tenantId, input, repo);
+  try {
+    const contact = await createContact(tenantId, input, repo);
+    return { ok: true, contact };
+  } catch (error) {
+    if (error instanceof DuplicateContactEmailError) {
+      return duplicateEmailFailure(error);
+    }
+    throw error;
+  }
 }
 
 export async function updateContactForSession(
@@ -83,7 +102,7 @@ export async function updateContactForSession(
   id: string,
   input: UpdateContactInput & ClientTenantInput,
   repo?: CrmRepository,
-): Promise<Contact | null> {
+): Promise<ContactUpdateResult | null> {
   const { tenantId } = await requireTenant(getSession, input);
   if (input.status !== undefined && !isContactStatus(input.status)) {
     return null;
@@ -94,7 +113,18 @@ export async function updateContactForSession(
   ) {
     return null;
   }
-  return updateContact(tenantId, id, input, repo);
+  try {
+    const contact = await updateContact(tenantId, id, input, repo);
+    if (!contact) {
+      return null;
+    }
+    return { ok: true, contact };
+  } catch (error) {
+    if (error instanceof DuplicateContactEmailError) {
+      return duplicateEmailFailure(error);
+    }
+    throw error;
+  }
 }
 
 export async function deleteContactForSession(
@@ -120,7 +150,7 @@ export async function getContactAction(id: string): Promise<Contact | null> {
 
 export async function createContactAction(
   input: CreateContactInput,
-): Promise<Contact | null> {
+): Promise<ContactCreateResult | null> {
   const { auth } = await import("@/auth");
   return createContactForSession(auth, input);
 }
@@ -128,7 +158,7 @@ export async function createContactAction(
 export async function updateContactAction(
   id: string,
   input: UpdateContactInput,
-): Promise<Contact | null> {
+): Promise<ContactUpdateResult | null> {
   const { auth } = await import("@/auth");
   return updateContactForSession(auth, id, input);
 }

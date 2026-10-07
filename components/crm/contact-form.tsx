@@ -42,6 +42,13 @@ export function ContactForm({
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [taken, setTaken] = useState<{
+    id: string;
+    name: string;
+    email: string;
+  } | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const alertId = "contact-email-taken";
   const [values, setValues] = useState<ContactFormValues>({
     name: contact?.name ?? "",
     email: contact?.email ?? "",
@@ -82,14 +89,22 @@ export function ContactForm({
       organizationId: emptyToNull(values.organizationId),
     };
     setPending(true);
+    setTaken(null);
+    setSaveFailed(false);
     try {
-      if (contact) {
-        await updateContactAction(contact.id, input);
-      } else {
-        await createContactAction(input);
+      const saved = contact
+        ? await updateContactAction(contact.id, input)
+        : await createContactAction(input);
+      if (saved && saved.ok) {
+        router.refresh();
+        onClose();
+        return;
       }
-      router.refresh();
-      onClose();
+      if (saved && !saved.ok && saved.existing) {
+        setTaken(saved.existing);
+      } else {
+        setSaveFailed(true);
+      }
     } finally {
       setPending(false);
     }
@@ -105,6 +120,19 @@ export function ContactForm({
         onKeyDown={onDialogKeyDown}
       >
         <h2 id={titleId}>{title}</h2>
+        {taken ? (
+          <p role="alert" id={alertId}>
+            {taken.name} already uses {taken.email}.{" "}
+            <a href={`/crm/contacts/${taken.id}`} onClick={() => onClose()}>
+              Open {taken.name}
+            </a>
+          </p>
+        ) : null}
+        {!taken && saveFailed ? (
+          <p role="alert" id={alertId}>
+            Could not save that contact. That email may already be in use.
+          </p>
+        ) : null}
         <form onSubmit={onSubmit}>
           <div className={styles["crm-field"]}>
             <label htmlFor="contact-name">Name</label>
@@ -129,6 +157,8 @@ export function ContactForm({
               name="email"
               type="email"
               value={values.email}
+              aria-invalid={taken || saveFailed ? true : undefined}
+              aria-describedby={taken || saveFailed ? alertId : undefined}
               onChange={(event) =>
                 setValues((current) => ({
                   ...current,

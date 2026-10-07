@@ -1,4 +1,5 @@
-import { and, desc, eq, getTableColumns, max, or, sql } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, max, ne, or, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { getDb } from "../db";
 import type { WriteOpts } from "../db/batch-transaction";
 import { type DealStage } from "./constants";
@@ -209,6 +210,65 @@ export async function insertContact(
     .values(row)
     .returning();
   return inserted;
+}
+
+/**
+ * Keyed on the SQLSTATE, never on an index name: the name is a deployment
+ * detail, and a code-stripped driver error still carries the duplicate-key
+ * message. Mirrors the signup store's mapping for `users_email_lower_idx`.
+ */
+const UNIQUE_VIOLATION = "23505";
+
+export function isUniqueViolation(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) {
+    return false;
+  }
+  const candidate = error as { code?: unknown; message?: unknown };
+  if (candidate.code === UNIQUE_VIOLATION) {
+    return true;
+  }
+  return (
+    typeof candidate.message === "string" &&
+    candidate.message.includes("duplicate key value")
+  );
+}
+
+/**
+ * The tenant-scoped case-insensitive pre-check on the same expression the
+ * unique index enforces — the Drizzle mirror of 8.1's `lower(email)`
+ * lookup. The self-exclusion lets a contact keep (or re-case) its own
+ * address; without it every casing fix reads as a duplicate.
+ */
+export function contactEmailPrecheck(
+  tenantId: string,
+  email: string,
+  excludeId?: string,
+): SQL {
+  const scoped = and(
+    eq(contacts.tenantId, tenantId),
+    sql`lower(${contacts.email}) = ${email.trim().toLowerCase()}`,
+    excludeId === undefined ? undefined : ne(contacts.id, excludeId),
+  );
+  if (!scoped) {
+    throw new Error("contact email pre-check needs a tenant");
+  }
+  return scoped;
+}
+
+export async function findContactByEmailInDrizzle(
+  tenantId: string,
+  email: string | null,
+  excludeId?: string,
+): Promise<Contact | null> {
+  if (email == null || email.trim() === "") {
+    return null;
+  }
+  const [row] = await requireCrmDb()
+    .select()
+    .from(contacts)
+    .where(contactEmailPrecheck(tenantId, email, excludeId))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function updateContactInDrizzle(
