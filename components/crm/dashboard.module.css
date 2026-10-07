@@ -126,6 +126,8 @@
 .chartBody {
   width: 100%;
   height: 16rem;
+  /* Recharts SVG ticks/labels that opt into currentColor inherit themed ink. */
+  color: var(--ink-dim);
 }
 
 .empty {
@@ -183,6 +185,13 @@
   gap: 0.2rem;
   font-size: var(--text-small);
   color: var(--ink-dim);
+  /* 13.2: every activity reads as its own card — a full non-zero border on
+     each item (not just dividers) so adjacent activities never run together
+     and no last-child exception leaves an item boundary-less. */
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-0);
+  padding: 0.55rem 0.7rem;
 }
 
 .feedMeta {

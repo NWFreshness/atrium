@@ -78,12 +78,12 @@ describe("PNW role table (verbatim)", () => {
 
   it("declares every light (mist) role hex — derived, not copied from dark", () => {
     expect(light).toContain("--bg-0: #eef1f2");
-    expect(light).toContain("--bg-1: #f5f7f8");
-    expect(light).toContain("--bg-2: #fbfcfc");
+    expect(light).toContain("--bg-1: #f7f7f5");
+    expect(light).toContain("--bg-2: #fdfdfc");
     expect(light).toContain("--bg-3: #ffffff");
     expect(light).toContain("--ink: #25282a");
-    expect(light).toContain("--ink-dim: #4f5f48");
-    expect(light).toContain("--ink-faint: #5f6b5a");
+    expect(light).toContain("--ink-dim: #55534e");
+    expect(light).toContain("--ink-faint: #67655f");
     expect(light).toContain("--brass: #8a6320");
     expect(light).toContain("--brass-bright: #a97b25");
     expect(light).toContain("--brass-deep: #6f4e15");
@@ -92,8 +92,8 @@ describe("PNW role table (verbatim)", () => {
     expect(light).toContain("--moss: #2d4a3e");
     expect(light).toContain("--slate: #46608a");
     expect(light).toContain("--timber: #6a5c48");
-    expect(light).toContain("--line: #c9d2d0");
-    expect(light).toContain("--line-strong: #a9b6b3");
+    expect(light).toContain("--line: #d8d7d2");
+    expect(light).toContain("--line-strong: #b7b6b1");
     expect(light).not.toContain("--brass: #dfa84a");
     expect(light).not.toContain("--ink-faint: #a3b19b");
     expect(light).not.toContain("--clay: #b87355");
@@ -183,9 +183,10 @@ describe("geometry, overlays, motion", () => {
     expect(globals).toContain("body::before");
     expect(globals).toContain("body::after");
     expect(globals).toContain("fractalNoise");
-    expect(globals).toMatch(/body::before[\s\S]*?opacity:\s*0\.05/);
+    // 13.2: the light default carries the quieter grain; dark re-lifts it.
+    expect(globals).toMatch(/body::before[\s\S]*?opacity:\s*0\.035/);
     expect(globals).toMatch(
-      /\[data-theme="light"\] body::before[\s\S]*?opacity:\s*0\.035/,
+      /\[data-theme="dark"\] body::before[\s\S]*?opacity:\s*0\.05/,
     );
     expect(globals).toContain("46s");
     expect(globals).toMatch(/alternate/);
@@ -198,6 +199,20 @@ describe("geometry, overlays, motion", () => {
     const media = globals.slice(mediaStart);
     expect(media).toMatch(/body::after\s*\{[^}]*animation:\s*none/);
     expect(media).toContain("transition-duration: 0.01ms !important");
+  });
+
+  it("keeps the moss-green drift on dark only — the light default wash is neutral", () => {
+    const base = globals.slice(
+      globals.indexOf("body::after {"),
+      globals.indexOf('[data-theme="dark"] body::after'),
+    );
+    expect(base, "light default wash still carries moss").not.toContain(
+      "45, 74, 62",
+    );
+    const darkWash = globals.slice(
+      globals.indexOf('[data-theme="dark"] body::after'),
+    );
+    expect(darkWash, "dark lost its moss drift").toContain("45, 74, 62");
   });
 });
 

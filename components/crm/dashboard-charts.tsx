@@ -6,6 +6,7 @@ import {
   CartesianGrid,
   Cell,
   ComposedChart,
+  LabelList,
   Legend,
   Line,
   Pie,
@@ -15,6 +16,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import type { ReactNode } from "react";
 import type {
   FunnelStage,
   MonthlyRevenue,
@@ -42,6 +44,49 @@ const FORECAST = "#b9ab93"; // timber
 const OPEN = "#8b9fc2"; // rain — unchanged value, slate role
 const LATE = "#e0a488"; // cedar lifted
 const BRASS = "#dfa84a"; // golden
+
+/*
+ * 13.2 funnel readability: stage labels sit on a fixed-width category axis
+ * and values print at the bar ends, so neither can be covered at 375px.
+ * Long labels ellipsize with the full stage name kept in <title>.
+ */
+const STAGE_LABEL_MAX = 14;
+
+function truncateStageLabel(label: string): string {
+  return label.length > STAGE_LABEL_MAX
+    ? `${label.slice(0, STAGE_LABEL_MAX - 1)}…`
+    : label;
+}
+
+function compactStageValue(value: ReactNode): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return String(value ?? "");
+  }
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${Math.round(value / 1_000)}k`;
+  return String(value);
+}
+
+function FunnelStageTick(props: {
+  x?: number | string;
+  y?: number | string;
+  payload?: { value?: string | number };
+}) {
+  const full = String(props.payload?.value ?? "");
+  return (
+    <text
+      x={props.x}
+      y={props.y}
+      textAnchor="end"
+      dominantBaseline="central"
+      fontSize={12}
+      fill="currentColor"
+    >
+      <title>{full}</title>
+      {truncateStageLabel(full)}
+    </text>
+  );
+}
 
 export function DashboardCharts({
   monthly,
@@ -106,10 +151,24 @@ export function DashboardCharts({
         <h2 className={styles.chartTitle}>Pipeline funnel</h2>
         <div className={styles.chartBody}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={funnel} layout="vertical">
+            <BarChart
+              data={funnel}
+              layout="vertical"
+              margin={{ top: 4, right: 40, bottom: 0, left: 8 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis type="category" dataKey="label" width={90} />
+              <XAxis
+                type="number"
+                tick={{ fontSize: 12, fill: "currentColor" }}
+                tickMargin={8}
+              />
+              <YAxis
+                type="category"
+                dataKey="label"
+                width={132}
+                interval={0}
+                tick={<FunnelStageTick />}
+              />
               <Tooltip />
               <Legend />
               <Bar
@@ -121,7 +180,16 @@ export function DashboardCharts({
                 name="Pipeline by stage"
                 fill={OPEN}
                 isAnimationActive={false}
-              />
+                radius={[0, 4, 4, 0]}
+              >
+                <LabelList
+                  dataKey="value"
+                  position="right"
+                  fill="currentColor"
+                  fontSize={12}
+                  formatter={compactStageValue}
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

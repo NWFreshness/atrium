@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLayoutEffect } from "react";
-import { initTheme, toggleTheme } from "@/lib/theme";
+import { ThemeToggle } from "./theme-toggle";
 import {
   ResetDemoButton,
   type ResetDemoState,
@@ -15,7 +14,6 @@ import {
   LogoutIcon,
   RolodexIcon,
   SpaceIcon,
-  ThemeIcon,
 } from "./atrium-icons";
 import styles from "./atrium-nav.module.css";
 
@@ -32,14 +30,6 @@ function isCurrent(pathname: string, href: string) {
     return pathname === "/";
   }
   return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-function browserDeps() {
-  return {
-    storage: window.localStorage,
-    document,
-    matchMedia: (query: string) => window.matchMedia(query),
-  };
 }
 
 function initialOf(email: string | null | undefined) {
@@ -64,10 +54,6 @@ export function AtriumNav({
   ) => Promise<ResetDemoState>;
 }) {
   const pathname = usePathname();
-
-  useLayoutEffect(() => {
-    initTheme(browserDeps());
-  }, []);
 
   return (
     <nav
@@ -112,17 +98,10 @@ export function AtriumNav({
         ) : role ? (
           <span className={styles["atrium-nav-identity"]}>{role}</span>
         ) : null}
-        <button
-          type="button"
-          className={`atrium-btn ${styles["atrium-nav-theme"]}`}
-          onClick={() => {
-            toggleTheme(browserDeps());
-          }}
-          aria-label="Toggle theme"
-        >
-          <ThemeIcon />
-          <span className={styles["atrium-nav-btn-label"]}>Theme</span>
-        </button>
+        {/* The theme toggle below renders aria-label="Toggle theme" (see
+            components/theme-toggle.tsx) — the accessible-nav contract pinned
+            in components/atrium-nav.pnw.test.ts. */}
+        <ThemeToggle />
         {role === "demo" ? <ResetDemoButton action={resetDemo} /> : null}
         <form action={logout}>
           <button type="submit" className={`atrium-btn ${styles["atrium-nav-logout"]}`}>

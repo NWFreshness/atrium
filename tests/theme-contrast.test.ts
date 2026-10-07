@@ -209,6 +209,34 @@ describe("declared text pairs (both themes)", () => {
   });
 });
 
+describe("light surface neutrality (13.2 AC5)", () => {
+  // Surface, text, and border tokens on the light branch stay near-gray: no
+  // channel deviates more than 8 steps from the others, so no green (or any
+  // hue) cast survives on the default theme. Accent and data roles
+  // (--brass-*, --moss, --clay-*, --slate, --timber) keep their hues by
+  // design and are excluded here.
+  const NEUTRAL_ROLES = [
+    "--bg-0",
+    "--bg-1",
+    "--bg-2",
+    "--bg-3",
+    "--ink",
+    "--ink-dim",
+    "--ink-faint",
+    "--line",
+    "--line-strong",
+  ] as const;
+  const MAX_SPREAD = 8;
+  it.each([...NEUTRAL_ROLES])("%s is a near-gray", (name) => {
+    const { r, g, b } = tokenColor(light, name);
+    const spread = Math.max(r, g, b) - Math.min(r, g, b);
+    expect(
+      spread,
+      `${name} = rgb(${r}, ${g}, ${b}) carries a tint (spread ${spread})`,
+    ).toBeLessThanOrEqual(MAX_SPREAD);
+  });
+});
+
 describe("named fill-only exceptions", () => {
   it("lists --brass-deep and --clay on dark --bg-0 as fill", () => {
     expect(FILL_EXCEPTIONS).toEqual([
