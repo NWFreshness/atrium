@@ -11,7 +11,11 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { deleteOrganizationAction } from "@/lib/crm/org-actions";
+import {
+  deleteOrganizationAction,
+  organizationCascadePreviewAction,
+} from "@/lib/crm/org-actions";
+import { consequenceMessage } from "@/lib/crm/cascade-preview";
 import type { Organization } from "@/lib/crm/queries";
 import { OrgForm } from "./org-form";
 import styles from "./org.module.css";
@@ -95,7 +99,9 @@ export function OrgTable({ organizations }: { organizations: Organization[] }) {
                   type="button"
                   aria-label={`Delete ${org.name}`}
                   onClick={async () => {
-                    if (!confirm(`Delete ${org.name}?`)) {
+                    const preview =
+                      await organizationCascadePreviewAction(org.id);
+                    if (!confirm(consequenceMessage(org.name, preview))) {
                       return;
                     }
                     await deleteOrganizationAction(org.id);

@@ -12,7 +12,11 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { deleteContactAction } from "@/lib/crm/contact-actions";
+import {
+  contactCascadePreviewAction,
+  deleteContactAction,
+} from "@/lib/crm/contact-actions";
+import { consequenceMessage } from "@/lib/crm/cascade-preview";
 import { formatDate } from "@/lib/crm/format";
 import {
   daysSinceContacted,
@@ -195,7 +199,9 @@ export function ContactTable({
                   type="button"
                   aria-label={`Delete ${contact.name}`}
                   onClick={async () => {
-                    if (!confirm(`Delete ${contact.name}?`)) {
+                    const preview =
+                      await contactCascadePreviewAction(contact.id);
+                    if (!confirm(consequenceMessage(contact.name, preview))) {
                       return;
                     }
                     await deleteContactAction(contact.id);

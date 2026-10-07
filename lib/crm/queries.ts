@@ -8,6 +8,9 @@ import {
   deleteDealInDrizzle,
   deleteOrganizationInDrizzle,
   findContactByEmailInDrizzle,
+  contactCascadePreviewInDrizzle,
+  dealCascadePreviewInDrizzle,
+  organizationCascadePreviewInDrizzle,
   getActivityInDrizzle,
   getContactInDrizzle,
   getDealInDrizzle,
@@ -28,10 +31,13 @@ import {
   updateOrganizationInDrizzle,
 } from "./queries-drizzle";
 import {
+  contactCascadePreviewInMemory,
   createActivityInMemory,
   createContactInMemory,
   createDealInMemory,
   createOrganizationInMemory,
+  dealCascadePreviewInMemory,
+  organizationCascadePreviewInMemory,
   deleteActivityInMemory,
   deleteContactInMemory,
   deleteDealInMemory,
@@ -54,6 +60,7 @@ import {
 } from "./queries-memory";
 import {
   type Activity,
+  type CascadePreview,
   type Contact,
   type CrmRepository,
   type CreateActivityInput,
@@ -76,6 +83,7 @@ import {
 
 export type {
   Activity,
+  CascadePreview,
   Contact,
   CrmRepository,
   CreateActivityInput,
@@ -218,6 +226,18 @@ export async function deleteOrganization(
   return deleteOrganizationInDrizzle(scoped, id);
 }
 
+export async function organizationCascadePreview(
+  tenantId: string,
+  id: string,
+  repo?: CrmRepository,
+): Promise<CascadePreview> {
+  const scoped = requireTenantId(tenantId);
+  if (repo) {
+    return organizationCascadePreviewInMemory(repo, scoped, id);
+  }
+  return organizationCascadePreviewInDrizzle(scoped, id);
+}
+
 export async function listContacts(
   tenantId: string,
   repo?: CrmRepository,
@@ -342,6 +362,18 @@ export async function deleteContact(
   return deleteContactInDrizzle(scoped, id);
 }
 
+export async function contactCascadePreview(
+  tenantId: string,
+  id: string,
+  repo?: CrmRepository,
+): Promise<CascadePreview> {
+  const scoped = requireTenantId(tenantId);
+  if (repo) {
+    return contactCascadePreviewInMemory(repo, scoped, id);
+  }
+  return contactCascadePreviewInDrizzle(scoped, id);
+}
+
 export async function listDeals(
   tenantId: string,
   repo?: CrmRepository,
@@ -444,6 +476,18 @@ export async function deleteDeal(
     return deleteDealInMemory(repo, scoped, id);
   }
   return deleteDealInDrizzle(scoped, id);
+}
+
+export async function dealCascadePreview(
+  tenantId: string,
+  id: string,
+  repo?: CrmRepository,
+): Promise<CascadePreview> {
+  const scoped = requireTenantId(tenantId);
+  if (repo) {
+    return dealCascadePreviewInMemory(repo, scoped, id);
+  }
+  return dealCascadePreviewInDrizzle(scoped, id);
 }
 
 export async function listActivities(

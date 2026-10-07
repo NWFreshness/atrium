@@ -3,6 +3,7 @@
 import { requireTenant, type GetSession } from "../tenancy";
 import { CONTACT_STATUSES, type ContactStatus } from "./constants";
 import {
+  contactCascadePreview,
   createContact,
   deleteContact,
   DuplicateContactEmailError,
@@ -11,6 +12,7 @@ import {
   getOrganization,
   listContacts,
   updateContact,
+  type CascadePreview,
   type ContactCreateResult,
   type ContactUpdateResult,
   type CreateContactInput,
@@ -136,6 +138,15 @@ export async function deleteContactForSession(
   return deleteContact(tenantId, id, repo);
 }
 
+export async function contactCascadePreviewForSession(
+  getSession: GetSession,
+  id: string,
+  repo?: CrmRepository,
+): Promise<CascadePreview> {
+  const { tenantId } = await requireTenant(getSession);
+  return contactCascadePreview(tenantId, id, repo);
+}
+
 export async function listContactsAction(
   opts?: ListContactsOpts,
 ): Promise<Contact[]> {
@@ -166,4 +177,11 @@ export async function updateContactAction(
 export async function deleteContactAction(id: string): Promise<Contact | null> {
   const { auth } = await import("@/auth");
   return deleteContactForSession(auth, id);
+}
+
+export async function contactCascadePreviewAction(
+  id: string,
+): Promise<CascadePreview> {
+  const { auth } = await import("@/auth");
+  return contactCascadePreviewForSession(auth, id);
 }

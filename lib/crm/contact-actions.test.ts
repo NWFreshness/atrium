@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  contactCascadePreviewForSession,
   createContactForSession,
   deleteContactForSession,
   getContactForSession,
@@ -9,7 +10,9 @@ import {
   updateContactForSession,
 } from "./contact-actions";
 import {
+  createActivity,
   createContact,
+  createDeal,
   createMemoryCrmRepository,
   createOrganization,
   DuplicateContactEmailError,
@@ -217,6 +220,35 @@ describe("contact session actions", () => {
     expect(await getContact(tenantA, lead!.id, memory)).toMatchObject({
       status: "lead",
     });
+  });
+
+  it("previews another tenant's contact as all-zero", async () => {
+    const memory = repo();
+    const other = await createContact(
+      tenantB,
+      { name: "Bea", status: "lead" },
+      memory,
+    );
+    await createDeal(
+      tenantB,
+      {
+        name: "Beta deal",
+        contactId: other.id,
+        stage: "New",
+        value: 500,
+        boardOrder: 0,
+      },
+      memory,
+    );
+    await createActivity(
+      tenantB,
+      { type: "note", contactId: other.id, description: "hi", done: false },
+      memory,
+    );
+
+    await expect(
+      contactCascadePreviewForSession(getSessionA, other.id, memory),
+    ).resolves.toEqual({ contacts: 0, deals: 0, activities: 0 });
   });
 
   it("throws when unauthenticated", async () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createDealForSession,
+  dealCascadePreviewForSession,
   deleteDealForSession,
   getDealForSession,
   listDealsForSession,
@@ -8,6 +9,7 @@ import {
   updateDealForSession,
 } from "./deal-actions";
 import {
+  createActivity,
   createContact,
   createDeal,
   createMemoryCrmRepository,
@@ -276,6 +278,24 @@ describe("deal session actions", () => {
     expect(await getDeal(tenantA, deal!.id, memory)).toMatchObject({
       stage: "New",
     });
+  });
+
+  it("previews another tenant's deal as all-zero", async () => {
+    const memory = repo();
+    const other = await createDeal(
+      tenantB,
+      { name: "Beta deal", stage: "New", value: 500, boardOrder: 0 },
+      memory,
+    );
+    await createActivity(
+      tenantB,
+      { type: "note", dealId: other.id, description: "hi", done: false },
+      memory,
+    );
+
+    await expect(
+      dealCascadePreviewForSession(getSessionA, other.id, memory),
+    ).resolves.toEqual({ contacts: 0, deals: 0, activities: 0 });
   });
 
   it("throws when unauthenticated", async () => {

@@ -4,9 +4,12 @@ import {
   deleteOrganizationForSession,
   getOrganizationForSession,
   listOrganizationsForSession,
+  organizationCascadePreviewForSession,
   updateOrganizationForSession,
 } from "./org-actions";
 import {
+  createContact,
+  createDeal,
   createMemoryCrmRepository,
   createOrganization,
   getOrganization,
@@ -128,6 +131,35 @@ describe("org session actions", () => {
     expect(await getOrganization(tenantB, other.id, memory)).toMatchObject({
       name: "Beta Co",
     });
+  });
+
+  it("previews another tenant's organization as all-zero", async () => {
+    const memory = repo();
+    const other = await createOrganization(
+      tenantB,
+      { name: "Beta Co" },
+      memory,
+    );
+    await createContact(
+      tenantB,
+      { name: "Bea", organizationId: other.id, status: "lead" },
+      memory,
+    );
+    await createDeal(
+      tenantB,
+      {
+        name: "Beta deal",
+        organizationId: other.id,
+        stage: "New",
+        value: 500,
+        boardOrder: 0,
+      },
+      memory,
+    );
+
+    await expect(
+      organizationCascadePreviewForSession(getSessionA, other.id, memory),
+    ).resolves.toEqual({ contacts: 0, deals: 0, activities: 0 });
   });
 
   it("throws when unauthenticated", async () => {

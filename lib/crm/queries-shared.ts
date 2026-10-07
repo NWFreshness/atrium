@@ -19,6 +19,19 @@ export type CrmRepository = {
   activities: Activity[];
 };
 
+/**
+ * What a delete will unlink. Exactly three required number keys — one per
+ * noun the consequence message can name, in message order
+ * (contacts → deals → activities). Parents that cannot unlink a noun carry
+ * 0 for it (an organization always carries `activities: 0`: there is no
+ * `activities.organizationId`).
+ */
+export type CascadePreview = {
+  contacts: number;
+  deals: number;
+  activities: number;
+};
+
 export type CreateOrganizationInput = {
   name: string;
   website?: string | null;
