@@ -259,6 +259,17 @@
   color: var(--ink-faint);
 }
 
+/* 11.8 filter summary. The mono label voice of `.crm-empty`, seated in the
+   toolbar between the search form and the Add control. */
+.crm-filter-summary {
+  margin: 0;
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-data);
+  letter-spacing: 0.02em;
+  color: var(--ink-faint);
+}
+
 .crm-dialog-backdrop {
   position: fixed;
   inset: 0;

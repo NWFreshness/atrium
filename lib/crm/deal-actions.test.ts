@@ -135,6 +135,75 @@ describe("deal session actions", () => {
     ).toEqual([widget]);
   });
 
+  it("passes stage, the close-date window, and contactId through against the session tenant only", async () => {
+    const memory = repo();
+    const acme = await createOrganization(tenantA, { name: "Acme" }, memory);
+    const ada = await createContact(
+      tenantA,
+      { name: "Ada", status: "lead" },
+      memory,
+    );
+    const wanted = await createDealForSession(
+      getSessionA,
+      {
+        name: "Widget rollout",
+        organizationId: acme.id,
+        contactId: ada.id,
+        stage: "Qualified",
+        value: 1000,
+        closeDate: new Date("2026-09-15T00:00:00.000Z"),
+      },
+      memory,
+    );
+    await createDealForSession(
+      getSessionA,
+      { name: "Other deal", stage: "New", value: 500 },
+      memory,
+    );
+    await createDeal(
+      tenantB,
+      { name: "Widget east", stage: "Qualified", value: 100 },
+      memory,
+    );
+
+    expect(
+      await listDealsForSession(getSessionA, { stage: "Qualified" }, memory),
+    ).toEqual([wanted]);
+    expect(
+      await listDealsForSession(
+        getSessionA,
+        {
+          q: "widget",
+          organizationId: acme.id,
+          contactId: ada.id,
+          stage: "Qualified",
+          closeAfter: new Date("2026-09-01T00:00:00.000Z"),
+          closeBefore: new Date("2026-10-01T00:00:00.000Z"),
+        },
+        memory,
+      ),
+    ).toEqual([wanted]);
+    // The tenant-override probe: a hostile tenantId in the input is still
+    // scoped to the session tenant, for the new keys exactly as for `q`.
+    expect(
+      await listDealsForSession(
+        getSessionA,
+        { stage: "Qualified", tenantId: tenantB },
+        memory,
+      ),
+    ).toEqual([wanted]);
+    expect(
+      await listDealsForSession(
+        getSessionA,
+        {
+          closeAfter: new Date("2026-09-01T00:00:00.000Z"),
+          tenantId: tenantB,
+        },
+        memory,
+      ),
+    ).toEqual([wanted]);
+  });
+
   it("returns null for missing or other-tenant deals", async () => {
     const memory = repo();
     const other = await createDeal(

@@ -1,4 +1,4 @@
-import { and, count, desc, eq, getTableColumns, max, ne, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, getTableColumns, gte, lt, max, ne, or, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import { getDb } from "../db";
 import type { WriteOpts } from "../db/batch-transaction";
@@ -329,6 +329,13 @@ export async function listDealsInDrizzle(
       : []),
     ...(opts?.contactId !== undefined
       ? [eq(deals.contactId, opts.contactId)]
+      : []),
+    ...(opts?.stage !== undefined ? [eq(deals.stage, opts.stage)] : []),
+    ...(opts?.closeAfter !== undefined
+      ? [gte(deals.closeDate, opts.closeAfter)]
+      : []),
+    ...(opts?.closeBefore !== undefined
+      ? [lt(deals.closeDate, opts.closeBefore)]
       : []),
   ];
   if (!search) {

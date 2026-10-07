@@ -102,10 +102,12 @@ export function ContactTable({
   contacts,
   organizations,
   activitiesByContactId = {},
+  filtered = false,
 }: {
   contacts: Contact[];
   organizations: Organization[];
   activitiesByContactId?: Record<string, Activity[]>;
+  filtered?: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<Contact | null>(null);
@@ -228,7 +230,9 @@ export function ContactTable({
   return (
     <>
       {contacts.length === 0 ? (
-        <p className={styles["crm-empty"]}>No contacts</p>
+        <p className={styles["crm-empty"]}>
+          {filtered ? "No contacts match these filters." : "No contacts"}
+        </p>
       ) : (
         <div className={styles["crm-table-wrap"]}>
           <table className={styles["crm-table"]}>

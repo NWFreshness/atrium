@@ -46,7 +46,13 @@ const columnHelper = createColumnHelper<typeof features, Organization>();
  */
 const sortText = sortFn_alphanumeric;
 
-export function OrgTable({ organizations }: { organizations: Organization[] }) {
+export function OrgTable({
+  organizations,
+  filtered = false,
+}: {
+  organizations: Organization[];
+  filtered?: boolean;
+}) {
   const router = useRouter();
   const [editing, setEditing] = useState<Organization | null>(null);
 
@@ -128,7 +134,9 @@ export function OrgTable({ organizations }: { organizations: Organization[] }) {
   return (
     <>
       {organizations.length === 0 ? (
-        <p className={styles["crm-empty"]}>No organizations</p>
+        <p className={styles["crm-empty"]}>
+          {filtered ? "No organizations match these filters." : "No organizations"}
+        </p>
       ) : (
         <div className={styles["crm-table-wrap"]}>
           <table className={styles["crm-table"]}>
