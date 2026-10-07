@@ -1,6 +1,12 @@
 export const THEME_STORAGE_KEY = "atrium.theme";
 
-export const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");if(t!=="light"&&t!=="dark"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`;
+/*
+ * 13.2 D5: first visit is always light. A stored choice wins; otherwise the
+ * default is light — the OS prefers-color-scheme is deliberately NOT
+ * auto-followed (predictable default). Runs in <head> before first paint
+ * (see app/layout.tsx), so the first paint is already light.
+ */
+export const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");if(t!=="light"&&t!=="dark"){t="light"}document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`;
 
 export type Theme = "light" | "dark";
 
@@ -31,18 +37,6 @@ function readStoredTheme(deps: ThemeDeps): Theme | null {
   }
 }
 
-function readOsTheme(deps: ThemeDeps): Theme | null {
-  try {
-    const media = deps.matchMedia?.("(prefers-color-scheme: dark)");
-    if (!media) {
-      return null;
-    }
-    return media.matches ? "dark" : "light";
-  } catch {
-    return null;
-  }
-}
-
 function readAppliedTheme(deps: ThemeDeps): Theme | null {
   try {
     const applied = deps.document?.documentElement.getAttribute?.("data-theme");
@@ -52,8 +46,13 @@ function readAppliedTheme(deps: ThemeDeps): Theme | null {
   }
 }
 
+/*
+ * 13.2 D5: stored choice wins, otherwise light. The OS preference is not
+ * consulted — first visit is always light regardless of the OS setting.
+ * Storage throwing (private mode) also lands on light, never on an exception.
+ */
 function resolvedTheme(deps: ThemeDeps): Theme {
-  return readStoredTheme(deps) ?? readOsTheme(deps) ?? "light";
+  return readStoredTheme(deps) ?? "light";
 }
 
 function currentTheme(deps: ThemeDeps): Theme {
