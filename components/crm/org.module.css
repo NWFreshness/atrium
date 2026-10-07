@@ -405,3 +405,43 @@
   color: var(--cedar);
   font-variant-numeric: tabular-nums;
 }
+
+/* Detail title row (11.5). The shared `atrium-pagetitle` keeps the heading
+   and sub-line; this wrapper only seats the Edit control beside them. */
+.crm-detail-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Detail Edit trigger. Visible at rest — this control never stages through
+   a hidden state, so it carries no opacity rule; keyboard focus takes the
+   golden ring the rest of the CRM surface uses. */
+.crm-detail-action {
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 550;
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid color-mix(in srgb, var(--brass) 40%, var(--line-strong));
+  background: var(--bg-1);
+  color: var(--brass);
+  cursor: pointer;
+}
+
+.crm-detail-action:hover {
+  color: var(--ink);
+  background: var(--bg-2);
+}
+
+.crm-detail-action:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}

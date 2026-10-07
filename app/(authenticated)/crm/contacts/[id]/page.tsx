@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityForm } from "@/components/crm/activity-form";
 import { ActivityTimeline } from "@/components/crm/activity-timeline";
+import { ContactForm } from "@/components/crm/contact-form";
+import { DetailEdit } from "@/components/crm/detail-edit";
 import styles from "@/components/crm/org.module.css";
 import { listActivitiesAction } from "@/lib/crm/activity-actions";
 import { getContactAction } from "@/lib/crm/contact-actions";
@@ -12,7 +14,10 @@ import {
   lastContactedAt,
 } from "@/lib/crm/last-contacted";
 import { formatDate } from "@/lib/crm/format";
-import { getOrganizationAction } from "@/lib/crm/org-actions";
+import {
+  getOrganizationAction,
+  listOrganizationsAction,
+} from "@/lib/crm/org-actions";
 import type { Activity } from "@/lib/crm/queries";
 
 function lastContactedLabel(
@@ -41,10 +46,11 @@ export default async function ContactDetailPage({
     notFound();
   }
 
-  const [organization, deals, activities] = await Promise.all([
+  const [organization, organizations, deals, activities] = await Promise.all([
     contact.organizationId
       ? getOrganizationAction(contact.organizationId)
       : Promise.resolve(null),
+    listOrganizationsAction(),
     listDealsAction({ contactId: id }),
     listActivitiesAction({ contactId: id }),
   ]);
@@ -56,9 +62,16 @@ export default async function ContactDetailPage({
 
   return (
     <main>
-      <div className="atrium-pagetitle">
-        <h1>{contact.name}</h1>
-        <p className="atrium-sub">Contact · tenant-scoped</p>
+      <div className={styles["crm-detail-title"]}>
+        <div className="atrium-pagetitle">
+          <h1>{contact.name}</h1>
+          <p className="atrium-sub">Contact · tenant-scoped</p>
+        </div>
+        <DetailEdit
+          form={ContactForm}
+          formProps={{ contact, organizations }}
+          name={contact.name}
+        />
       </div>
       <dl className={styles["crm-detail"]}>
         <dt>Email</dt>

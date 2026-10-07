@@ -1,16 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import {
   DEAL_STAGES,
   STAGE_PROBABILITY,
   type DealStage,
 } from "@/lib/crm/constants";
-import {
-  createDealAction,
-  updateDealAction,
-} from "@/lib/crm/deal-actions";
+import { createDealAction, updateDealAction } from "@/lib/crm/deal-actions";
 import type { Contact, Deal, Organization } from "@/lib/crm/queries";
 import styles from "./org.module.css";
 
@@ -78,7 +82,21 @@ export function DealForm({
     initialValues(deal),
   );
   const title = deal ? `Edit ${deal.name}` : "Add deal";
-  const titleId = "deal-form-title";
+  const titleId = useId();
+  const nameRef = useRef<HTMLInputElement | null>(null);
+
+  // Dialog behaviour for the 11.5 detail pages (inherited by the list
+  // pages through the same component): focus Name on open, Escape closes.
+  useEffect(() => {
+    nameRef.current?.focus();
+  }, []);
+
+  function onDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+    }
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -121,12 +139,14 @@ export function DealForm({
         aria-modal="true"
         aria-labelledby={titleId}
         className={styles["crm-dialog"]}
+        onKeyDown={onDialogKeyDown}
       >
         <h2 id={titleId}>{title}</h2>
         <form onSubmit={onSubmit}>
           <div className={styles["crm-field"]}>
             <label htmlFor="deal-name">Name</label>
             <input
+              ref={nameRef}
               id="deal-name"
               name="name"
               value={values.name}

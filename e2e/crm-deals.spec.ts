@@ -198,10 +198,9 @@ test.afterEach(async ({ page }) => {
       await remove.first().click();
       await expect(remove).toHaveCount(0, NAV_TIMEOUT);
     }
-    await expect(page.getByRole("link", { name: orgName, exact: true })).toHaveCount(
-      0,
-      NAV_TIMEOUT,
-    );
+    await expect(
+      page.getByRole("link", { name: orgName, exact: true }),
+    ).toHaveCount(0, NAV_TIMEOUT);
   }
 });
 
@@ -437,7 +436,9 @@ test("contacts sort by the visible organization name, not by the raw id", async 
   ).toBeVisible(NAV_TIMEOUT);
 
   const header = sortHeader(page, "Organization");
-  await header.getByRole("button", { name: "Organization", exact: true }).click();
+  await header
+    .getByRole("button", { name: "Organization", exact: true })
+    .click();
   await expect(header).toHaveAttribute("aria-sort", "ascending");
 
   // The seed's org names (Bluepeak / Harbor & Lane / Northwind) sort in a
@@ -528,7 +529,9 @@ test("deleting an organization sets the deal's organization cell to null without
   await page.goto("/crm/deals");
   const dealRow = page.getByRole("row").filter({ hasText: dealName });
   await expect(dealRow).toBeVisible(NAV_TIMEOUT);
-  await expect(dealRow).toContainText(orgName, { timeout: NAV_TIMEOUT.timeout });
+  await expect(dealRow).toContainText(orgName, {
+    timeout: NAV_TIMEOUT.timeout,
+  });
 
   // Delete the org. After the row's `Delete {orgName}` click, the deal
   // row should still exist and its Organization cell should no longer
@@ -553,4 +556,264 @@ test("deleting an organization sets the deal's organization cell to null without
   await expect(
     page.getByRole("row").filter({ hasText: dealName }),
   ).not.toContainText(orgName, { timeout: NAV_TIMEOUT.timeout });
+});
+
+/**
+ * 11.5 — edit from the detail pages, in the browser.
+ *
+ * One journey per record type. Each detail page carries a single
+ * `Edit {name}` control beside the title (and no Add affordance); opening
+ * it focuses the form's Name input, saving shows in the server-rendered
+ * `<dd>` after a reload, and every edited field is restored to its prior
+ * value so reruns are stable. Escape closes with focus back on the
+ * trigger; loading the page steals no focus. Dialog locators are scoped
+ * by `role="dialog"`, never by `body`.
+ */
+
+/**
+ * Mirrors `createOrganization` for contacts: creates through the list-page
+ * dialog and leaves the row's link on screen so the journey can read the
+ * id off its href. The contact is deleted in the journey body —
+ * `afterEach` only scrubs deals and orgs.
+ */
+async function createContact(page: Page, name: string, jobTitle: string) {
+  await page.goto("/crm/contacts");
+  await expect(
+    page.getByRole("heading", { name: "Contacts", level: 1, exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+  await page.getByRole("button", { name: "Add contact", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Add contact" });
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  await dialog.getByLabel("Name", { exact: true }).fill(name);
+  await dialog.getByLabel("Job title", { exact: true }).fill(jobTitle);
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+  await expect(page.getByRole("link", { name, exact: true })).toBeVisible(
+    NAV_TIMEOUT,
+  );
+}
+
+/** Reads a list-row link's href tail: `/crm/{records}/{id}` -> `{id}`. */
+async function idFromRowLink(page: Page, name: string): Promise<string> {
+  const href = await page
+    .getByRole("link", { name, exact: true })
+    .getAttribute("href");
+  const id = href?.split("/").pop() ?? "";
+  if (!id) {
+    throw new Error(`crm-deals: row link for ${name} has no id in its href`);
+  }
+  return id;
+}
+
+test("an organization edits industry from its detail page and the dl reflects it after reload (11.5 Journey H)", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+  test.setTimeout(G_TIMEOUT);
+  await login(page, demoEmail!, demoPassword!);
+
+  const name = `E2E Detail Org ${Date.now()} ${crypto.randomUUID()}`;
+  mintedOrg = name;
+  await createOrganization(page, name);
+  const id = await idFromRowLink(page, name);
+
+  await page.goto(`/crm/organizations/${id}`);
+  const heading = page.getByRole("heading", { name, level: 1, exact: true });
+  await expect(heading).toBeVisible(NAV_TIMEOUT);
+
+  // Loading the page steals no focus, and there is no Add affordance here.
+  await expect(heading).not.toBeFocused();
+  await expect(
+    page.getByRole("button", { name: "Add organization", exact: true }),
+  ).toHaveCount(0);
+
+  const edit = page.getByRole("button", { name: `Edit ${name}`, exact: true });
+  await edit.click();
+  const dialog = page.getByRole("dialog", {
+    name: `Edit ${name}`,
+    exact: true,
+  });
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  // Autofocus lands on Name.
+  await expect(dialog.getByLabel("Name", { exact: true })).toBeFocused();
+
+  await dialog.getByLabel("Industry", { exact: true }).fill("Harbor testing");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+
+  await page.reload();
+  await expect(
+    page.locator("dl").getByText("Harbor testing", { exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+
+  // Escape closes and focus returns to the control that opened the dialog.
+  await edit.click();
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+  await expect(edit).toBeFocused();
+
+  // Restore the prior value (empty) so reruns are stable.
+  await edit.click();
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  await dialog.getByLabel("Industry", { exact: true }).fill("");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+  await page.reload();
+  await expect(
+    page.locator("dl").getByText("Harbor testing", { exact: true }),
+  ).toHaveCount(0, NAV_TIMEOUT);
+});
+
+test("a contact edits job title from its detail page and the dl reflects it after reload (11.5 Journey I)", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+  test.setTimeout(G_TIMEOUT);
+  await login(page, demoEmail!, demoPassword!);
+
+  const name = `E2E Detail Contact ${Date.now()} ${crypto.randomUUID()}`;
+  await createContact(page, name, "First title");
+  const id = await idFromRowLink(page, name);
+
+  await page.goto(`/crm/contacts/${id}`);
+  const heading = page.getByRole("heading", { name, level: 1, exact: true });
+  await expect(heading).toBeVisible(NAV_TIMEOUT);
+
+  await expect(heading).not.toBeFocused();
+  await expect(
+    page.getByRole("button", { name: "Add contact", exact: true }),
+  ).toHaveCount(0);
+  // The inline activity submit adds an activity *to* this record and stays.
+  await expect(
+    page.getByRole("button", { name: "Add activity", exact: true }),
+  ).toBeVisible();
+
+  const edit = page.getByRole("button", { name: `Edit ${name}`, exact: true });
+  await edit.click();
+  const dialog = page.getByRole("dialog", {
+    name: `Edit ${name}`,
+    exact: true,
+  });
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  await expect(dialog.getByLabel("Name", { exact: true })).toBeFocused();
+
+  await dialog.getByLabel("Job title", { exact: true }).fill("Second title");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+
+  await page.reload();
+  await expect(
+    page.locator("dl").getByText("Second title", { exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+
+  await edit.click();
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+  await expect(edit).toBeFocused();
+
+  await edit.click();
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  await dialog.getByLabel("Job title", { exact: true }).fill("First title");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+  await page.reload();
+  await expect(
+    page.locator("dl").getByText("First title", { exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+
+  // `afterEach` scrubs only deals and orgs, so this journey deletes its
+  // own contact. The shared-handler trap applies: page.once, never page.on.
+  page.once("dialog", (dialog) => void dialog.accept());
+  await page.goto("/crm/contacts");
+  const remove = page.getByRole("button", {
+    name: `Delete ${name}`,
+    exact: true,
+  });
+  await remove.first().click();
+  await expect(remove).toHaveCount(0, NAV_TIMEOUT);
+  await expect(page.getByRole("link", { name, exact: true })).toHaveCount(
+    0,
+    NAV_TIMEOUT,
+  );
+});
+
+test("a deal edits value from its detail page and the dl reflects it after reload (11.5 Journey J)", async ({
+  page,
+}) => {
+  test.skip(
+    !demoEmail || !demoPassword,
+    "AUTH_DEMO_EMAIL and AUTH_DEMO_PASSWORD are required",
+  );
+  test.setTimeout(G_TIMEOUT);
+  await login(page, demoEmail!, demoPassword!);
+
+  const orgName = `E2E Detail Deal Org ${Date.now()} ${crypto.randomUUID()}`;
+  const dealName = `E2E Detail Deal ${Date.now()} ${crypto.randomUUID()}`;
+  mintedOrg = orgName;
+  minted = dealName;
+  await createOrganization(page, orgName);
+  const orgId = await idFromRowLink(page, orgName);
+  await createDeal(page, dealName, orgId);
+  const dealId = await idFromRowLink(page, dealName);
+
+  await page.goto(`/crm/deals/${dealId}`);
+  const heading = page.getByRole("heading", {
+    name: dealName,
+    level: 1,
+    exact: true,
+  });
+  await expect(heading).toBeVisible(NAV_TIMEOUT);
+
+  await expect(heading).not.toBeFocused();
+  await expect(
+    page.getByRole("button", { name: "Add deal", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Add activity", exact: true }),
+  ).toBeVisible();
+
+  const edit = page.getByRole("button", {
+    name: `Edit ${dealName}`,
+    exact: true,
+  });
+  await edit.click();
+  const dialog = page.getByRole("dialog", {
+    name: `Edit ${dealName}`,
+    exact: true,
+  });
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  await expect(dialog.getByLabel("Name", { exact: true })).toBeFocused();
+
+  await dialog.getByLabel("Value", { exact: true }).fill("2500");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+
+  await page.reload();
+  await expect(
+    page.locator("dl").getByText("$2,500.00", { exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
+
+  await edit.click();
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+  await expect(edit).toBeFocused();
+
+  await edit.click();
+  await expect(dialog).toBeVisible(NAV_TIMEOUT);
+  await dialog.getByLabel("Value", { exact: true }).fill("1000");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden(NAV_TIMEOUT);
+  await page.reload();
+  await expect(
+    page.locator("dl").getByText("$1,000.00", { exact: true }),
+  ).toBeVisible(NAV_TIMEOUT);
 });

@@ -317,3 +317,75 @@ describe("chart series names never collide with a KPI tile label", () => {
     }
   });
 });
+
+/*
+  11.5 — edit from the detail pages. Each `[id]` page renders one
+  `DetailEdit` in a `crm-detail-title` wrapper beside the untouched
+  `atrium-pagetitle`; the form arrives as a reference with serializable
+  props and `onClose` is created client-side, so no close handler crosses
+  the server/client boundary. The tables stay byte-unchanged (AC10 holds
+  that by diff, not here).
+*/
+describe("detail edit dialogs", () => {
+  const orgDetail = read("app/(authenticated)/crm/organizations/[id]/page.tsx");
+  const contactDetail = read("app/(authenticated)/crm/contacts/[id]/page.tsx");
+  const dealDetail = read("app/(authenticated)/crm/deals/[id]/page.tsx");
+  const details = [
+    ["organizations", orgDetail],
+    ["contacts", contactDetail],
+    ["deals", dealDetail],
+  ] as const;
+
+  it("mounts exactly one DetailEdit in the title wrapper on every detail page", () => {
+    for (const [label, src] of details) {
+      expect(src.match(/<DetailEdit\b/g), label).toHaveLength(1);
+      expect(src, label).toContain('styles["crm-detail-title"]');
+      expect(src, label).toContain("atrium-pagetitle");
+      expect(src, label).toContain('className="atrium-sub"');
+    }
+  });
+
+  it("hands each form as a reference with serializable props, no close handler", () => {
+    expect(orgDetail).toContain("form={OrgForm}");
+    expect(contactDetail).toContain("form={ContactForm}");
+    expect(dealDetail).toContain("form={DealForm}");
+    for (const [label, src] of details) {
+      expect(src, label).toContain("formProps=");
+      expect(src, `${label} must not pass a close handler`).not.toContain(
+        "onClose",
+      );
+    }
+  });
+
+  it("keeps Add affordances off the detail pages", () => {
+    for (const [label, src] of details) {
+      expect(src, label).not.toContain("AddOrganizationButton");
+      expect(src, label).not.toContain("AddContactButton");
+      expect(src, label).not.toContain("AddDealButton");
+    }
+    // The inline activity submit adds an activity *to* this record — a
+    // different verb on a different object — and stays.
+    expect(contactDetail).toContain("<ActivityForm");
+    expect(dealDetail).toContain("<ActivityForm");
+  });
+
+  it("feeds the selects from tenant lists, resolving deal display from the same lists", () => {
+    expect(contactDetail).toContain("listOrganizationsAction");
+    expect(dealDetail).toContain("listOrganizationsAction");
+    expect(dealDetail).toContain("listContactsAction");
+    expect(dealDetail).not.toContain("getOrganizationAction");
+    expect(dealDetail).not.toContain("getContactAction");
+    expect(dealDetail).toContain("deal.organizationId");
+    expect(dealDetail).toContain("deal.contactId");
+  });
+
+  it("styles the title row with a visible, keyboard-ringed Edit control", () => {
+    expect(orgCss).toContain(".crm-detail-title");
+    expect(orgCss).toContain(".crm-detail-action");
+    expect(rule(orgCss, ".crm-detail-action:focus-visible")).toContain(
+      "outline: 2px solid var(--brass)",
+    );
+    expect(rule(orgCss, ".crm-detail-action")).not.toContain("opacity: 0");
+    expect(orgCss).not.toMatch(/display:\s*none/);
+  });
+});
