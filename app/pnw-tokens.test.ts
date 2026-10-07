@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest";
 
 const globals = readFileSync(new URL("./globals.css", import.meta.url), "utf8");
 const layout = readFileSync(new URL("./layout.tsx", import.meta.url), "utf8");
+const theme = readFileSync(
+  new URL("../lib/theme.ts", import.meta.url),
+  "utf8",
+);
 const crmCharts = readFileSync(
   new URL("../components/crm/dashboard-charts.tsx", import.meta.url),
   "utf8",
@@ -285,5 +289,23 @@ describe("chart literals and aliases", () => {
         expect(src).not.toContain(hex);
       }
     }
+  });
+});
+
+describe("light-first default with a persisted toggle (13.4 AC5)", () => {
+  it("mounts the pre-paint init script in the root layout", () => {
+    expect(layout).toContain("THEME_INIT_SCRIPT");
+  });
+
+  it("falls back to light for first visits and malformed stored values", () => {
+    expect(theme).toContain('t="light"');
+    expect(theme).toMatch(/if\(t!=="light"&&t!=="dark"\)/);
+  });
+
+  it("persists the toggle client-side without following the OS preference", () => {
+    expect(theme).toContain('THEME_STORAGE_KEY = "atrium.theme"');
+    expect(theme).toContain("localStorage.getItem");
+    expect(theme).toContain("setItem(THEME_STORAGE_KEY, next)");
+    expect(theme).not.toContain("matchMedia(");
   });
 });

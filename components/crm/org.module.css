@@ -410,10 +410,12 @@
   cursor: not-allowed;
 }
 
-/* Stale "Last contacted" cell. Cedar text on basalt to match the dashboard
-   late pattern (10.3). Applied only when isStaleContacted returns true. */
+/* Stale "Last contacted" cell. Cedar-ink text to match the dashboard late
+   pattern (10.3): --clay-ink is the contrast-gated text tone (--cedar was
+   never a token, so this fell back to inherited ink). Applied only when
+   isStaleContacted returns true. */
 .crm-stale {
-  color: var(--cedar);
+  color: var(--clay-ink);
   font-variant-numeric: tabular-nums;
 }
 
