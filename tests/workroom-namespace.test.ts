@@ -361,6 +361,9 @@ describe("the retired palette does not come back", () => {
 
 describe("shared chrome interaction and responsive states (13.1 refresh)", () => {
   const chrome = read(resolve(root, "app/workroom.css"));
+  const pipelineBoard = read(
+    resolve(root, "components/crm/pipeline-board.module.css"),
+  );
 
   it("gives every interactive shared class a visible :hover and :focus-visible state", () => {
     for (const cls of ["atrium-btn", "atrium-subtab", "atrium-appcard"]) {
@@ -424,6 +427,20 @@ describe("shared chrome interaction and responsive states (13.1 refresh)", () =>
     );
     expect(nav, "nav end group does not opt into atrium-nav-endwrap").toContain(
       "atrium-nav-endwrap",
+    );
+  });
+
+  it("keeps the shared primary a single golden fill with charcoal text (13.4)", () => {
+    const from = chrome.indexOf(".atrium-btn-primary {");
+    expect(from, "missing .atrium-btn-primary").toBeGreaterThanOrEqual(0);
+    const block = chrome.slice(from, chrome.indexOf("}", from));
+    expect(block).toMatch(/background:\s*#dfa84a/);
+    expect(block).toMatch(/color:\s*#25282a/);
+  });
+
+  it("stacks the CRM pipeline board to one column at narrow widths (13.4)", () => {
+    expect(pipelineBoard).toMatch(
+      /@media[^{]*max-width:\s*56rem[^{]*\{[^}]*\.board[^}]*grid-template-columns:\s*1fr/,
     );
   });
 });

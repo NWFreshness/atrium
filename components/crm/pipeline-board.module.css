@@ -167,3 +167,15 @@
 .stageLost {
   --stage-c: var(--clay-ink);
 }
+
+/* Narrow-viewport stack (13.4): six across is illegible below tablet
+   widths, so the columns stack to one and drop their internal scroll —
+   cards keep full measure with no sideways scroll at 375 / 768. */
+@media (max-width: 56rem) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+  .list {
+    max-height: none;
+  }
+}

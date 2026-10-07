@@ -289,3 +289,29 @@ describe("shared focus ring (13.1 refresh)", () => {
     expect(light).toContain("--brass:");
   });
 });
+
+describe("primary action pair (13.4 polish)", () => {
+  // The golden/ink pairs behind the shared primary: charcoal on the dark
+  // gold (6.95:1) and mist on the light gold (4.76:1). Token facts, locked
+  // so a palette retune that drops the primary below the text floor fails.
+  it.each([
+    { theme: "dark", fg: "--bg-0", bg: "--brass", lock: 6.95 },
+    { theme: "light", fg: "--bg-0", bg: "--brass", lock: 4.76 },
+  ])("$theme $fg text on $bg fill", ({ theme, fg, bg, lock }) => {
+    const block = themeBlock(theme as "dark" | "light");
+    const ratio = contrastRatio(tokenColor(block, fg), tokenColor(block, bg));
+    expect(ratio, failMessage(fg, bg, ratio, lock)).toBeCloseTo(lock, 2);
+    expect(ratio, failMessage(fg, bg, ratio, TEXT_MIN)).toBeGreaterThanOrEqual(
+      TEXT_MIN,
+    );
+  });
+
+  it("paints the stale-contact tone from a gated text role, not an undeclared token", () => {
+    const org = readFileSync(
+      resolve("components/crm/org.module.css"),
+      "utf8",
+    );
+    expect(org).not.toMatch(/var\(--cedar\)/);
+    expect(org).toMatch(/\.crm-stale\s*\{[^}]*var\(--clay-ink\)/);
+  });
+});

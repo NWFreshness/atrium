@@ -88,3 +88,12 @@ describe("no per-app module edits", () => {
     expect(globals).not.toMatch(/atrium-nav/);
   });
 });
+
+describe("theme color-scheme handshake (13.4 AC5)", () => {
+  it("declares dark on :root and light on the mist override", () => {
+    expect(globals).toMatch(/:root\s*\{[^}]*color-scheme:\s*dark/);
+    expect(globals).toMatch(
+      /\[data-theme="light"\][^{]*\{[^}]*color-scheme:\s*light/,
+    );
+  });
+});
