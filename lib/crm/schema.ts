@@ -7,7 +7,9 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { tenants } from "../db/schema";
 import { ACTIVITY_TYPES, CONTACT_STATUSES, DEAL_STAGES } from "./constants";
 
@@ -56,7 +58,19 @@ export const contacts = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [index("contacts_tenantId_idx").on(table.tenantId)],
+  (table) => [
+    index("contacts_tenantId_idx").on(table.tenantId),
+    // Uniqueness is per tenant on `lower(email)`, not the raw column: the
+    // pre-check refuses case-variant duplicates with a link to the existing
+    // contact, and this index is the backstop that wins the race. `NULL`
+    // emails stay distinct in a unique index, so email-less contacts are
+    // unaffected; `""` is normalized to null before insert on both write
+    // paths so empty strings cannot collide.
+    uniqueIndex("contacts_email_lower_idx").on(
+      table.tenantId,
+      sql`lower(${table.email})`,
+    ),
+  ],
 );
 
 export const deals = pgTable(

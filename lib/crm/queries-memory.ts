@@ -29,6 +29,64 @@ export function createMemoryCrmRepository(): CrmRepository {
   };
 }
 
+/**
+ * The store-level refusal when two contacts in one tenant would hold the
+ * same email in any casing. Carries the clashing row so the action layer
+ * can name it and link to it; a bare instance with no `existing` is the
+ * race fallback, where the losing write never saw the winner's row.
+ */
+export class DuplicateContactEmailError extends Error {
+  readonly code = "duplicate_email" as const;
+  readonly existing?: { id: string; name: string; email: string };
+
+  constructor(existing?: { id: string; name: string; email: string }) {
+    super("A contact with this email already exists in this tenant.");
+    this.name = "DuplicateContactEmailError";
+    this.existing = existing;
+  }
+}
+
+/**
+ * Trim leading/trailing whitespace; an empty string becomes null so cleared
+ * emails cannot collide with each other in the unique index (`NULL`s are
+ * distinct, `""` is not). Idempotent.
+ */
+export function normalizeContactEmail(
+  value: string | null | undefined,
+): string | null {
+  if (value == null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+/**
+ * Tenant-scoped case-insensitive lookup on the same expression the unique
+ * index and the Drizzle pre-check use — the memory mirror of 8.1's
+ * `lower(email)` lookup. Nullish and empty input matches nothing.
+ */
+export function findContactByEmailInMemory(
+  repo: CrmRepository,
+  tenantId: string,
+  email: string | null | undefined,
+  excludeId?: string,
+): Contact | null {
+  const wanted = normalizeContactEmail(email);
+  if (!wanted) {
+    return null;
+  }
+  const lowered = wanted.toLowerCase();
+  const found = repo.contacts.find(
+    (row) =>
+      row.tenantId === tenantId &&
+      row.email != null &&
+      row.email.trim().toLowerCase() === lowered &&
+      row.id !== excludeId,
+  );
+  return found ? clone(found) : null;
+}
+
 function findScoped<T extends { id: string; tenantId: string }>(
   rows: T[],
   tenantId: string,
@@ -138,8 +196,20 @@ export function createContactInMemory(
   repo: CrmRepository,
   row: Contact,
 ): Contact {
-  repo.contacts.push(row);
-  return clone(row);
+  const email = normalizeContactEmail(row.email);
+  if (email) {
+    const clash = findContactByEmailInMemory(repo, row.tenantId, email);
+    if (clash) {
+      throw new DuplicateContactEmailError({
+        id: clash.id,
+        name: clash.name,
+        email: clash.email ?? email,
+      });
+    }
+  }
+  const stored: Contact = { ...row, email };
+  repo.contacts.push(stored);
+  return clone(stored);
 }
 
 export function updateContactInMemory(
@@ -152,8 +222,20 @@ export function updateContactInMemory(
   if (!row) {
     return null;
   }
+  const email =
+    input.email !== undefined ? normalizeContactEmail(input.email) : undefined;
+  if (email) {
+    const clash = findContactByEmailInMemory(repo, scoped, email, id);
+    if (clash) {
+      throw new DuplicateContactEmailError({
+        id: clash.id,
+        name: clash.name,
+        email: clash.email ?? email,
+      });
+    }
+  }
   if (input.name !== undefined) row.name = input.name;
-  if (input.email !== undefined) row.email = input.email;
+  if (input.email !== undefined) row.email = email ?? null;
   if (input.phone !== undefined) row.phone = input.phone;
   if (input.jobTitle !== undefined) row.jobTitle = input.jobTitle;
   if (input.organizationId !== undefined) {

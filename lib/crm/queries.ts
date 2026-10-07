@@ -7,6 +7,7 @@ import {
   deleteContactInDrizzle,
   deleteDealInDrizzle,
   deleteOrganizationInDrizzle,
+  findContactByEmailInDrizzle,
   getActivityInDrizzle,
   getContactInDrizzle,
   getDealInDrizzle,
@@ -15,6 +16,7 @@ import {
   insertContact,
   insertDeal,
   insertOrganization,
+  isUniqueViolation,
   listActivitiesInDrizzle,
   listContactsInDrizzle,
   listDealsInDrizzle,
@@ -34,6 +36,7 @@ import {
   deleteContactInMemory,
   deleteDealInMemory,
   deleteOrganizationInMemory,
+  DuplicateContactEmailError,
   getActivityInMemory,
   getContactInMemory,
   getDealInMemory,
@@ -43,6 +46,7 @@ import {
   listDealsInMemory,
   listOrganizationsInMemory,
   nextBoardOrderInMemory,
+  normalizeContactEmail,
   updateActivityInMemory,
   updateContactInMemory,
   updateDealInMemory,
@@ -89,6 +93,47 @@ export type {
   UpdateOrganizationInput,
 } from "./queries-shared";
 export { createMemoryCrmRepository } from "./queries-memory";
+export { DuplicateContactEmailError } from "./queries-memory";
+
+/** The contact the address already belongs to — named and linked in the UI. */
+export type TakenContactRef = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export type DuplicateEmailFailure = {
+  ok: false;
+  code: "duplicate_email";
+  existing?: TakenContactRef;
+};
+
+export type ContactCreateResult =
+  | { ok: true; contact: Contact }
+  | DuplicateEmailFailure;
+
+export type ContactUpdateResult =
+  | { ok: true; contact: Contact }
+  | DuplicateEmailFailure;
+
+/**
+ * Maps the store refusal to the typed result. The pre-check path carries
+ * the clashing contact for the link; the race path (a 23505 the pre-check
+ * passed) has no `existing` key — the losing write never saw the winner.
+ * (Defined here, not in the action module, because `"use server"` files
+ * may only export async functions.)
+ */
+export function duplicateEmailFailure(
+  error: DuplicateContactEmailError,
+): DuplicateEmailFailure {
+  return error.existing
+    ? {
+        ok: false,
+        code: "duplicate_email",
+        existing: error.existing,
+      }
+    : { ok: false, code: "duplicate_email" };
+}
 
 function short(value: unknown) {
   return assertText(value, MAX_SHORT_TEXT);
@@ -208,7 +253,7 @@ export async function createContact(
     id: newId(),
     tenantId: scoped,
     name: short(input.name) as string,
-    email: short(input.email ?? null) ?? null,
+    email: normalizeContactEmail(short(input.email ?? null) ?? null),
     phone: short(input.phone ?? null) ?? null,
     jobTitle: short(input.jobTitle ?? null) ?? null,
     organizationId: input.organizationId ?? null,
@@ -218,7 +263,32 @@ export async function createContact(
   if (repo) {
     return createContactInMemory(repo, row);
   }
-  return insertContact(row, opts);
+  // A batched write cannot read: the wipe travels in the same batch, so the
+  // pre-check is skipped and the unique index owns the guarantee at flush.
+  if (!opts?.batch && row.email) {
+    const clash = await findContactByEmailInDrizzle(scoped, row.email);
+    if (clash) {
+      throw new DuplicateContactEmailError({
+        id: clash.id,
+        name: clash.name,
+        email: clash.email ?? row.email,
+      });
+    }
+  }
+  if (opts?.batch) {
+    return insertContact(row, opts);
+  }
+  try {
+    return await insertContact(row, opts);
+  } catch (error) {
+    // The race the pre-check cannot win: two concurrent creates both passed
+    // it, and the index refused the loser. No `existing` link — the losing
+    // write never saw the winner's row.
+    if (isUniqueViolation(error)) {
+      throw new DuplicateContactEmailError();
+    }
+    throw error;
+  }
 }
 
 export async function updateContact(
@@ -232,10 +302,32 @@ export async function updateContact(
   if (input.email !== undefined) short(input.email);
   if (input.phone !== undefined) short(input.phone);
   if (input.jobTitle !== undefined) short(input.jobTitle);
+  const normalized: UpdateContactInput =
+    input.email !== undefined
+      ? { ...input, email: normalizeContactEmail(input.email) }
+      : input;
   if (repo) {
-    return updateContactInMemory(repo, scoped, id, input);
+    return updateContactInMemory(repo, scoped, id, normalized);
   }
-  return updateContactInDrizzle(scoped, id, input);
+  const email = normalized.email ?? undefined;
+  if (email) {
+    const clash = await findContactByEmailInDrizzle(scoped, email, id);
+    if (clash) {
+      throw new DuplicateContactEmailError({
+        id: clash.id,
+        name: clash.name,
+        email: clash.email ?? email,
+      });
+    }
+  }
+  try {
+    return await updateContactInDrizzle(scoped, id, normalized);
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new DuplicateContactEmailError();
+    }
+    throw error;
+  }
 }
 
 export async function deleteContact(

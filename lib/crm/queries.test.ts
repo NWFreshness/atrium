@@ -1,4 +1,5 @@
 import { getTableColumns } from "drizzle-orm";
+import { PgDialect } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
 import {
   ACTIVITY_TYPES,
@@ -16,6 +17,7 @@ import {
   deleteContact,
   deleteDeal,
   deleteOrganization,
+  DuplicateContactEmailError,
   getActivity,
   getContact,
   getDeal,
@@ -40,6 +42,10 @@ import {
 } from "./schema";
 import { createWriteBatch } from "../db/batch-transaction";
 import { createRecordingDb } from "../db/batch-test-helpers";
+import {
+  contactEmailPrecheck,
+  isUniqueViolation,
+} from "./queries-drizzle";
 
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
@@ -1270,5 +1276,151 @@ describe("text ceilings", () => {
     );
     await createOrganization(tenantA, { name: "Acme" }, memory);
     expect(await listOrganizations(tenantA, memory, "%")).toEqual([percent]);
+  });
+});
+
+describe("contact email uniqueness", () => {
+  it("refuses a case-variant duplicate in the same tenant", async () => {
+    const memory = repo();
+    const ana = await createContact(
+      tenantA,
+      { name: "Ana Ruiz", email: "Ana@x.test", status: "lead" },
+      memory,
+    );
+
+    const attempt = createContact(
+      tenantA,
+      { name: "Ana Clone", email: "ana@x.test", status: "lead" },
+      memory,
+    );
+    await expect(attempt).rejects.toMatchObject({ code: "duplicate_email" });
+    const error: unknown = await attempt.catch((cause) => cause);
+    expect(error).toBeInstanceOf(DuplicateContactEmailError);
+    expect(
+      (error as DuplicateContactEmailError).existing,
+    ).toMatchObject({ id: ana.id, name: "Ana Ruiz" });
+    expect(await listContacts(tenantA, memory)).toHaveLength(1);
+  });
+
+  it("lets email-less contacts coexist and scopes the address to the tenant", async () => {
+    const memory = repo();
+    await createContact(tenantA, { name: "No Mail 1", status: "lead" }, memory);
+    await createContact(
+      tenantA,
+      { name: "No Mail 2", email: null, status: "lead" },
+      memory,
+    );
+    await createContact(
+      tenantA,
+      { name: "Ana A", email: "ana@x.test", status: "lead" },
+      memory,
+    );
+    await createContact(
+      tenantB,
+      { name: "Ana B", email: "ANA@X.TEST", status: "lead" },
+      memory,
+    );
+
+    expect(await listContacts(tenantA, memory)).toHaveLength(3);
+    expect(await listContacts(tenantB, memory)).toHaveLength(1);
+  });
+
+  it("trims on create and update, and stores an empty string as null on both", async () => {
+    const memory = repo();
+    const created = await createContact(
+      tenantA,
+      { name: "Ana", email: "  ana@x.test  ", status: "lead" },
+      memory,
+    );
+    expect(created.email).toBe("ana@x.test");
+
+    const blank = await createContact(
+      tenantA,
+      { name: "Bo", email: "", status: "lead" },
+      memory,
+    );
+    expect(blank.email).toBeNull();
+
+    const recased = await updateContact(
+      tenantA,
+      created.id,
+      { email: "  ANA@x.test  " },
+      memory,
+    );
+    expect(recased?.email).toBe("ANA@x.test");
+
+    const cleared = await updateContact(
+      tenantA,
+      created.id,
+      { email: "" },
+      memory,
+    );
+    expect(cleared?.email).toBeNull();
+  });
+
+  it("refuses an update onto another contact's address but keeps own-address updates", async () => {
+    const memory = repo();
+    const ana = await createContact(
+      tenantA,
+      { name: "Ana", email: "ana@x.test", status: "lead" },
+      memory,
+    );
+    const bob = await createContact(
+      tenantA,
+      { name: "Bob", email: "bob@x.test", status: "lead" },
+      memory,
+    );
+
+    await expect(
+      updateContact(tenantA, bob.id, { email: "ANA@X.TEST" }, memory),
+    ).rejects.toMatchObject({ code: "duplicate_email" });
+
+    const kept = await updateContact(
+      tenantA,
+      ana.id,
+      { email: "ANA@x.test", jobTitle: "VP" },
+      memory,
+    );
+    expect(kept?.jobTitle).toBe("VP");
+    expect(kept?.email).toBe("ANA@x.test");
+  });
+
+  it("renders the pre-check on lower(email) scoped to the tenant, never a bare equality", () => {
+    const { sql, params } = new PgDialect().sqlToQuery(
+      contactEmailPrecheck(tenantA, "Ana@X.test"),
+    );
+    expect(sql).toContain('lower("contacts"."email")');
+    expect(sql).toContain('"contacts"."tenantId"');
+    expect(sql).not.toMatch(/"contacts"\."email"\s*=/);
+    expect(params).toEqual([tenantA, "ana@x.test"]);
+  });
+
+  it("excludes the row's own id in the update pre-check", () => {
+    const { sql, params } = new PgDialect().sqlToQuery(
+      contactEmailPrecheck(tenantA, "ana@x.test", "contact-1"),
+    );
+    expect(sql).toContain('"contacts"."id"');
+    expect(params).toEqual([tenantA, "ana@x.test", "contact-1"]);
+  });
+});
+
+describe("isUniqueViolation", () => {
+  it("keys on the SQLSTATE, never on an index name", () => {
+    expect(isUniqueViolation({ code: "23505", message: "boom" })).toBe(true);
+    expect(
+      isUniqueViolation({
+        message:
+          'duplicate key value violates unique constraint "contacts_tenantId_idx"',
+      }),
+    ).toBe(true);
+    expect(
+      isUniqueViolation({
+        code: "42P10",
+        message:
+          "there is no unique or exclusion constraint matching the ON CONFLICT specification",
+      }),
+    ).toBe(false);
+    expect(isUniqueViolation(null)).toBe(false);
+    expect(isUniqueViolation(new Error("nope"))).toBe(false);
   });
 });

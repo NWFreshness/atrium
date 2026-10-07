@@ -2,7 +2,7 @@ import { getTableColumns, type SQL } from "drizzle-orm";
 import { getTableConfig, PgDialect, type PgTable } from "drizzle-orm/pg-core";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { accounts, sessions, tenants, userRoleEnum, users } from "./schema";
+import { accounts, contacts, sessions, tenants, userRoleEnum, users } from "./schema";
 import * as schemaBarrel from "./schema";
 
 /**
@@ -106,10 +106,15 @@ describe("tenantId indexes", () => {
       const table = tableNamed(name);
       expect(getTableColumns(table).tenantId, `${name}.tenantId`).toBeDefined();
 
-      const onTenantId = getTableConfig(table).indexes.filter((index) =>
-        index.config.columns.some(
-          (column) => "name" in column && column.name === "tenantId",
-        ),
+      const onTenantId = getTableConfig(table).indexes.filter(
+        (index) =>
+          // Single-column only: the composite `contacts_email_lower_idx`
+          // leads on tenantId too, but this gate owns the dedicated
+          // `where tenantId = ?` index, named after its table.
+          index.config.columns.length === 1 &&
+          index.config.columns.some(
+            (column) => "name" in column && column.name === "tenantId",
+          ),
       );
 
       // Exactly one, named after its table, and *leading* on tenantId: a
@@ -265,6 +270,57 @@ describe("the auth_throttles migration", () => {
   it("does not drop users or tenants or add RLS", () => {
     expect(source).not.toMatch(
       /DROP TABLE|DROP TYPE|ALTER TYPE|CREATE POLICY|ROW LEVEL SECURITY|DELETE FROM|TRUNCATE/i,
+    );
+  });
+});
+
+describe("the contacts lower(email) unique index", () => {
+  const unique = getTableConfig(contacts).indexes.filter(
+    (entry) => entry.config.unique,
+  );
+
+  it("uniques contacts.email per tenant, on tenantId plus the lower(email) expression", () => {
+    expect(unique.map((entry) => entry.config.name)).toEqual([
+      "contacts_email_lower_idx",
+    ]);
+
+    const index = unique[0]!;
+    expect(index.config.method).toBe("btree");
+    // An expression index carries `SQL` chunks rather than columns, so print
+    // what it would render as instead of comparing object identity.
+    expect(
+      index.config.columns.map((column) =>
+        "name" in column ? column.name : render(column),
+      ),
+    ).toEqual(["tenantId", 'lower("contacts"."email")']);
+  });
+
+  it("keeps contacts.email a bare nullable column", () => {
+    expect(getTableColumns(contacts).email.isUnique).toBe(false);
+    expect(getTableColumns(contacts).email.notNull).toBe(false);
+  });
+});
+
+describe("the contacts email uniqueness migration", () => {
+  const { source, statements } = migrationStatements(
+    "0008_next_psylocke.sql",
+  );
+
+  it("creates the composite unique idempotently and nothing else", () => {
+    expect(statements).toHaveLength(1);
+    expect(statements[0]).toContain(
+      'CREATE UNIQUE INDEX IF NOT EXISTS "contacts_email_lower_idx"',
+    );
+    expect(statements[0]).toContain('ON "contacts"');
+    expect(statements[0]).toMatch(/lower\("email"\)/);
+    // IF NOT EXISTS matches by name, not by definition — the caveat above
+    // the statement says so, because a same-named drift would skip silently.
+    expect(source).toContain("not by definition");
+  });
+
+  it("rewrites nothing else — no table, policy, or delete form", () => {
+    expect(source).not.toMatch(
+      /DROP TABLE|DROP TYPE|ALTER TYPE|ALTER TABLE|CREATE POLICY|ROW LEVEL SECURITY|DELETE FROM|TRUNCATE/i,
     );
   });
 });
