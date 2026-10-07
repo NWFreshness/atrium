@@ -297,7 +297,14 @@ export function listDealsInMemory(
         dealMatchesSearch(row, repo, opts?.q) &&
         (opts?.organizationId === undefined ||
           row.organizationId === opts.organizationId) &&
-        (opts?.contactId === undefined || row.contactId === opts.contactId),
+        (opts?.contactId === undefined || row.contactId === opts.contactId) &&
+        (opts?.stage === undefined || row.stage === opts.stage) &&
+        (opts?.closeAfter === undefined ||
+          (row.closeDate != null &&
+            row.closeDate.getTime() >= opts.closeAfter.getTime())) &&
+        (opts?.closeBefore === undefined ||
+          (row.closeDate != null &&
+            row.closeDate.getTime() < opts.closeBefore.getTime())),
     )
     .map(clone);
 }

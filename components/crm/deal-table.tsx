@@ -76,10 +76,12 @@ export function DealTable({
   deals,
   organizations,
   contacts,
+  filtered = false,
 }: {
   deals: Deal[];
   organizations: Organization[];
   contacts: Contact[];
+  filtered?: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<Deal | null>(null);
@@ -214,7 +216,9 @@ export function DealTable({
   return (
     <>
       {deals.length === 0 ? (
-        <p className={styles["crm-empty"]}>No deals</p>
+        <p className={styles["crm-empty"]}>
+          {filtered ? "No deals match these filters." : "No deals"}
+        </p>
       ) : (
         <div className={styles["crm-table-wrap"]}>
           <table className={styles["crm-table"]}>

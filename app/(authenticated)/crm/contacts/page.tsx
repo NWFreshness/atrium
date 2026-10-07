@@ -82,6 +82,7 @@ export default async function ContactsPage({
         contacts={contacts}
         organizations={organizations}
         activitiesByContactId={activitiesByContactId}
+        filtered={(q?.trim() ?? "") !== "" || status !== undefined}
       />
     </main>
   );

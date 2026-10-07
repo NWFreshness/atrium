@@ -87,6 +87,9 @@ export type ListDealsOpts = {
   q?: string;
   organizationId?: string;
   contactId?: string;
+  stage?: DealStage;
+  closeAfter?: Date;
+  closeBefore?: Date;
 };
 
 export type ListActivitiesOpts = {

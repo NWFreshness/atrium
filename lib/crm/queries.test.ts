@@ -649,6 +649,198 @@ describe("listDeals filters", () => {
   });
 });
 
+describe("listDeals stage and close-date filters", () => {
+  const after = new Date("2026-09-01T00:00:00.000Z");
+  const before = new Date("2026-10-01T00:00:00.000Z");
+
+  async function deal(
+    tenantId: string,
+    name: string,
+    extra: {
+      stage?: "New" | "Qualified" | "Won";
+      closeDate?: Date | null;
+      organizationId?: string | null;
+      contactId?: string | null;
+    },
+    memory: ReturnType<typeof repo>,
+  ) {
+    return createDeal(
+      tenantId,
+      {
+        name,
+        stage: extra.stage ?? "New",
+        value: 1000,
+        ...(extra.closeDate !== undefined
+          ? { closeDate: extra.closeDate }
+          : {}),
+        ...(extra.organizationId !== undefined
+          ? { organizationId: extra.organizationId }
+          : {}),
+        ...(extra.contactId !== undefined
+          ? { contactId: extra.contactId }
+          : {}),
+      },
+      memory,
+    );
+  }
+
+  it("filters by stage equality within the tenant", async () => {
+    const memory = repo();
+    await deal(tenantA, "Early", { stage: "New" }, memory);
+    const qualified = await deal(tenantA, "Middle", { stage: "Qualified" }, memory);
+    await deal(tenantB, "Other", { stage: "Qualified" }, memory);
+
+    expect(await listDeals(tenantA, memory, { stage: "Qualified" })).toEqual([
+      qualified,
+    ]);
+    expect(await listDeals(tenantA, memory, { stage: "Won" })).toEqual([]);
+  });
+
+  it("applies the close-date window half-open: [closeAfter, closeBefore)", async () => {
+    const memory = repo();
+    const early = await deal(
+      tenantA,
+      "Early",
+      { closeDate: new Date("2026-08-15T00:00:00.000Z") },
+      memory,
+    );
+    const inside = await deal(
+      tenantA,
+      "Inside",
+      { closeDate: new Date("2026-09-15T00:00:00.000Z") },
+      memory,
+    );
+    const late = await deal(
+      tenantA,
+      "Late",
+      { closeDate: new Date("2026-10-15T00:00:00.000Z") },
+      memory,
+    );
+
+    expect(
+      await listDeals(tenantA, memory, { closeAfter: after }),
+    ).toEqual([inside, late]);
+    expect(
+      await listDeals(tenantA, memory, { closeBefore: before }),
+    ).toEqual([early, inside]);
+    expect(
+      await listDeals(tenantA, memory, {
+        closeAfter: after,
+        closeBefore: before,
+      }),
+    ).toEqual([inside]);
+  });
+
+  it("pins the half-open bound by id, not by index", async () => {
+    const memory = repo();
+    const onAfter = await deal(tenantA, "On after", { closeDate: after }, memory);
+    const onBefore = await deal(
+      tenantA,
+      "On before",
+      { closeDate: before },
+      memory,
+    );
+    const beforeMinusMs = await deal(
+      tenantA,
+      "Before minus a millisecond",
+      { closeDate: new Date(before.getTime() - 1) },
+      memory,
+    );
+
+    const windowed = await listDeals(tenantA, memory, {
+      closeAfter: after,
+      closeBefore: before,
+    });
+    expect(windowed).toEqual([onAfter, beforeMinusMs]);
+    expect(windowed.map((row) => row.id)).not.toContain(onBefore.id);
+  });
+
+  it("excludes NULL closeDate when either bound is active, returns it with no window", async () => {
+    const memory = repo();
+    const undated = await deal(tenantA, "Undated", { closeDate: null }, memory);
+    const dated = await deal(
+      tenantA,
+      "Dated",
+      { closeDate: new Date("2026-09-15T00:00:00.000Z") },
+      memory,
+    );
+
+    expect(await listDeals(tenantA, memory)).toEqual([undated, dated]);
+    expect(
+      await listDeals(tenantA, memory, { closeAfter: after }),
+    ).toEqual([dated]);
+    expect(
+      await listDeals(tenantA, memory, { closeBefore: before }),
+    ).toEqual([dated]);
+    expect(
+      await listDeals(tenantA, memory, {
+        closeAfter: after,
+        closeBefore: before,
+      }),
+    ).toEqual([dated]);
+  });
+
+  it("returns [] for an inverted window", async () => {
+    const memory = repo();
+    await deal(
+      tenantA,
+      "Inside",
+      { closeDate: new Date("2026-09-15T00:00:00.000Z") },
+      memory,
+    );
+
+    expect(
+      await listDeals(tenantA, memory, {
+        closeAfter: before,
+        closeBefore: after,
+      }),
+    ).toEqual([]);
+  });
+
+  it("combines all five opts keys down to exactly one row", async () => {
+    const memory = repo();
+    const acme = await createOrganization(tenantA, { name: "Acme" }, memory);
+    const ada = await createContact(
+      tenantA,
+      { name: "Ada Lovelace", status: "lead" },
+      memory,
+    );
+    const wanted = await deal(
+      tenantA,
+      "Widget rollout",
+      {
+        stage: "Qualified",
+        closeDate: new Date("2026-09-15T00:00:00.000Z"),
+        organizationId: acme.id,
+        contactId: ada.id,
+      },
+      memory,
+    );
+    await deal(
+      tenantA,
+      "Widget follow-up",
+      {
+        stage: "Qualified",
+        closeDate: new Date("2026-09-15T00:00:00.000Z"),
+        organizationId: acme.id,
+      },
+      memory,
+    );
+    await deal(tenantA, "Other work", { stage: "New" }, memory);
+
+    expect(
+      await listDeals(tenantA, memory, {
+        q: "widget",
+        organizationId: acme.id,
+        contactId: ada.id,
+        stage: "Qualified",
+        closeAfter: after,
+        closeBefore: before,
+      }),
+    ).toEqual([wanted]);
+  });
+});
+
 describe("createDeal defaults", () => {
   it("defaults probability from STAGE_PROBABILITY when omitted", async () => {
     const memory = repo();

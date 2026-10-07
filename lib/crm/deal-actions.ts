@@ -65,6 +65,9 @@ export async function listDealsForSession(
     q: input.q,
     organizationId: input.organizationId,
     contactId: input.contactId,
+    stage: input.stage,
+    closeAfter: input.closeAfter,
+    closeBefore: input.closeBefore,
   });
 }
 

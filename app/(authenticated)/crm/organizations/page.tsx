@@ -30,7 +30,10 @@ export default async function OrganizationsPage({
         </form>
         <AddOrganizationButton />
       </div>
-      <OrgTable organizations={organizations} />
+      <OrgTable
+        organizations={organizations}
+        filtered={(q?.trim() ?? "") !== ""}
+      />
     </main>
   );
 }
