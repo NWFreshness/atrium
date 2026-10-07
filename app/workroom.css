@@ -83,6 +83,13 @@
   color: #25282a;
 }
 
+/* Visible keyboard focus for every shared button (13.1). Inputs already
+   carry their own :focus-visible rule below; nav tabs and app cards follow. */
+.atrium-btn:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
 /* ---------- Fields ---------- */
 .atrium-field {
   display: block;
@@ -266,6 +273,8 @@
 /* ---------- Subnav ---------- */
 .atrium-subnav {
   display: flex;
+  flex-wrap: wrap;
+  row-gap: 0.35rem;
   gap: 0.4rem;
   margin: 1.1rem 0 0;
   border-bottom: 1px solid var(--line);
@@ -298,6 +307,12 @@
 }
 
 .atrium-subtab:hover {
+  color: var(--ink);
+}
+
+.atrium-subtab:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
   color: var(--ink);
 }
 
@@ -458,10 +473,69 @@
   gap: 9px;
 }
 
+.atrium-appcard:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 3px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .atrium-appcard,
   .atrium-appcard:hover {
     transform: none;
     transition: none;
+  }
+  .atrium-btn,
+  .atrium-btn:hover,
+  .atrium-btn-primary:hover,
+  .atrium-subtab,
+  .atrium-subtab:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---------- Responsive (13.1) ----------
+   Launcher graph collapses 4 → 2 → 1 column so no width in the
+   375 / 768 / 1024 / 1440 pass squeezes cards or scrolls sideways. */
+@media (max-width: 64rem) {
+  .atrium-graph {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  .atrium-launcher {
+    padding: 1.5rem 1rem 2.5rem;
+  }
+  .atrium-graph {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* A vw-sized card must never outgrow its padded container (13.1): the
+   login/signup card is width:min(400px, 92vw) inside a padded grid <main>,
+   which pokes ~2px past the viewport under ~400px widths. Plain
+   max-width:100% cannot hold it — as a grid item the percentage resolves
+   against the track the card itself sized — so the cap is viewport-based
+   and mirrors the main's 2 x 2rem padding. */
+.atrium-fit {
+  max-width: calc(100vw - 4rem);
+}
+
+/* Narrow-viewport hook for the top nav strip (13.1). The strip itself lives
+   in components/atrium-nav.module.css; this shared class is opted into via
+   className only, so its two groups wrap instead of scrolling sideways. */
+@media (max-width: 56rem) {
+  .atrium-nav-stack {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    min-height: 0;
+  }
+  .atrium-nav-endwrap {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+    max-width: 100%;
   }
 }

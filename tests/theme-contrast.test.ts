@@ -250,3 +250,14 @@ describe("instrument scope", () => {
     ).toBeGreaterThanOrEqual(TEXT_MIN);
   });
 });
+
+describe("shared focus ring (13.1 refresh)", () => {
+  it("declares a single --focus-ring token in :root routed through --brass", () => {
+    expect(dark).toMatch(/--focus-ring:\s*2px solid var\(--brass\)/);
+  });
+
+  it("keeps the routing target contrast-gated in both themes", () => {
+    expect(dark).toContain("--brass:");
+    expect(light).toContain("--brass:");
+  });
+});

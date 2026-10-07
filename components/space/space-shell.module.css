@@ -262,3 +262,19 @@
   line-height: var(--text-h1-leading);
   margin: 0;
 }
+
+/*
+ * 13.1 — the fixed 264px sidebar beside the editor measures 410px of scroll
+ * width at a 375px viewport (Playwright probe, JOB-006). Stack them; the
+ * sidebar keeps its raised surface, the rule just moves to the bottom edge.
+ */
+@media (max-width: 40rem) {
+  .space-shell {
+    flex-direction: column;
+  }
+  .space-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+}
