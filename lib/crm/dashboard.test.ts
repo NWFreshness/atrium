@@ -204,60 +204,56 @@ describe("buildDashboard tiles", () => {
 });
 
 describe("pipelineFunnel", () => {
-  it("includes Won in the last 6 months, omits Lost, and cumulatively counts later stages in New+", () => {
-    const sinceMonth = monthRange(now)[0].key;
-    const funnel = pipelineFunnel(
-      [
-        deal({ id: "new", stage: "New", value: 1000, probability: 10 }),
-        deal({
-          id: "qualified",
-          stage: "Qualified",
-          value: 2000,
-          probability: 25,
-        }),
-        deal({
-          id: "proposal",
-          stage: "Proposal",
-          value: 3000,
-          probability: 50,
-        }),
-        deal({
-          id: "negotiation",
-          stage: "Negotiation",
-          value: 4000,
-          probability: 75,
-        }),
-        deal({
-          id: "won-in-window",
-          stage: "Won",
-          value: 5000,
-          probability: 100,
-          closeDate: new Date("2026-04-01T00:00:00.000Z"),
-        }),
-        deal({
-          id: "lost",
-          stage: "Lost",
-          value: 9999,
-          probability: 0,
-          closeDate: new Date("2026-09-01T00:00:00.000Z"),
-        }),
-        deal({
-          id: "won-too-old",
-          stage: "Won",
-          value: 1111,
-          probability: 100,
-          closeDate: new Date("2026-03-01T00:00:00.000Z"),
-        }),
-        deal({
-          id: "won-no-close",
-          stage: "Won",
-          value: 2222,
-          probability: 100,
-          closeDate: null,
-        }),
-      ],
-      sinceMonth,
-    );
+  it("counts every Won deal regardless of closeDate, omits Lost, and cumulatively counts later stages in New+", () => {
+    const funnel = pipelineFunnel([
+      deal({ id: "new", stage: "New", value: 1000, probability: 10 }),
+      deal({
+        id: "qualified",
+        stage: "Qualified",
+        value: 2000,
+        probability: 25,
+      }),
+      deal({
+        id: "proposal",
+        stage: "Proposal",
+        value: 3000,
+        probability: 50,
+      }),
+      deal({
+        id: "negotiation",
+        stage: "Negotiation",
+        value: 4000,
+        probability: 75,
+      }),
+      deal({
+        id: "won-in-window",
+        stage: "Won",
+        value: 5000,
+        probability: 100,
+        closeDate: new Date("2026-04-01T00:00:00.000Z"),
+      }),
+      deal({
+        id: "lost",
+        stage: "Lost",
+        value: 9999,
+        probability: 0,
+        closeDate: new Date("2026-09-01T00:00:00.000Z"),
+      }),
+      deal({
+        id: "won-too-old",
+        stage: "Won",
+        value: 1111,
+        probability: 100,
+        closeDate: new Date("2026-03-01T00:00:00.000Z"),
+      }),
+      deal({
+        id: "won-no-close",
+        stage: "Won",
+        value: 2222,
+        probability: 100,
+        closeDate: null,
+      }),
+    ]);
 
     expect(funnel.map((row) => row.label)).toEqual([
       "New+",
@@ -267,16 +263,70 @@ describe("pipelineFunnel", () => {
       "Won",
     ]);
     expect(funnel[0]).toMatchObject({
-      count: 5,
-      value: 15000,
+      count: 7,
+      value: 18333,
       inStage: 1,
     });
+    expect(funnel[4]).toMatchObject({
+      label: "Won",
+      count: 3,
+      value: 8333,
+      inStage: 3,
+    });
+  });
+
+  it.each([
+    ["null", null],
+    ["pre-window", new Date("2026-03-01T00:00:00.000Z")],
+    ["in-window", new Date("2026-09-10T00:00:00.000Z")],
+  ])("counts a lone Won deal with %s closeDate (AC1)", (_label, closeDate) => {
+    const funnel = pipelineFunnel([
+      deal({
+        id: "won",
+        stage: "Won",
+        value: 5000,
+        probability: 100,
+        closeDate,
+      }),
+    ]);
+
     expect(funnel[4]).toMatchObject({
       label: "Won",
       count: 1,
       value: 5000,
       inStage: 1,
     });
+    expect(funnel[0]).toMatchObject({ count: 1, value: 5000 });
+  });
+
+  it("leaves open-stage counts unchanged (AC3)", () => {
+    const funnel = pipelineFunnel([
+      deal({ id: "new", stage: "New", value: 1000, probability: 10 }),
+      deal({
+        id: "qualified",
+        stage: "Qualified",
+        value: 2000,
+        probability: 25,
+      }),
+      deal({
+        id: "proposal",
+        stage: "Proposal",
+        value: 3000,
+        probability: 50,
+      }),
+      deal({
+        id: "negotiation",
+        stage: "Negotiation",
+        value: 4000,
+        probability: 75,
+      }),
+    ]);
+
+    expect(funnel.map((row) => row.count)).toEqual([4, 3, 2, 1, 0]);
+    expect(funnel.map((row) => row.value)).toEqual([
+      10000, 9000, 7000, 4000, 0,
+    ]);
+    expect(funnel.map((row) => row.inStage)).toEqual([1, 1, 1, 1, 0]);
   });
 });
 
