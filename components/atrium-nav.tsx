@@ -70,7 +70,10 @@ export function AtriumNav({
   }, []);
 
   return (
-    <nav className={styles["atrium-nav-strip"]} aria-label="Atrium">
+    <nav
+      className={`${styles["atrium-nav-strip"]} atrium-nav-stack`}
+      aria-label="Atrium"
+    >
       <div className={styles["atrium-nav-left"]}>
         <Link href="/" className={styles["atrium-nav-brand"]}>
           <span className={styles["atrium-nav-brand-mark"]} aria-hidden="true" />
@@ -98,7 +101,7 @@ export function AtriumNav({
           })}
         </ul>
       </div>
-      <div className={styles["atrium-nav-end"]}>
+      <div className={`${styles["atrium-nav-end"]} atrium-nav-endwrap`}>
         {email ? (
           <Link href="/settings" className={styles["atrium-nav-identity"]}>
             <span className={styles["atrium-nav-avatar"]} aria-hidden="true">

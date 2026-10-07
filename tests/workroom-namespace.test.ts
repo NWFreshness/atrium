@@ -358,3 +358,72 @@ describe("the retired palette does not come back", () => {
     }
   });
 });
+
+describe("shared chrome interaction and responsive states (13.1 refresh)", () => {
+  const chrome = read(resolve(root, "app/workroom.css"));
+
+  it("gives every interactive shared class a visible :hover and :focus-visible state", () => {
+    for (const cls of ["atrium-btn", "atrium-subtab", "atrium-appcard"]) {
+      expect(chrome, `missing .${cls}:hover`).toMatch(
+        new RegExp(`\\.${cls}:hover\\s*[,{]`),
+      );
+      expect(chrome, `missing .${cls}:focus-visible`).toMatch(
+        new RegExp(`\\.${cls}:focus-visible\\s*[,{]`),
+      );
+    }
+    expect(chrome, "missing input :focus-visible").toMatch(
+      /\.atrium-field input:focus-visible\s*[,{]/,
+    );
+  });
+
+  it("routes shared focus outlines through the --focus-ring token", () => {
+    const uses = chrome.match(/var\(--focus-ring\)/g) ?? [];
+    expect(uses.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("honors prefers-reduced-motion in the shared layer", () => {
+    const from = chrome.indexOf("@media (prefers-reduced-motion: reduce)");
+    expect(from, "missing reduced-motion block").toBeGreaterThanOrEqual(0);
+    const media = chrome.slice(from);
+    for (const cls of ["atrium-btn", "atrium-subtab", "atrium-appcard"]) {
+      expect(media, `${cls} not neutralized under reduced motion`).toContain(
+        cls,
+      );
+    }
+  });
+
+  it("collapses the launcher graph and wraps the subnav at narrow widths", () => {
+    expect(chrome).toMatch(
+      /@media[^{]*max-width[^{]*\{[^}]*\.atrium-graph[^}]*grid-template-columns/,
+    );
+    expect(chrome).toMatch(/\.atrium-subnav\s*\{[^}]*flex-wrap:\s*wrap/);
+  });
+
+  it("keeps vw-sized cards inside their padded container", () => {
+    expect(chrome).toMatch(
+      /\.atrium-fit\s*\{[^}]*max-width:\s*calc\(100vw - 4rem\)/,
+    );
+    for (const page of ["app/login/page.tsx", "app/signup/page.tsx"]) {
+      expect(
+        read(resolve(root, page)),
+        `${page} does not opt into atrium-fit`,
+      ).toContain("atrium-fit");
+    }
+  });
+
+  it("gives the top nav a narrow-viewport wrap hook without touching its module", () => {
+    expect(chrome).toMatch(
+      /@media[^{]*max-width:\s*56rem[^{]*\{[^}]*\.atrium-nav-stack[^}]*flex-wrap:\s*wrap/,
+    );
+    expect(chrome).toMatch(
+      /\.atrium-nav-endwrap\s*\{[^}]*flex-wrap:\s*wrap/,
+    );
+    const nav = read(resolve(root, "components/atrium-nav.tsx"));
+    expect(nav, "nav strip does not opt into atrium-nav-stack").toContain(
+      "atrium-nav-stack",
+    );
+    expect(nav, "nav end group does not opt into atrium-nav-endwrap").toContain(
+      "atrium-nav-endwrap",
+    );
+  });
+});

@@ -104,6 +104,10 @@
     0 18px 44px -26px rgba(20, 28, 32, 0.72);
   --glow-brass: 0 10px 30px -10px var(--brass-glow);
 
+  /* shared focus language — one visible ring for every atrium- control.
+     Routed through --brass so it stays contrast-gated in both themes. */
+  --focus-ring: 2px solid var(--brass);
+
   /* backward-compat aliases referenced by existing per-app CSS modules */
   --background: var(--bg-0);
   --foreground: var(--ink);

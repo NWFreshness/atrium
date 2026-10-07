@@ -14,7 +14,7 @@ export default function LoginPage() {
       <span className={styles["auth-mark"]} aria-hidden="true">
         A
       </span>
-      <div className={`${styles["auth-card"]} reveal`}>
+      <div className={`${styles["auth-card"]} reveal atrium-fit`}>
         <div className={styles["auth-brandrow"]}>
           <span className="atrium-brand">
             <span className="atrium-brand-mark" aria-hidden="true" />
