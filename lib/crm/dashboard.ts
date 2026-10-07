@@ -128,14 +128,9 @@ export function monthlyRevenue(
   });
 }
 
-export function pipelineFunnel(
-  deals: Deal[],
-  sinceMonth: string,
-): FunnelStage[] {
+export function pipelineFunnel(deals: Deal[]): FunnelStage[] {
   const live = deals.filter(
-    (deal) =>
-      isOpen(deal) ||
-      (deal.stage === "Won" && closeMonthKey(deal.closeDate) >= sinceMonth),
+    (deal) => isOpen(deal) || deal.stage === "Won",
   );
   return FUNNEL_STAGES.map((stage, index) => {
     const reached = live.filter(
@@ -243,7 +238,7 @@ export function buildDashboard(
       dealsWon: trailing.reduce((total, month) => total + month.won, 0),
       revenueWon: trailing.reduce((total, month) => total + month.actual, 0),
     },
-    funnel: pipelineFunnel(deals, months[0].key),
+    funnel: pipelineFunnel(deals),
     winLoss: winLoss(deals, months[0].key),
     topOrganizations: topOrganizations(deals, orgName, 5),
     followUps: followUps(activities, now),
