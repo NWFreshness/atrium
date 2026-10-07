@@ -6,7 +6,9 @@ import {
   deleteOrganization,
   getOrganization,
   listOrganizations,
+  organizationCascadePreview,
   updateOrganization,
+  type CascadePreview,
   type CreateOrganizationInput,
   type CrmRepository,
   type Organization,
@@ -63,6 +65,15 @@ export async function deleteOrganizationForSession(
   return deleteOrganization(tenantId, id, repo);
 }
 
+export async function organizationCascadePreviewForSession(
+  getSession: GetSession,
+  id: string,
+  repo?: CrmRepository,
+): Promise<CascadePreview> {
+  const { tenantId } = await requireTenant(getSession);
+  return organizationCascadePreview(tenantId, id, repo);
+}
+
 export async function listOrganizationsAction(
   q?: string,
 ): Promise<Organization[]> {
@@ -97,4 +108,11 @@ export async function deleteOrganizationAction(
 ): Promise<Organization | null> {
   const { auth } = await import("@/auth");
   return deleteOrganizationForSession(auth, id);
+}
+
+export async function organizationCascadePreviewAction(
+  id: string,
+): Promise<CascadePreview> {
+  const { auth } = await import("@/auth");
+  return organizationCascadePreviewForSession(auth, id);
 }

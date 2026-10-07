@@ -1,6 +1,7 @@
 import { type DealStage } from "./constants";
 import {
   type Activity,
+  type CascadePreview,
   type Contact,
   type CrmRepository,
   type Deal,
@@ -425,4 +426,50 @@ export function deleteActivityInMemory(
   }
   const [removed] = repo.activities.splice(index, 1);
   return clone(removed);
+}
+
+export function organizationCascadePreviewInMemory(
+  repo: CrmRepository,
+  scoped: string,
+  id: string,
+): CascadePreview {
+  return {
+    contacts: repo.contacts.filter(
+      (row) => row.tenantId === scoped && row.organizationId === id,
+    ).length,
+    deals: repo.deals.filter(
+      (row) => row.tenantId === scoped && row.organizationId === id,
+    ).length,
+    activities: 0,
+  };
+}
+
+export function contactCascadePreviewInMemory(
+  repo: CrmRepository,
+  scoped: string,
+  id: string,
+): CascadePreview {
+  return {
+    contacts: 0,
+    deals: repo.deals.filter(
+      (row) => row.tenantId === scoped && row.contactId === id,
+    ).length,
+    activities: repo.activities.filter(
+      (row) => row.tenantId === scoped && row.contactId === id,
+    ).length,
+  };
+}
+
+export function dealCascadePreviewInMemory(
+  repo: CrmRepository,
+  scoped: string,
+  id: string,
+): CascadePreview {
+  return {
+    contacts: 0,
+    deals: 0,
+    activities: repo.activities.filter(
+      (row) => row.tenantId === scoped && row.dealId === id,
+    ).length,
+  };
 }

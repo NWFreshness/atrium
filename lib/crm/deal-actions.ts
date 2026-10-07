@@ -5,12 +5,14 @@ import { DEAL_STAGES, type DealStage } from "./constants";
 import { moveDeal } from "./move-deal";
 import {
   createDeal,
+  dealCascadePreview,
   deleteDeal,
   getContact,
   getDeal,
   getOrganization,
   listDeals,
   updateDeal,
+  type CascadePreview,
   type CreateDealInput,
   type CrmRepository,
   type Deal,
@@ -129,6 +131,15 @@ export async function deleteDealForSession(
   return deleteDeal(tenantId, id, repo);
 }
 
+export async function dealCascadePreviewForSession(
+  getSession: GetSession,
+  id: string,
+  repo?: CrmRepository,
+): Promise<CascadePreview> {
+  const { tenantId } = await requireTenant(getSession);
+  return dealCascadePreview(tenantId, id, repo);
+}
+
 export async function moveDealForSession(
   getSession: GetSession,
   id: string,
@@ -171,6 +182,13 @@ export async function updateDealAction(
 export async function deleteDealAction(id: string): Promise<Deal | null> {
   const { auth } = await import("@/auth");
   return deleteDealForSession(auth, id);
+}
+
+export async function dealCascadePreviewAction(
+  id: string,
+): Promise<CascadePreview> {
+  const { auth } = await import("@/auth");
+  return dealCascadePreviewForSession(auth, id);
 }
 
 export async function moveDealAction(

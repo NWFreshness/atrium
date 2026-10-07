@@ -8,11 +8,13 @@ import {
   STAGE_PROBABILITY,
 } from "./constants";
 import {
+  contactCascadePreview,
   createActivity,
   createContact,
   createDeal,
   createMemoryCrmRepository,
   createOrganization,
+  dealCascadePreview,
   deleteActivity,
   deleteContact,
   deleteDeal,
@@ -26,6 +28,7 @@ import {
   listContacts,
   listDeals,
   listOrganizations,
+  organizationCascadePreview,
   updateActivity,
   updateContact,
   updateDeal,
@@ -143,6 +146,15 @@ describe("tenantId is required", () => {
         updateActivity(tenantId, "id", { description: "X" }, memory),
       ).rejects.toThrow(/tenantId/);
       await expect(deleteActivity(tenantId, "id", memory)).rejects.toThrow(
+        /tenantId/,
+      );
+      await expect(
+        organizationCascadePreview(tenantId, "id", memory),
+      ).rejects.toThrow(/tenantId/);
+      await expect(
+        contactCascadePreview(tenantId, "id", memory),
+      ).rejects.toThrow(/tenantId/);
+      await expect(dealCascadePreview(tenantId, "id", memory)).rejects.toThrow(
         /tenantId/,
       );
     }
@@ -1092,6 +1104,199 @@ describe("delete organization", () => {
       id: deal.id,
       organizationId: null,
     });
+  });
+});
+
+describe("cascadePreview", () => {
+  const zero = { contacts: 0, deals: 0, activities: 0 };
+
+  it("counts an organization's contacts and deals for the same tenant only", async () => {
+    const memory = repo();
+    const org = await createOrganization(tenantA, { name: "Acme" }, memory);
+    await createContact(
+      tenantA,
+      { name: "Ada", organizationId: org.id, status: "lead" },
+      memory,
+    );
+    await createContact(
+      tenantA,
+      { name: "Bob", organizationId: org.id, status: "lead" },
+      memory,
+    );
+    await createDeal(
+      tenantA,
+      {
+        name: "Widget rollout",
+        organizationId: org.id,
+        stage: "New",
+        value: 1000,
+        boardOrder: 0,
+      },
+      memory,
+    );
+    await createDeal(
+      tenantA,
+      {
+        name: "Widget renewal",
+        organizationId: org.id,
+        stage: "New",
+        value: 2000,
+        boardOrder: 1,
+      },
+      memory,
+    );
+    // A tenant-B organization with its own dependents must not leak into
+    // tenant A's counts — this assertion fails if the tenant predicate is
+    // dropped.
+    const other = await createOrganization(tenantB, { name: "Beta" }, memory);
+    await createContact(
+      tenantB,
+      { name: "Bea", organizationId: other.id, status: "lead" },
+      memory,
+    );
+    await createDeal(
+      tenantB,
+      {
+        name: "Beta deal",
+        organizationId: other.id,
+        stage: "New",
+        value: 500,
+        boardOrder: 0,
+      },
+      memory,
+    );
+
+    await expect(
+      organizationCascadePreview(tenantA, org.id, memory),
+    ).resolves.toEqual({ contacts: 2, deals: 2, activities: 0 });
+  });
+
+  it("counts a contact's deals and activities for the same tenant only", async () => {
+    const memory = repo();
+    const contact = await createContact(
+      tenantA,
+      { name: "Ada", status: "lead" },
+      memory,
+    );
+    await createDeal(
+      tenantA,
+      {
+        name: "Widget rollout",
+        contactId: contact.id,
+        stage: "New",
+        value: 1000,
+        boardOrder: 0,
+      },
+      memory,
+    );
+    await createActivity(
+      tenantA,
+      { type: "note", contactId: contact.id, description: "hello", done: false },
+      memory,
+    );
+    const other = await createContact(
+      tenantB,
+      { name: "Bea", status: "lead" },
+      memory,
+    );
+    await createDeal(
+      tenantB,
+      {
+        name: "Beta deal",
+        contactId: other.id,
+        stage: "New",
+        value: 500,
+        boardOrder: 0,
+      },
+      memory,
+    );
+    await createActivity(
+      tenantB,
+      { type: "note", contactId: other.id, description: "hi", done: false },
+      memory,
+    );
+
+    await expect(
+      contactCascadePreview(tenantA, contact.id, memory),
+    ).resolves.toEqual({ contacts: 0, deals: 1, activities: 1 });
+  });
+
+  it("counts a deal's activities for the same tenant only", async () => {
+    const memory = repo();
+    const deal = await createDeal(
+      tenantA,
+      { name: "Widget rollout", stage: "New", value: 1000, boardOrder: 0 },
+      memory,
+    );
+    await createActivity(
+      tenantA,
+      { type: "note", dealId: deal.id, description: "one", done: false },
+      memory,
+    );
+    await createActivity(
+      tenantA,
+      { type: "note", dealId: deal.id, description: "two", done: false },
+      memory,
+    );
+    const other = await createDeal(
+      tenantB,
+      { name: "Beta deal", stage: "New", value: 500, boardOrder: 0 },
+      memory,
+    );
+    await createActivity(
+      tenantB,
+      { type: "note", dealId: other.id, description: "hi", done: false },
+      memory,
+    );
+
+    await expect(dealCascadePreview(tenantA, deal.id, memory)).resolves.toEqual(
+      { contacts: 0, deals: 0, activities: 2 },
+    );
+  });
+
+  it("returns all-zero for a missing or other-tenant id, while delete returns null", async () => {
+    const memory = repo();
+    const otherOrg = await createOrganization(
+      tenantB,
+      { name: "Beta Co" },
+      memory,
+    );
+    const otherContact = await createContact(
+      tenantB,
+      { name: "Bea", status: "lead" },
+      memory,
+    );
+    const otherDeal = await createDeal(
+      tenantB,
+      { name: "Beta deal", stage: "New", value: 500, boardOrder: 0 },
+      memory,
+    );
+
+    await expect(
+      organizationCascadePreview(tenantA, "missing", memory),
+    ).resolves.toEqual(zero);
+    await expect(
+      organizationCascadePreview(tenantA, otherOrg.id, memory),
+    ).resolves.toEqual(zero);
+    await expect(
+      deleteOrganization(tenantA, "missing", memory),
+    ).resolves.toBeNull();
+
+    await expect(
+      contactCascadePreview(tenantA, "missing", memory),
+    ).resolves.toEqual(zero);
+    await expect(
+      contactCascadePreview(tenantA, otherContact.id, memory),
+    ).resolves.toEqual(zero);
+    await expect(deleteContact(tenantA, "missing", memory)).resolves.toBeNull();
+
+    await expect(
+      dealCascadePreview(tenantA, "missing", memory),
+    ).resolves.toEqual(zero);
+    await expect(
+      dealCascadePreview(tenantA, otherDeal.id, memory),
+    ).resolves.toEqual(zero);
+    await expect(deleteDeal(tenantA, "missing", memory)).resolves.toBeNull();
   });
 });
 

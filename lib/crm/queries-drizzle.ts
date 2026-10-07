@@ -1,10 +1,11 @@
-import { and, desc, eq, getTableColumns, max, ne, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, getTableColumns, max, ne, or, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import { getDb } from "../db";
 import type { WriteOpts } from "../db/batch-transaction";
 import { type DealStage } from "./constants";
 import {
   type Activity,
+  type CascadePreview,
   type Contact,
   type Deal,
   type ListActivitiesOpts,
@@ -501,4 +502,61 @@ export async function deleteActivityInDrizzle(
     .where(tenantRow(activities, scoped, id))
     .returning();
   return removed ?? null;
+}
+
+export async function organizationCascadePreviewInDrizzle(
+  scoped: string,
+  id: string,
+): Promise<CascadePreview> {
+  const [contactRows] = await requireCrmDb()
+    .select({ n: count() })
+    .from(contacts)
+    .where(
+      and(eq(contacts.tenantId, scoped), eq(contacts.organizationId, id)),
+    );
+  const [dealRows] = await requireCrmDb()
+    .select({ n: count() })
+    .from(deals)
+    .where(and(eq(deals.tenantId, scoped), eq(deals.organizationId, id)));
+  return {
+    contacts: contactRows?.n ?? 0,
+    deals: dealRows?.n ?? 0,
+    activities: 0,
+  };
+}
+
+export async function contactCascadePreviewInDrizzle(
+  scoped: string,
+  id: string,
+): Promise<CascadePreview> {
+  const [dealRows] = await requireCrmDb()
+    .select({ n: count() })
+    .from(deals)
+    .where(and(eq(deals.tenantId, scoped), eq(deals.contactId, id)));
+  const [activityRows] = await requireCrmDb()
+    .select({ n: count() })
+    .from(activities)
+    .where(
+      and(eq(activities.tenantId, scoped), eq(activities.contactId, id)),
+    );
+  return {
+    contacts: 0,
+    deals: dealRows?.n ?? 0,
+    activities: activityRows?.n ?? 0,
+  };
+}
+
+export async function dealCascadePreviewInDrizzle(
+  scoped: string,
+  id: string,
+): Promise<CascadePreview> {
+  const [activityRows] = await requireCrmDb()
+    .select({ n: count() })
+    .from(activities)
+    .where(and(eq(activities.tenantId, scoped), eq(activities.dealId, id)));
+  return {
+    contacts: 0,
+    deals: 0,
+    activities: activityRows?.n ?? 0,
+  };
 }

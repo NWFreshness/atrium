@@ -13,7 +13,11 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { deleteDealAction } from "@/lib/crm/deal-actions";
+import {
+  dealCascadePreviewAction,
+  deleteDealAction,
+} from "@/lib/crm/deal-actions";
+import { consequenceMessage } from "@/lib/crm/cascade-preview";
 import { formatDate, formatMoney } from "@/lib/crm/format";
 import type { Contact, Deal, Organization } from "@/lib/crm/queries";
 import { DealForm } from "./deal-form";
@@ -182,7 +186,8 @@ export function DealTable({
                   type="button"
                   aria-label={`Delete ${deal.name}`}
                   onClick={async () => {
-                    if (!confirm(`Delete ${deal.name}?`)) {
+                    const preview = await dealCascadePreviewAction(deal.id);
+                    if (!confirm(consequenceMessage(deal.name, preview))) {
                       return;
                     }
                     await deleteDealAction(deal.id);
