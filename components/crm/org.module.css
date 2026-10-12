@@ -1,7 +1,7 @@
 /* ============================================================
    CRM tables, dialogs, and detail panels — PNW pass (10.3)
    Basalt panels, lichen data, cedar for what is late. Density is
-   unchanged: 44px rows and Archivo at 13.5px — its narrower advance
+   unchanged: 44px rows and the content sans at 13.5px — its narrower advance
    buys the characters per column, so it is not spent on larger type.
    Headers sit at `--text-label` in `--ink-faint`; hover is `--bg-2` /
    `--line-strong`; golden is the primary action and the focus ring.

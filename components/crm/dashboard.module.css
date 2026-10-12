@@ -3,7 +3,7 @@
    KPI tiles on `--bg-1`, one accent rule per tile from the four
    semantic tones (`--moss` / `--brass` / `--clay-ink` / `--slate`),
    figures in the display face at `--text-kpi` with tabular numerals,
-   labels in Geist Mono at `--text-label`. Golden (`--brass`) is spent
+   labels in JetBrains Mono at `--text-label`. Golden (`--brass`) is spent
    once per screen: here, on the tile whose value matters most.
    ============================================================ */
 
@@ -34,18 +34,17 @@
   box-shadow: var(--shadow-panel);
 }
 
+/* the readout's indicator lamp, tinted by the tile's one tone */
 .tile::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--tile-c, var(--line-strong)),
-    transparent 75%
-  );
+  top: 14px;
+  right: 14px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tile-c, var(--line-strong));
+  box-shadow: var(--led-glow) var(--tile-c, var(--line-strong));
 }
 
 .tileLabel {
@@ -123,9 +122,16 @@
   color: var(--ink);
 }
 
+/* Recharts draws its grid in a fixed light gray; route it to the hairline. */
+.chartBody :global(.recharts-cartesian-grid line) {
+  stroke: var(--line-strong);
+}
+
 .chartBody {
   width: 100%;
   height: 16rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
   /* Recharts SVG ticks/labels that opt into currentColor inherit themed ink. */
   color: var(--ink-dim);
 }

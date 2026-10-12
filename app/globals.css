@@ -1,7 +1,10 @@
 /* ============================================================
-   PNW — Atrium design system (Phase 10.1)
-   Basalt dark / mist light. Outfit headings, Archivo body,
-   Geist Mono data. Groove keeps its own --inst-* scope.
+   Rack — Atrium design system (Phase 14)
+   Hardware chassis: basalt dark (default) / cream light.
+   JetBrains Mono for chrome, labels and numbers; IBM Plex Sans
+   for anything a person reads or writes. Groove keeps its own
+   --inst-* scope. Token names are unchanged from Phase 10 so the
+   per-app CSS modules did not have to move.
    ============================================================ */
 
 /* ---------- Tokens ---------- */
@@ -10,99 +13,109 @@
 
   /*
     Usage rules (do not "helpfully" break these in a later pass):
-    1. One highlight per screen. --brass (golden) marks the single
-       most important thing on a view — active nav, a win, the
-       primary button. Nothing else uses it.
-    2. Dark moss is a surface; light moss is ink. #2d4a3e is 1.53:1
-       on basalt and 8.56:1 on mist. Never use --moss as ink in dark.
+    1. One highlight per screen. Amber marks the single most
+       important thing on a view — active nav, the primary button,
+       the key figure. --brass is amber as ink; --amber is amber as
+       a fill and always carries --on-amber text.
+    2. LEDs carry status: --led ok/saved, --warn due, --bad overdue,
+       --led-off idle. Never colour alone — pair with a word.
+    3. Mono is chrome. Anything a person reads or writes is
+       --font-sans on a flat panel, never on the grid.
+    4. Charts take the signal tokens directly (fill="var(--moss)"),
+       so they follow the theme.
   */
 
-  /* surfaces (dark = basalt, moss-cast upward) */
-  --bg-0: #25282a;
-  --bg-1: #2b3330;
-  --bg-2: #313b37;
-  --bg-3: #39443f;
-  --line: rgba(163, 177, 155, 0.16);
-  --line-strong: rgba(163, 177, 155, 0.3);
+  /* surfaces (dark = basalt chassis, raised panels lighter) */
+  --bg-0: #14171a;
+  --bg-1: #191d21;
+  --bg-2: #1f2428;
+  --bg-3: #272d32;
+  --line: #2c3236;
+  --line-strong: #3d454a;
+  --grid: #1a1e22;
 
-  /* ink (mist / lichen) */
-  --ink: #eef1f2;
-  --ink-dim: #b3bfa9;
-  --ink-faint: #a3b19b;
+  /* ink */
+  --ink: #dfe5e3;
+  --ink-dim: #a4afac;
+  --ink-faint: #8f9b98;
 
-  /* golden accent — the phase's single highlight */
-  --brass: #dfa84a;
-  --brass-bright: #efc272;
-  --brass-deep: #8a6320;
-  --brass-soft: rgba(223, 168, 74, 0.13);
-  --brass-glow: rgba(223, 168, 74, 0.45);
+  /* amber — the single highlight. --brass* are ink-safe on every surface. */
+  --brass: #ffb000;
+  --brass-bright: #ffc640;
+  --brass-deep: #a06a00;
+  --brass-soft: rgba(255, 176, 0, 0.12);
+  --brass-glow: rgba(255, 176, 0, 0.45);
+  --amber: #ffb000;
+  --on-amber: #14171a;
 
-  /* data palette: lichen / cedar / rain / timber. --violet retired. */
-  --moss: #2d4a3e;
-  --clay: #b87355;
-  --clay-ink: #e0a488;
-  --slate: #8b9fc2; /* 5.54 / 4.33 / 3.78 vs bg-0/2/3 — hue series, not small text on --bg-2 */
-  --timber: #b9ab93;
+  /* signals and data series: led green / red / blue / neutral */
+  --moss: #58e08c;
+  --clay: #c7513d;
+  --clay-ink: #ff7a66;
+  --slate: #7fb2ff;
+  --timber: #c2b8a3;
   --good: var(--moss);
   --warn: var(--brass);
   --bad: var(--clay-ink);
+  --led: var(--moss);
+  --led-off: #3a4246;
+  --led-glow: 0 0 8px;
 
-  /* type — Outfit headings, Archivo body, Geist Mono data */
-  --font-display: var(--font-outfit), Georgia, serif;
-  --font-sans: var(--font-archivo), "Helvetica Neue", sans-serif;
+  /* type — JetBrains Mono chrome, IBM Plex Sans content */
+  --font-display:
+    var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: var(--font-plex-sans), "Helvetica Neue", sans-serif;
   --font-mono:
-    var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+    var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
-  --text-display: clamp(2.4rem, 5.6vw, 4.1rem);
+  --text-display: clamp(1.7rem, 3.4vw, 2.4rem);
   --text-display-weight: 700;
-  --text-display-tracking: -0.015em;
-  --text-display-leading: 1.02;
+  --text-display-tracking: 0.04em;
+  --text-display-leading: 1.08;
 
-  --text-h1: clamp(1.9rem, 3.4vw, 2.7rem);
+  --text-h1: clamp(1.4rem, 2.3vw, 1.8rem);
   --text-h1-weight: 700;
-  --text-h1-tracking: -0.015em;
-  --text-h1-leading: 1.06;
+  --text-h1-tracking: 0;
+  --text-h1-leading: 1.15;
 
-  --text-h2: clamp(1.4rem, 2.4vw, 1.95rem);
-  --text-h2-weight: 600;
-  --text-h2-tracking: -0.01em;
-  --text-h2-leading: 1.12;
+  --text-h2: clamp(1.1rem, 1.7vw, 1.3rem);
+  --text-h2-weight: 700;
+  --text-h2-tracking: 0;
+  --text-h2-leading: 1.2;
 
-  --text-h3: 1.06rem;
-  --text-h3-weight: 600;
-  --text-h3-tracking: -0.005em;
-  --text-h3-leading: 1.25;
+  --text-h3: 0.95rem;
+  --text-h3-weight: 700;
+  --text-h3-tracking: 0.02em;
+  --text-h3-leading: 1.3;
 
-  --text-body: 1rem;
+  --text-body: 0.9375rem;
   --text-body-weight: 400;
   --text-body-leading: 1.6;
 
-  --text-small: 0.875rem;
+  --text-small: 0.84rem;
   --text-small-weight: 400;
   --text-small-leading: 1.55;
 
-  --text-label: 0.66rem;
-  --text-label-tracking: 0.16em;
-  /* mono, +0.16em, uppercase — later passes set font-family + text-transform */
+  --text-label: 0.64rem;
+  --text-label-tracking: 0.14em;
+  /* mono, +0.14em, uppercase — consumers set font-family + text-transform */
 
-  --text-data: 0.82rem;
+  --text-data: 0.8rem;
   /* mono, font-variant-numeric: tabular-nums */
 
-  --text-kpi: 1.85rem;
-  --text-kpi-weight: 700;
-  --text-kpi-tracking: -0.02em;
+  --text-kpi: 1.5rem;
+  --text-kpi-weight: 500;
+  --text-kpi-tracking: -0.01em;
 
   --measure: 68ch;
   --measure-lede: 60ch;
 
-  /* geometry — sharpened for the architectural read */
-  --r-sm: 4px;
-  --r-md: 6px;
-  --r-lg: 10px;
-  --shadow-panel:
-    0 1px 0 rgba(255, 255, 255, 0.03) inset,
-    0 18px 44px -26px rgba(20, 28, 32, 0.72);
-  --glow-brass: 0 10px 30px -10px var(--brass-glow);
+  /* geometry — machined: tight radii, hairlines, no soft shadows */
+  --r-sm: 2px;
+  --r-md: 3px;
+  --r-lg: 4px;
+  --shadow-panel: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --glow-brass: 0 0 14px -2px var(--brass-glow);
 
   /* shared focus language — one visible ring for every atrium- control.
      Routed through --brass so it stays contrast-gated in both themes. */
@@ -114,32 +127,38 @@
 }
 
 [data-theme="light"] {
-  --bg-0: #eef1f2;
-  --bg-1: #f7f7f5;
-  --bg-2: #fdfdfc;
-  --bg-3: #ffffff;
-  --line: #d8d7d2;
-  --line-strong: #b7b6b1;
+  /* cream chassis: warm off-white hardware, raised panels lighter */
+  --bg-0: #e4dfd0;
+  --bg-1: #ece8db;
+  --bg-2: #f3f0e6;
+  --bg-3: #faf8f1;
+  --line: #c9c2ae;
+  --line-strong: #a39b85;
+  --grid: #dbd5c5;
 
-  --ink: #25282a;
-  --ink-dim: #55534e;
-  --ink-faint: #67655f;
+  --ink: #1d1c1a;
+  --ink-dim: #46453e;
+  --ink-faint: #585750;
 
-  --brass: #8a6320;
-  --brass-bright: #a97b25;
-  --brass-deep: #6f4e15;
-  --brass-soft: rgba(138, 99, 32, 0.11);
-  --brass-glow: rgba(138, 99, 32, 0.35);
+  /* amber cannot be ink on cream: --brass drops to a deep amber, the
+     bright fill stays on --amber. */
+  --brass: #754b00;
+  --brass-bright: #f0a400;
+  --brass-deep: #5e3c00;
+  --brass-soft: rgba(240, 164, 0, 0.16);
+  --brass-glow: rgba(240, 164, 0, 0.4);
+  --amber: #f0a400;
+  --on-amber: #1d1c1a;
 
-  --moss: #2d4a3e;
-  --clay: #8f5138;
-  --clay-ink: #8f5138;
-  --slate: #46608a;
-  --timber: #6a5c48;
+  --moss: #17613a;
+  --clay: #9c2c18;
+  --clay-ink: #9c2c18;
+  --slate: #234f99;
+  --timber: #57503f;
+  --led-off: #b9b2a0;
+  --led-glow: 0 0 0;
 
-  --shadow-panel:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 16px 36px -24px rgba(37, 40, 42, 0.18);
+  --shadow-panel: inset 0 1px 0 rgba(255, 255, 255, 0.55);
 
   --background: var(--bg-0);
   --foreground: var(--ink);
@@ -159,9 +178,18 @@ body {
   min-height: 100%;
 }
 
+/* Grid paper is the chassis face. It is the body's own background, not an
+   overlay: a positioned layer would paint over unpositioned chrome such as
+   the Space sidebar. Panels are opaque, so body text never sits on it; only
+   short chrome titles do. */
 body {
   margin: 0;
   background: var(--bg-0);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--text-body);
@@ -175,65 +203,20 @@ body {
   color-scheme: dark;
 }
 
-/* paper grain — above the page colour, below nothing interactive */
+/* powder-coat grain — above the page colour, below nothing interactive */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* clearing-sky: neutral warm wash on the light default (no green cast);
-   the moss → cedar → golden drift lives under [data-theme="dark"] below. */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      720px 380px at 18% -10%,
-      rgba(85, 83, 78, 0.1),
-      transparent 62%
-    ),
-    radial-gradient(
-      520px 280px at 82% -6%,
-      rgba(143, 81, 56, 0.07),
-      transparent 58%
-    ),
-    radial-gradient(
-      640px 320px at 50% -12%,
-      rgba(138, 99, 32, 0.07),
-      transparent 70%
-    );
-  animation: sky-drift 46s ease-in-out infinite alternate;
-}
-
-[data-theme="dark"] body::after {
-  background:
-    radial-gradient(
-      720px 380px at 18% -10%,
-      rgba(45, 74, 62, 0.22),
-      transparent 62%
-    ),
-    radial-gradient(
-      520px 280px at 82% -6%,
-      rgba(184, 115, 85, 0.1),
-      transparent 58%
-    ),
-    radial-gradient(
-      640px 320px at 50% -12%,
-      rgba(223, 168, 74, 0.08),
-      transparent 70%
-    );
-}
-
-[data-theme="dark"] body::before {
-  opacity: 0.05;
+/* the cream chassis carries a quieter grain */
+[data-theme="light"] body::before {
+  opacity: 0.035;
 }
 
 ::selection {
@@ -274,23 +257,11 @@ p {
   }
 }
 
-@keyframes sky-drift {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(2%, 1.5%, 0);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     animation: none;
     opacity: 1;
     transform: none;
-  }
-  body::after {
-    animation: none;
   }
   * {
     transition-duration: 0.01ms !important;

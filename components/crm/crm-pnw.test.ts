@@ -55,8 +55,14 @@ const ESPRESSO = [
 
 /** The four retired series literals (the PNW palette replaced them in 10.1). */
 const RETIRED_SERIES = ["#8fae83", "#a88fc0", "#cd7258"];
-/** The PNW data palette, the only hexes allowed inside the charts. */
-const PNW_SERIES = ["#a3b19b", "#e0a488", "#8b9fc2", "#b9ab93", "#dfa84a"];
+/** The signal tokens, the only colours allowed inside the charts (Phase 14). */
+const PNW_SERIES = [
+  "var(--moss)",
+  "var(--clay-ink)",
+  "var(--slate)",
+  "var(--timber)",
+  "var(--brass)",
+];
 
 const TILE_TONES = [
   "tileCount",
@@ -163,10 +169,11 @@ describe("KPI tiles", () => {
 });
 
 describe("PNW data palette in the charts", () => {
-  it("paints the four series from the PNW values only", () => {
+  it("paints the series from the signal tokens only", () => {
     for (const hex of PNW_SERIES) {
       expect(charts, hex).toContain(hex);
     }
+    expect(charts, "a literal series colour").not.toMatch(/"#[0-9a-fA-F]{6}"/);
     for (const hex of RETIRED_SERIES) {
       expect(charts, `${hex} is retired`).not.toContain(hex);
     }
@@ -282,12 +289,17 @@ describe("no espresso-era value left in components/crm", () => {
     expect(src).not.toMatch(/rgba\(\s*10,\s*8,\s*4/);
   });
 
-  it("allows the PNW series literals only inside the chart component", () => {
+  it("leaves no colour literal anywhere in components/crm, the charts included", () => {
+    // Phase 14: the chart series became tokens too, so the one exemption the
+    // charts had is gone. Comments may still cite a hex; code may not.
     for (const [name, src] of Object.entries(files)) {
-      if (name === "components/crm/dashboard-charts.tsx") continue;
-      for (const hex of PNW_SERIES) {
-        expect(src, `${name} must use tokens, not ${hex}`).not.toContain(hex);
-      }
+      const code = src
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\/\/.*$/gm, "");
+      expect(
+        [...code.matchAll(/#[0-9a-fA-F]{6}\b/g)].map((m) => m[0]),
+        `${name} must use tokens, not a literal`,
+      ).toEqual([]);
     }
   });
 });

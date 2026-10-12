@@ -64,7 +64,7 @@
   position: relative;
 }
 
-/* 10.4 spec 3 — Archivo body at 16px/1.6, never the display face. */
+/* 10.4 spec 3 — content-sans body at the body scale, never the display face. */
 .space-block-input {
   display: block;
   width: 100%;
@@ -89,9 +89,9 @@
   color: var(--ink-faint);
 }
 
-/* Headings inside a page are Outfit on the h2/h3 scale. */
+/* Headings inside a page are the writer's words: sans, on the h2/h3 scale. */
 .space-block-heading1 .space-block-input {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: var(--text-h2);
   font-weight: var(--text-h2-weight);
   letter-spacing: var(--text-h2-tracking);
@@ -99,7 +99,7 @@
 }
 
 .space-block-heading2 .space-block-input {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: var(--text-h3);
   font-weight: var(--text-h3-weight);
   letter-spacing: var(--text-h3-tracking);
@@ -107,7 +107,7 @@
 }
 
 .space-block-heading3 .space-block-input {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: var(--text-small);
   font-weight: 600;
   letter-spacing: -0.005em;

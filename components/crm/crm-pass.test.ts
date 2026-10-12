@@ -34,12 +34,12 @@ describe("CRM dashboard", () => {
     expect(charts).not.toContain("monthlyRevenue");
   });
 
-  it("themes the charts to the PNW data palette (golden / lichen / rain / cedar)", () => {
-    expect(charts).toContain("#dfa84a"); // golden
-    expect(charts).toContain("#a3b19b"); // lichen
-    expect(charts).toContain("#8b9fc2"); // rain
-    expect(charts).toContain("#e0a488"); // cedar lifted
-    expect(charts).toContain("#b9ab93"); // timber — the violet slot
+  it("themes the charts from the signal tokens (amber / led green / blue / red)", () => {
+    expect(charts).toContain('"var(--brass)"'); // amber
+    expect(charts).toContain('"var(--moss)"'); // led green
+    expect(charts).toContain('"var(--slate)"'); // blue
+    expect(charts).toContain('"var(--clay-ink)"'); // red
+    expect(charts).toContain('"var(--timber)"'); // neutral — the violet slot
     for (const retired of ["#8fae83", "#a88fc0", "#cd7258", "#dfa33c"]) {
       expect(charts).not.toContain(retired);
     }

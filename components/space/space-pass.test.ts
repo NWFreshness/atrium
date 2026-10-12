@@ -52,7 +52,9 @@ describe("Space editor", () => {
   it("styles with tokens", () => {
     expect(editorCss).toContain("var(--brass)");
     expect(editorCss).toContain("var(--ink-faint)");
-    expect(editorCss).toContain("var(--font-display)");
+    // Phase 14: headings in a page are the writer's words, so they are sans.
+    expect(editorCss).toContain("var(--font-sans)");
+    expect(editorCss).not.toContain("var(--font-display)");
   });
 });
 

@@ -168,7 +168,7 @@
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
   padding: 3px 9px;
-  border-radius: 999px;
+  border-radius: var(--r-sm);
   white-space: nowrap;
 }
 
@@ -232,7 +232,7 @@
   gap: 0.5rem;
 }
 
-/* dates and counts read in mono; the person link inside the line is Archivo */
+/* dates and counts read in mono; the person link inside the line is the content sans */
 .rolodex-today-panel li {
   font-family: var(--font-mono);
   font-size: 12.5px;

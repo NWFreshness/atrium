@@ -108,9 +108,12 @@ describe("PNW palette on the Space modules", () => {
   );
 });
 
-describe("Space sidebar — the raised surface and the one golden marker", () => {
-  it("paints the sidebar on --bg-1 (the page stays --bg-0)", () => {
-    expect(rule(shellCss, ".space-sidebar").body).toMatch(
+describe("Space sidebar — rack chrome and the one amber marker", () => {
+  it("paints the sidebar as an opaque --bg-0 faceplate beside the calm --bg-1 page", () => {
+    const sidebar = rule(shellCss, ".space-sidebar").body;
+    expect(sidebar).toMatch(/background:\s*var\(--bg-0\)/);
+    expect(sidebar).toContain("var(--font-mono)");
+    expect(rule(shellCss, ".space-page").body).toMatch(
       /background:\s*var\(--bg-1\)/,
     );
   });
@@ -139,9 +142,9 @@ describe("Space sidebar — the raised surface and the one golden marker", () =>
     }
   });
 
-  it("sets the page title in the display face at --text-h1", () => {
+  it("sets the page title in the content sans at --text-h1", () => {
     const h1 = rule(shellCss, ".space-page-header h1").body;
-    expect(h1).toContain("var(--font-display)");
+    expect(h1).toContain("var(--font-sans)");
     expect(h1).toContain("var(--text-h1)");
   });
 });
@@ -175,12 +178,12 @@ describe("Space editor — measured prose, not the display face", () => {
     expect(input).toContain("var(--text-body-leading)");
   });
 
-  it("sets page headings in Outfit at the h2/h3 scale", () => {
+  it("sets page headings in the content sans at the h2/h3 scale", () => {
     const h1 = rule(editorCss, ".space-block-heading1 .space-block-input").body;
-    expect(h1).toContain("var(--font-display)");
+    expect(h1).toContain("var(--font-sans)");
     expect(h1).toContain("var(--text-h2)");
     const h2 = rule(editorCss, ".space-block-heading2 .space-block-input").body;
-    expect(h2).toContain("var(--font-display)");
+    expect(h2).toContain("var(--font-sans)");
     expect(h2).toContain("var(--text-h3)");
   });
 

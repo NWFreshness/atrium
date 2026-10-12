@@ -246,7 +246,7 @@
   font-size: 11px;
   letter-spacing: 0.02em;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--r-sm);
   white-space: nowrap;
 }
 

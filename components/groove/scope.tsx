@@ -15,7 +15,7 @@ const GRID = [100, 1000, 10000];
  */
 function traceColour(canvas: HTMLCanvasElement): string {
   const moss = getComputedStyle(canvas).getPropertyValue("--inst-moss").trim();
-  return moss || "#a3b19b";
+  return moss || "#58e08c";
 }
 
 interface ScopeProps {

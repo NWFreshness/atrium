@@ -1,5 +1,6 @@
 /**
- * Phase 10.7 — computed WCAG contrast from the shipped CSS.
+ * Phase 10.7, re-based on the Phase 14 rack palette — computed WCAG contrast
+ * from the shipped CSS. The 4.5 / 3.0 floors are unchanged.
  *
  * Reads `app/globals.css` (`:root` and `[data-theme="light"]`) and the
  * instrument block in `components/groove/groove-shell.module.css`. A renamed
@@ -32,6 +33,7 @@ const TEXT_ROLES = [
   "--clay-ink",
   "--slate",
   "--timber",
+  "--moss",
 ] as const;
 
 const SURFACES = ["--bg-0", "--bg-1", "--bg-2", "--bg-3"] as const;
@@ -44,12 +46,9 @@ const INST_ROLES = [
 ] as const;
 
 /**
- * Spec-named fill exceptions. `role` must stay `"fill"` — raising it to
- * `"text"` is the fourth injection probe and fails both this list pin and
- * the 4.5 check.
- *
- * Dark `--brass-deep` on `--bg-0` is 2.75 in the 10.1 table (gradient only),
- * below the UI 3:1 floor, so that pair is locked rather than held to 3.0.
+ * Fill-only roles. `role` must stay `"fill"` — raising it to `"text"` fails
+ * both this list pin and the 4.5 check. Both clear the 3:1 UI floor on the
+ * rack palette, so neither needs a below-floor lock any more.
  */
 const FILL_EXCEPTIONS: {
   theme: "dark";
@@ -62,21 +61,16 @@ const FILL_EXCEPTIONS: {
 ];
 
 /**
- * 10.1 table numbers this gate must not lift. Locked to two decimals so a
- * silent drop still fails. `--ink-faint` vs dark `--bg-3` measures 4.496,
- * which the table prints as 4.50.
+ * Pairs allowed below 4.5 at a locked number. Empty on the rack palette:
+ * every text role clears the floor on every surface in both themes. The
+ * mechanism stays so a future exception has to be named here.
  */
 const TEXT_LOCKS: {
-  theme: "dark";
+  theme: "dark" | "light";
   fg: (typeof TEXT_ROLES)[number];
   bg: (typeof SURFACES)[number];
   lock: number;
-}[] = [
-  { theme: "dark", fg: "--slate", bg: "--bg-2", lock: 4.33 },
-  { theme: "dark", fg: "--slate", bg: "--bg-3", lock: 3.78 },
-  { theme: "dark", fg: "--timber", bg: "--bg-3", lock: 4.49 },
-  { theme: "dark", fg: "--ink-faint", bg: "--bg-3", lock: 4.5 },
-];
+}[] = [];
 
 function stripComments(css: string): string {
   return css.replace(/\/\*[\s\S]*?\*\//g, "");
@@ -209,13 +203,13 @@ describe("declared text pairs (both themes)", () => {
   });
 });
 
-describe("light surface neutrality (13.2 AC5)", () => {
-  // Surface, text, and border tokens on the light branch stay near-gray: no
-  // channel deviates more than 8 steps from the others, so no green (or any
-  // hue) cast survives on the default theme. Accent and data roles
-  // (--brass-*, --moss, --clay-*, --slate, --timber) keep their hues by
-  // design and are excluded here.
-  const NEUTRAL_ROLES = [
+describe("cream chassis warmth (Phase 14, replaces the 13.2 near-gray rule)", () => {
+  // The light theme is a cream chassis on purpose, so its surface, text and
+  // border tokens are warm: red >= green >= blue. That still rules out the
+  // green cast 13.2 guarded against. The spread is capped so "warm" cannot
+  // drift into a coloured surface. Accent and data roles keep their hues and
+  // are excluded here.
+  const WARM_ROLES = [
     "--bg-0",
     "--bg-1",
     "--bg-2",
@@ -226,13 +220,21 @@ describe("light surface neutrality (13.2 AC5)", () => {
     "--line",
     "--line-strong",
   ] as const;
-  const MAX_SPREAD = 8;
-  it.each([...NEUTRAL_ROLES])("%s is a near-gray", (name) => {
+  const MAX_SPREAD = 32;
+  it.each([...WARM_ROLES])("%s is a warm neutral", (name) => {
     const { r, g, b } = tokenColor(light, name);
-    const spread = Math.max(r, g, b) - Math.min(r, g, b);
+    expect(
+      r,
+      `${name} = rgb(${r}, ${g}, ${b}) is not warm`,
+    ).toBeGreaterThanOrEqual(g);
+    expect(
+      g,
+      `${name} = rgb(${r}, ${g}, ${b}) is not warm`,
+    ).toBeGreaterThanOrEqual(b);
+    const spread = r - b;
     expect(
       spread,
-      `${name} = rgb(${r}, ${g}, ${b}) carries a tint (spread ${spread})`,
+      `${name} = rgb(${r}, ${g}, ${b}) is a colour, not a neutral (spread ${spread})`,
     ).toBeLessThanOrEqual(MAX_SPREAD);
   });
 });
@@ -252,13 +254,6 @@ describe("named fill-only exceptions", () => {
       tokenColor(block, ex.bg),
     );
     const need = ex.role === "text" ? TEXT_MIN : FILL_MIN;
-    if (ex.fg === "--brass-deep" && ex.role === "fill") {
-      expect(ratio, failMessage(ex.fg, ex.bg, ratio, 2.75)).toBeCloseTo(
-        2.75,
-        2,
-      );
-      return;
-    }
     expect(
       ratio,
       failMessage(ex.fg, ex.bg, ratio, need),
@@ -290,13 +285,13 @@ describe("shared focus ring (13.1 refresh)", () => {
   });
 });
 
-describe("primary action pair (13.4 polish)", () => {
-  // The golden/ink pairs behind the shared primary: charcoal on the dark
-  // gold (6.95:1) and mist on the light gold (4.76:1). Token facts, locked
-  // so a palette retune that drops the primary below the text floor fails.
+describe("primary action pair (13.4 polish, Phase 14 tokens)", () => {
+  // The amber fill and the ink it carries: the shared primary button and the
+  // active nav block. Token facts, locked so a palette retune that drops the
+  // primary below the text floor fails.
   it.each([
-    { theme: "dark", fg: "--bg-0", bg: "--brass", lock: 6.95 },
-    { theme: "light", fg: "--bg-0", bg: "--brass", lock: 4.76 },
+    { theme: "dark", fg: "--on-amber", bg: "--amber", lock: 9.82 },
+    { theme: "light", fg: "--on-amber", bg: "--amber", lock: 8.12 },
   ])("$theme $fg text on $bg fill", ({ theme, fg, bg, lock }) => {
     const block = themeBlock(theme as "dark" | "light");
     const ratio = contrastRatio(tokenColor(block, fg), tokenColor(block, bg));
@@ -307,10 +302,7 @@ describe("primary action pair (13.4 polish)", () => {
   });
 
   it("paints the stale-contact tone from a gated text role, not an undeclared token", () => {
-    const org = readFileSync(
-      resolve("components/crm/org.module.css"),
-      "utf8",
-    );
+    const org = readFileSync(resolve("components/crm/org.module.css"), "utf8");
     expect(org).not.toMatch(/var\(--cedar\)/);
     expect(org).toMatch(/\.crm-stale\s*\{[^}]*var\(--clay-ink\)/);
   });

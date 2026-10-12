@@ -61,3 +61,14 @@ test("demo login reaches home", async ({ page }) => {
   await expect(page).toHaveURL("/");
   await expect(page.getByRole("heading", { name: "Atrium" })).toBeVisible();
 });
+
+test("Enter the demo signs in without typing credentials", async ({ page }) => {
+  test.skip(!demoPassword, "AUTH_DEMO_PASSWORD is required");
+
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Enter the demo" }).click();
+  await expect(page).toHaveURL("/");
+  await expect(page.getByRole("heading", { name: "Atrium" })).toBeVisible();
+  // The demo account is the only one that can reset itself.
+  await expect(page.getByRole("button", { name: "Reset demo" })).toBeVisible();
+});
