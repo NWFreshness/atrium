@@ -26,24 +26,24 @@ import type {
 import styles from "./dashboard.module.css";
 
 /*
- * PNW data palette (10.1 values, restyled roles here in 10.3). Recharts writes
- * SVG attributes, where `var(--token)` does not resolve, so the four series
- * stay literals and mirror the role tokens:
+ * Rack data palette (Phase 14). The series are the signal tokens themselves:
+ * a `var(--token)` in an SVG presentation attribute resolves like any CSS
+ * value, so the charts follow the theme instead of pinning dark literals.
  *
- *   WON      lichen   → the `--moss` data role
- *   FORECAST timber   → the slot the retired violet held
- *   OPEN     rain     → the `--slate` role (value unchanged, role was)
- *   LATE     cedar    → `--clay-ink`, the lifted clay for late work
- *   BRASS    golden   → the screen's one highlight (the deal-count line)
+ *   WON      led green  → `--moss`
+ *   FORECAST neutral    → `--timber`
+ *   OPEN     blue       → `--slate`
+ *   LATE     red        → `--clay-ink`
+ *   BRASS    amber      → the screen's one highlight (the deal-count line)
  *
- * The hues sit within 1.0–1.29 of each other in luminance, so colour can never
- * be the only channel: every series carries a name and every chart a legend.
+ * Colour is never the only channel: every series carries a name and every
+ * chart a legend.
  */
-const WON = "#a3b19b"; // lichen
-const FORECAST = "#b9ab93"; // timber
-const OPEN = "#8b9fc2"; // rain — unchanged value, slate role
-const LATE = "#e0a488"; // cedar lifted
-const BRASS = "#dfa84a"; // golden
+const WON = "var(--moss)";
+const FORECAST = "var(--timber)";
+const OPEN = "var(--slate)";
+const LATE = "var(--clay-ink)";
+const BRASS = "var(--brass)";
 
 /*
  * 13.2 funnel readability: stage labels sit on a fixed-width category axis

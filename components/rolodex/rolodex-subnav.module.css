@@ -20,6 +20,8 @@
   padding: 0;
 }
 
+/* Same 2rem gutter as the subnav above it, so titles do not sit flush to
+   the viewport edge. */
 .rolodex-page {
-  padding: 0;
+  padding: 0 2rem 2rem;
 }

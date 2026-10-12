@@ -119,9 +119,16 @@ describe("cadence mapping is the palette's job (10.5 §1)", () => {
     for (const state of ["overdue", "due", "on cadence", "snoozed"]) {
       expect(chartsTsx.toLowerCase(), state).toContain(state);
     }
-    // the 10.1 literals stay verbatim — the namespace gate checks every hex
-    for (const hex of ["#a3b19b", "#dfa84a", "#e0a488", "#8b9fc2", "#b9ab93"]) {
-      expect(chartsTsx).toContain(hex);
+    // Phase 14: the series are the signal tokens — the namespace gate rejects
+    // any literal
+    for (const token of [
+      "var(--moss)",
+      "var(--brass)",
+      "var(--clay-ink)",
+      "var(--slate)",
+      "var(--timber)",
+    ]) {
+      expect(chartsTsx).toContain(token);
     }
   });
 
@@ -171,7 +178,7 @@ describe("one highlight on Today (10.5 §4)", () => {
 
   it("takes the primary from the shared button layer, not a second copy", () => {
     expect(chrome).toMatch(
-      /\.atrium-btn-primary\s*\{[^}]*background:\s*#dfa84a/,
+      /\.atrium-btn-primary\s*\{[^}]*background:\s*var\(--amber\)/,
     );
     expect(personForm).toContain("atrium-btn-primary");
     expect(importDialog).toContain("atrium-btn");
@@ -327,12 +334,12 @@ describe("person page headings and panels", () => {
 });
 
 describe("shared chrome, not a local copy (10.2/10.5 §7)", () => {
-  it("keeps the subnav on the shared row with the golden active tab", () => {
+  it("keeps the subnav on the shared row with the amber active tab", () => {
     expect(subnavTsx).toContain("atrium-subnav");
     expect(subnavTsx).toContain("atrium-subtab");
     expect(subnavTsx).toContain("atrium-subtab-active");
     expect(chrome).toMatch(
-      /\.atrium-subtab-active\s*\{[^}]*color:\s*var\(--brass\)/,
+      /\.atrium-subtab-active\s*\{[^}]*border-bottom-color:\s*var\(--amber\)/,
     );
   });
 

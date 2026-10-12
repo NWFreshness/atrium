@@ -29,22 +29,22 @@
 }
 
 :global(.groove-chassis) {
-  --inst-deep: #14181a;
-  --inst-bg: #1b1f21;
-  --inst-panel: #23282a;
-  --inst-panel-hi: #2c3234;
-  --inst-line: #3c4344;
-  --inst-line-soft: #2b3133;
-  --inst-ink: #eef1f2;
-  --inst-dim: #b3bfa9;
-  --inst-faint: #a3b19b;
-  --inst-brass: #dfa84a;
-  --inst-brass-bright: #efc272;
-  --inst-brass-deep: #8a6320;
-  --inst-brass-glow: rgba(223, 168, 74, 0.55);
-  --inst-moss: #a3b19b;
-  --inst-clay: #b87355;
-  --inst-clay-deep: #8f5138;
+  --inst-deep: #101315;
+  --inst-bg: #171a1d;
+  --inst-panel: #1f2428;
+  --inst-panel-hi: #272d32;
+  --inst-line: #3d454a;
+  --inst-line-soft: #2c3236;
+  --inst-ink: #dfe5e3;
+  --inst-dim: #a4afac;
+  --inst-faint: #8f9b98;
+  --inst-brass: #ffb000;
+  --inst-brass-bright: #ffc640;
+  --inst-brass-deep: #a06a00;
+  --inst-brass-glow: rgba(255, 176, 0, 0.55);
+  --inst-moss: #58e08c;
+  --inst-clay: #c7513d;
+  --inst-clay-deep: #8f3a2b;
   --groove-accent: var(--inst-ink);
 
   position: relative;
@@ -53,7 +53,7 @@
   gap: 0.7rem;
   padding: 1.1rem 1.15rem 1.25rem;
   border: 1px solid var(--inst-line);
-  border-radius: 12px;
+  border-radius: 6px;
   background: linear-gradient(
     180deg,
     var(--inst-panel-hi) 0%,
@@ -186,7 +186,7 @@
   color: var(--inst-ink);
   border-color: var(--inst-brass);
   box-shadow:
-    0 0 0 1px rgba(223, 168, 74, 0.25),
+    0 0 0 1px rgba(255, 176, 0, 0.25),
     0 0 18px -4px var(--inst-brass-glow);
 }
 
@@ -320,7 +320,7 @@
 :global(.groove-patch-btn-active) {
   border-color: var(--inst-brass);
   color: var(--inst-brass-bright);
-  box-shadow: inset 0 0 0 1px rgba(223, 168, 74, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(255, 176, 0, 0.2);
 }
 
 :global(.groove-patch-slot) {
@@ -619,7 +619,7 @@
 }
 
 :global(.groove-led-beat) {
-  outline: 1px solid rgba(223, 168, 74, 0.28);
+  outline: 1px solid rgba(255, 176, 0, 0.28);
   outline-offset: 0;
 }
 
@@ -691,8 +691,8 @@
 :global(.groove-pad-v1) {
   background: linear-gradient(
     180deg,
-    rgba(223, 168, 74, 0.3),
-    rgba(223, 168, 74, 0.16)
+    rgba(255, 176, 0, 0.3),
+    rgba(255, 176, 0, 0.16)
   );
   border-color: var(--inst-brass-deep);
 }
@@ -700,8 +700,8 @@
 :global(.groove-pad-v2) {
   background: linear-gradient(
     180deg,
-    rgba(223, 168, 74, 0.62),
-    rgba(223, 168, 74, 0.34)
+    rgba(255, 176, 0, 0.62),
+    rgba(255, 176, 0, 0.34)
   );
   border-color: var(--inst-brass);
   box-shadow:
@@ -712,8 +712,8 @@
 :global(.groove-pad-on) {
   background: linear-gradient(
     180deg,
-    rgba(223, 168, 74, 0.3),
-    rgba(223, 168, 74, 0.16)
+    rgba(255, 176, 0, 0.3),
+    rgba(255, 176, 0, 0.16)
   );
   border-color: var(--inst-brass-deep);
 }
@@ -776,7 +776,7 @@
 }
 
 :global(.groove-vel-slot-beat) {
-  border-left: 1px solid rgba(223, 168, 74, 0.22);
+  border-left: 1px solid rgba(255, 176, 0, 0.22);
 }
 
 :global(.groove-vel-bar) {
@@ -884,7 +884,7 @@
 }
 
 :global(.groove-sweep-seg-on) {
-  background: rgba(223, 168, 74, 0.24);
+  background: rgba(255, 176, 0, 0.24);
 }
 
 :global(.groove-sweep-fill) {
@@ -919,7 +919,7 @@
   background:
     radial-gradient(
       120% 90% at 50% 0%,
-      rgba(223, 168, 74, 0.06),
+      rgba(255, 176, 0, 0.06),
       transparent 70%
     ),
     var(--inst-deep);
@@ -1010,15 +1010,15 @@
 /* ------------------------------------------------------------ unit accents -- */
 
 :global(.groove-unit-drums) {
-  --unit-accent: #dfa84a;
+  --unit-accent: #ffb000;
 }
 
 :global(.groove-unit-bass) {
-  --unit-accent: #8b9fc2;
+  --unit-accent: #7fb2ff;
 }
 
 :global(.groove-unit-pads) {
-  --unit-accent: #a3b19b;
+  --unit-accent: #58e08c;
 }
 
 :global(.groove-unit-lead) {

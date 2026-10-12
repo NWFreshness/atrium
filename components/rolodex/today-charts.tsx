@@ -13,17 +13,17 @@ import {
 import type { CircleCounts, MonthCount } from "@/lib/rolodex/dashboard";
 import styles from "./today.module.css";
 
-/* PNW data palette (10.1/10.5) — the same hexes the CRM charts use. The four
-   series are the four cadence states, so each one is the colour that state
-   carries in the KPI tiles and the who-to-contact chips on this screen:
-   on cadence = lichen, due within seven days = golden, overdue = cedar lifted,
-   snoozed/off = rain; timber is the plain count (interactions logged). Each
-   series is labelled directly, so colour is never the only channel. */
-const IN_TOUCH = "#a3b19b"; // lichen — on cadence (--moss family)
-const DUE = "#dfa84a"; // golden — due within seven days (--brass)
-const OVERDUE = "#e0a488"; // cedar lifted — overdue (--clay-ink)
-const SNOOZED = "#8b9fc2"; // rain — snoozed/off (--slate)
-const COUNT = "#b9ab93"; // timber — interactions logged (--timber)
+/* Rack data palette (Phase 14) — the same signal tokens the CRM charts use.
+   The four series are the four cadence states, so each one is the colour that
+   state carries in the readouts and chips on this screen: on cadence = led
+   green, due within seven days = amber, overdue = red, snoozed/off = blue;
+   the neutral is the plain count (interactions logged). Each series is
+   labelled directly, so colour is never the only channel. */
+const IN_TOUCH = "var(--moss)"; // on cadence
+const DUE = "var(--brass)"; // due within seven days
+const OVERDUE = "var(--clay-ink)"; // overdue
+const SNOOZED = "var(--slate)"; // snoozed/off
+const COUNT = "var(--timber)"; // interactions logged
 
 export function TodayCharts({
   months,

@@ -6,11 +6,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.25rem;
-  min-height: 54px;
-  padding: 0 1.5rem;
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg-0) 78%, transparent);
-  backdrop-filter: blur(10px);
+  min-height: 46px;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid var(--line-strong);
+  /* opaque: the strip is a faceplate, the grid must not show through */
+  background: var(--bg-0);
 }
 
 .atrium-nav-left {
@@ -26,8 +26,9 @@
   gap: 0.5rem;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--text-h3);
-  letter-spacing: -0.02em;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   color: var(--ink);
   text-decoration: none;
   white-space: nowrap;
@@ -36,63 +37,59 @@
 .atrium-nav-brand-mark {
   width: 7px;
   height: 7px;
-  border-radius: 0;
-  transform: rotate(45deg);
-  background: var(--brass);
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: var(--led-glow) var(--amber);
 }
 
 .atrium-nav-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.4rem;
+  gap: 0.35rem;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .atrium-nav-link {
-  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 4px 2px;
-  font-family: var(--font-sans);
-  font-size: 13.5px;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   font-weight: 500;
-  color: var(--ink-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
   text-decoration: none;
-  transition: color 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
 }
 
 .atrium-nav-link svg {
-  width: 15px;
-  height: 15px;
-}
-
-.atrium-nav-link::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -3px;
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, var(--brass), transparent 160%);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  width: 13px;
+  height: 13px;
 }
 
 .atrium-nav-link:hover {
   color: var(--ink);
+  background: var(--bg-2);
 }
 
-.atrium-nav-link-current {
-  color: var(--brass);
+.atrium-nav-link:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
 }
 
-.atrium-nav-link-current::after {
-  transform: scaleX(1);
+/* the one amber block on the strip: where you are */
+.atrium-nav-link-current,
+.atrium-nav-link-current:hover {
+  color: var(--on-amber);
+  background: var(--amber);
+  font-weight: 700;
 }
 
 .atrium-nav-glyph {
@@ -111,7 +108,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 12.5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
   color: var(--ink-dim);
   white-space: nowrap;
   /* It is a <Link> now (6.3) and globals.css has no anchor reset, so the email
@@ -120,15 +119,15 @@
 }
 
 .atrium-nav-avatar {
-  width: 27px;
-  height: 27px;
-  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-sm);
   display: grid;
   place-items: center;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--ink);
-  border: 1.5px solid var(--line-strong);
+  border: 1px solid var(--line-strong);
   background: var(--bg-2);
 }
 

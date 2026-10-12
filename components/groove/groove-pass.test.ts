@@ -74,11 +74,12 @@ describe("Groove keeps its own dark instrument tokens", () => {
     expect(shellCss).toContain("--inst-ink");
   });
 
-  it("carries the PNW instrument values, not the espresso ones", () => {
-    // 10.6 recast the desk; groove-pnw.test.ts holds the full 15-row table.
-    expect(shellRules).toContain("--inst-panel: #23282a");
-    expect(shellRules).toContain("--inst-ink: #eef1f2");
-    expect(shellRules).toContain("--inst-brass: #dfa84a");
+  it("carries the rack instrument values, not the espresso ones", () => {
+    // Phase 14 moved the desk onto the rack values; groove-pnw.test.ts holds
+    // the full 15-row table.
+    expect(shellRules).toContain("--inst-panel: #1f2428");
+    expect(shellRules).toContain("--inst-ink: #dfe5e3");
+    expect(shellRules).toContain("--inst-brass: #ffb000");
     expect(shellRules).not.toContain("--inst-panel: #1a1510");
     expect(shellRules).not.toContain("--inst-ink: #f4ecdc");
   });

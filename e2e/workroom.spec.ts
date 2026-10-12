@@ -5,9 +5,9 @@
  * unit test:
  *
  *  1. the theme still re-themes every surface and survives a reload (dark = basalt,
- *     light = mist, Groove stays instrument-dark on a mist page);
- *  2. computed type stack: Outfit headings, Archivo body, Geist Mono labels;
- *  3. prefers-reduced-motion stops the card stagger and the sky drift;
+ *     light = cream, Groove stays instrument-dark on a cream page);
+ *  2. computed type stack: JetBrains Mono chrome, IBM Plex Sans content;
+ *  3. prefers-reduced-motion stops the card stagger, and no page layer animates;
  *  4. every top-nav, subnav, and sidebar tab is a real route — the defect this exists
  *     to catch is a tab that navigates nowhere (the static prototype's `href="#"`),
  *     which a "no console errors" walk would happily call green;
@@ -26,9 +26,9 @@ const email = demoEmail ?? ownerEmail;
 const password =
   demoEmail && demoPassword ? demoPassword : (ownerPassword ?? null);
 
-/** PNW surfaces, straight from app/globals.css --bg-0. */
-const BASALT = "rgb(37, 40, 42)"; // :root (dark)
-const MIST = "rgb(238, 241, 242)"; // [data-theme="light"]
+/** Rack surfaces, straight from app/globals.css --bg-0. */
+const BASALT = "rgb(20, 23, 26)"; // :root (dark)
+const CREAM = "rgb(228, 223, 208)"; // [data-theme="light"]
 
 async function login(page: Page) {
   await page.goto("/login");
@@ -72,16 +72,16 @@ test("unauthenticated / redirects to a themed login screen", async ({
   );
 
   const background = await bodyBackground(page);
-  expect([BASALT, MIST]).toContain(background);
+  expect([BASALT, CREAM]).toContain(background);
 });
 
-test("login loads Outfit headings, Archivo body, and Geist Mono labels", async ({
+test("login loads JetBrains Mono chrome and IBM Plex Sans content", async ({
   page,
 }) => {
   await page.goto("/login");
   const families = await page.evaluate(() => {
     const h1 = document.querySelector("h1");
-    const bodyP = document.querySelector("p");
+    const bodyP = document.querySelector("[class*='auth-tag']");
     const mono = document.querySelector("[class*='auth-foot']");
     return {
       h1: h1 ? getComputedStyle(h1).fontFamily : "",
@@ -89,12 +89,12 @@ test("login loads Outfit headings, Archivo body, and Geist Mono labels", async (
       mono: mono ? getComputedStyle(mono).fontFamily : "",
     };
   });
-  expect(families.h1, families.h1).toMatch(/outfit/i);
-  expect(families.body, families.body).toMatch(/archivo/i);
-  expect(families.mono, families.mono).toMatch(/geist\s*mono/i);
+  expect(families.h1, families.h1).toMatch(/jetbrains.?mono/i);
+  expect(families.body, families.body).toMatch(/ibm.?plex.?sans/i);
+  expect(families.mono, families.mono).toMatch(/jetbrains.?mono/i);
 });
 
-test("prefers-reduced-motion stops the stagger and the sky drift", async ({
+test("prefers-reduced-motion stops the stagger, and the grid never animates", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -119,7 +119,7 @@ test.describe("authenticated theme QA", () => {
     "AUTH_DEMO_EMAIL/AUTH_DEMO_PASSWORD (or the owner pair) are required for e2e",
   );
 
-  test("dark is basalt, light is mist, and the choice survives reload", async ({
+  test("dark is basalt, light is cream, and the choice survives reload", async ({
     page,
   }) => {
     await login(page);
@@ -130,24 +130,24 @@ test.describe("authenticated theme QA", () => {
 
     await themeButton(page).click();
     await expect(html(page)).toHaveAttribute("data-theme", "light");
-    expect(await bodyBackground(page)).toBe(MIST);
+    expect(await bodyBackground(page)).toBe(CREAM);
     expect(await bodyBackground(page)).not.toBe("rgb(255, 255, 255)");
 
     await page.reload();
     await expect(html(page)).toHaveAttribute("data-theme", "light");
-    expect(await bodyBackground(page)).toBe(MIST);
+    expect(await bodyBackground(page)).toBe(CREAM);
     expect(
       await page.evaluate(() => localStorage.getItem("atrium.theme")),
     ).toBe("light");
   });
 
-  test("Groove stays instrument-dark on a mist page", async ({ page }) => {
+  test("Groove stays instrument-dark on a cream page", async ({ page }) => {
     await login(page);
     await setTheme(page, "light");
     await page.goto("/groove");
     await expect(page.getByRole("region", { name: "RHYTHM" })).toBeVisible();
 
-    expect(await bodyBackground(page)).toBe(MIST);
+    expect(await bodyBackground(page)).toBe(CREAM);
 
     const chassis = await page
       .locator(".groove-chassis")
@@ -159,10 +159,10 @@ test.describe("authenticated theme QA", () => {
           color: style.color,
         };
       });
-    // Groove declares its own PNW instrument tokens and never re-skins for paper.
-    expect(chassis.panel).toBe("#23282a");
-    expect(chassis.ink).toBe("#eef1f2");
-    expect(chassis.color).toBe("rgb(238, 241, 242)");
+    // Groove declares its own rack instrument tokens and never re-skins for paper.
+    expect(chassis.panel).toBe("#1f2428");
+    expect(chassis.ink).toBe("#dfe5e3");
+    expect(chassis.color).toBe("rgb(223, 229, 227)");
   });
 
   const TOP_NAV = [

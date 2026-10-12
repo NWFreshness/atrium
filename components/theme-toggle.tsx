@@ -4,7 +4,7 @@
  * 13.2 — the shared theme toggle. Mounted in the top-nav chrome
  * (components/atrium-nav.tsx) so it is reached from all four apps.
  *
- * First visit is always light (spec D5 — the OS prefers-color-scheme is not
+ * First visit is always dark (Phase 14 — the OS prefers-color-scheme is not
  * auto-followed); a stored choice wins afterwards and persists client-side in
  * localStorage. When storage is unavailable the toggle still flips for the
  * session and never throws.
@@ -22,7 +22,7 @@ function browserDeps() {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
     try {
@@ -32,7 +32,7 @@ export function ThemeToggle() {
         setTheme(applied);
       }
     } catch {
-      /* Storage/document unavailable: stay on the light default. */
+      /* Storage/document unavailable: stay on the dark default. */
     }
   }, []);
 

@@ -33,19 +33,7 @@ function createDocument(initial: Record<string, string> = {}) {
 }
 
 describe("initTheme", () => {
-  it("always renders light on first visit, even with a dark OS preference", () => {
-    const document = createDocument();
-
-    initTheme({
-      storage: createStorage(),
-      document,
-      matchMedia: () => ({ matches: true }),
-    });
-
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
-  });
-
-  it("renders light on first visit with a light OS preference", () => {
+  it("always renders dark on first visit, even with a light OS preference", () => {
     const document = createDocument();
 
     initTheme({
@@ -54,7 +42,19 @@ describe("initTheme", () => {
       matchMedia: () => ({ matches: false }),
     });
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+  });
+
+  it("renders dark on first visit with a dark OS preference", () => {
+    const document = createDocument();
+
+    initTheme({
+      storage: createStorage(),
+      document,
+      matchMedia: () => ({ matches: true }),
+    });
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
   it("uses a stored light or dark theme instead of the OS preference", () => {
@@ -93,18 +93,18 @@ describe("initTheme", () => {
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
-  it("falls back to light when storage is omitted, even with a dark OS preference", () => {
+  it("falls back to dark when storage is omitted, even with a light OS preference", () => {
     const document = createDocument();
 
     initTheme({
       document,
-      matchMedia: () => ({ matches: true }),
+      matchMedia: () => ({ matches: false }),
     });
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
-  it("falls back to light when matchMedia is omitted and nothing is stored", () => {
+  it("falls back to dark when matchMedia is omitted and nothing is stored", () => {
     const document = createDocument();
 
     initTheme({
@@ -112,7 +112,7 @@ describe("initTheme", () => {
       document,
     });
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
   it("does not throw when document is omitted", () => {
@@ -124,7 +124,7 @@ describe("initTheme", () => {
     ).not.toThrow();
   });
 
-  it("falls back to light when storage getItem throws, ignoring the OS preference", () => {
+  it("falls back to dark when storage getItem throws, ignoring the OS preference", () => {
     const document = createDocument();
 
     expect(() =>
@@ -136,14 +136,14 @@ describe("initTheme", () => {
           setItem() {},
         },
         document,
-        matchMedia: () => ({ matches: true }),
+        matchMedia: () => ({ matches: false }),
       }),
     ).not.toThrow();
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
-  it("falls back to light when storage getItem throws and matchMedia is unavailable", () => {
+  it("falls back to dark when storage getItem throws and matchMedia is unavailable", () => {
     const document = createDocument();
 
     expect(() =>
@@ -158,10 +158,10 @@ describe("initTheme", () => {
       }),
     ).not.toThrow();
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
-  it("falls back to light when matchMedia throws and nothing is stored", () => {
+  it("falls back to dark when matchMedia throws and nothing is stored", () => {
     const document = createDocument();
 
     expect(() =>
@@ -174,19 +174,19 @@ describe("initTheme", () => {
       }),
     ).not.toThrow();
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
-  it("falls back to light when the stored value is invalid, ignoring the OS", () => {
+  it("falls back to dark when the stored value is invalid, ignoring the OS", () => {
     const document = createDocument();
 
     initTheme({
       storage: createStorage({ [THEME_STORAGE_KEY]: "system" }),
       document,
-      matchMedia: () => ({ matches: true }),
+      matchMedia: () => ({ matches: false }),
     });
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 });
 
@@ -225,7 +225,7 @@ describe("toggleTheme", () => {
     expect(storage.getItem(THEME_STORAGE_KEY)).toBe("light");
   });
 
-  it("flips the light default to dark when nothing is stored", () => {
+  it("flips the dark default to light when nothing is stored", () => {
     const storage = createStorage();
     const document = createDocument();
     const deps = {
@@ -237,9 +237,9 @@ describe("toggleTheme", () => {
     initTheme(deps);
     const next = toggleTheme(deps);
 
-    expect(next).toBe("dark");
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
-    expect(storage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+    expect(next).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(storage.getItem(THEME_STORAGE_KEY)).toBe("light");
   });
 
   it("still applies data-theme when storage setItem throws", () => {
@@ -305,8 +305,8 @@ describe("toggleTheme", () => {
       next = toggleTheme(deps);
     }).not.toThrow();
 
-    expect(next).toBe("dark");
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(next).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
   });
 
   it("does not throw when matchMedia is omitted", () => {
@@ -320,9 +320,9 @@ describe("toggleTheme", () => {
       next = toggleTheme(deps);
     }).not.toThrow();
 
-    expect(next).toBe("dark");
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
-    expect(storage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+    expect(next).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(storage.getItem(THEME_STORAGE_KEY)).toBe("light");
   });
 
   it("does not throw when document is omitted", () => {
@@ -350,8 +350,8 @@ describe("toggleTheme", () => {
       next = toggleTheme(deps);
     }).not.toThrow();
 
-    expect(next).toBe("dark");
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(next).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
   });
 
   it("does not throw when matchMedia throws", () => {
@@ -370,8 +370,8 @@ describe("toggleTheme", () => {
       next = toggleTheme(deps);
     }).not.toThrow();
 
-    expect(next).toBe("dark");
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(next).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
   });
 });
 
@@ -381,9 +381,9 @@ describe("THEME_INIT_SCRIPT", () => {
     expect(THEME_INIT_SCRIPT).toContain("data-theme");
   });
 
-  it("defaults to light without consulting the OS preference", () => {
+  it("defaults to dark without consulting the OS preference", () => {
     expect(THEME_INIT_SCRIPT).not.toContain("matchMedia");
     expect(THEME_INIT_SCRIPT).not.toContain("prefers-color-scheme");
-    expect(THEME_INIT_SCRIPT).toContain('t="light"');
+    expect(THEME_INIT_SCRIPT).toContain('t="dark"');
   });
 });

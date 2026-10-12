@@ -1,13 +1,13 @@
 /**
- * 13.2 dashboard readability + light default (JOB-007).
+ * 13.2 dashboard readability (JOB-007), with the Phase 14 dark default.
  *
  * AC1: every pipeline-funnel stage label/value on /crm is legible — no two
  *   funnel label boxes intersect at 375 / 768 / 1024 / 1440px.
  * AC3: every Recent-activity item renders a visible separator (non-zero
  *   boundary on each item) and adjacent items are separated.
- * AC4: first visit (cleared storage) renders light even under a dark OS
- *   preference; the shared-chrome toggle flips dark/light and the choice
- *   survives reload.
+ * AC4 (reversed by Phase 14): first visit (cleared storage) renders dark even
+ *   under a light OS preference; the shared-chrome toggle flips dark/light and
+ *   the choice survives reload.
  *
  * The authenticated section skips without an auth pair, following the
  * e2e/ui-refresh.spec.ts pattern. This pass runs in addition to
@@ -29,9 +29,9 @@ const email = demoEmail ?? ownerEmail;
 const password =
   demoEmail && demoPassword ? demoPassword : (ownerPassword ?? null);
 
-/** PNW surfaces, straight from app/globals.css --bg-0. */
-const BASALT = "rgb(37, 40, 42)"; // :root (dark)
-const MIST = "rgb(238, 241, 242)"; // [data-theme="light"]
+/** Rack surfaces, straight from app/globals.css --bg-0. */
+const BASALT = "rgb(20, 23, 26)"; // :root (dark)
+const CREAM = "rgb(228, 223, 208)"; // [data-theme="light"]
 
 async function login(page: Page) {
   await page.goto("/login");
@@ -143,7 +143,7 @@ test.describe("authenticated dashboard readability", () => {
     }
   });
 
-  test("first visit renders light; toggle round-trips and persists across reload", async ({
+  test("first visit renders dark; toggle round-trips and persists across reload", async ({
     page,
   }) => {
     await page.goto("/login");
@@ -155,8 +155,19 @@ test.describe("authenticated dashboard readability", () => {
     const toggle = page.getByRole("button", { name: "Toggle theme" });
     await expect(toggle).toBeVisible();
 
+    await expect(html).toHaveAttribute("data-theme", "dark");
+    expect(await bodyBackground(page)).toBe(BASALT);
+
+    await toggle.click();
     await expect(html).toHaveAttribute("data-theme", "light");
-    expect(await bodyBackground(page)).toBe(MIST);
+    expect(await bodyBackground(page)).toBe(CREAM);
+
+    await page.reload();
+    await expect(html).toHaveAttribute("data-theme", "light");
+    expect(await bodyBackground(page)).toBe(CREAM);
+    expect(
+      await page.evaluate(() => localStorage.getItem("atrium.theme")),
+    ).toBe("light");
 
     await toggle.click();
     await expect(html).toHaveAttribute("data-theme", "dark");
@@ -165,26 +176,15 @@ test.describe("authenticated dashboard readability", () => {
     await page.reload();
     await expect(html).toHaveAttribute("data-theme", "dark");
     expect(await bodyBackground(page)).toBe(BASALT);
-    expect(await page.evaluate(() => localStorage.getItem("atrium.theme"))).toBe(
-      "dark",
-    );
-
-    await toggle.click();
-    await expect(html).toHaveAttribute("data-theme", "light");
-    expect(await bodyBackground(page)).toBe(MIST);
-
-    await page.reload();
-    await expect(html).toHaveAttribute("data-theme", "light");
-    expect(await bodyBackground(page)).toBe(MIST);
-    expect(await page.evaluate(() => localStorage.getItem("atrium.theme"))).toBe(
-      "light",
-    );
+    expect(
+      await page.evaluate(() => localStorage.getItem("atrium.theme")),
+    ).toBe("dark");
   });
 
-  test.describe("dark OS preference", () => {
-    test.use({ colorScheme: "dark" });
+  test.describe("light OS preference", () => {
+    test.use({ colorScheme: "light" });
 
-    test("first visit is still light (OS setting is not auto-followed)", async ({
+    test("first visit is still dark (OS setting is not auto-followed)", async ({
       page,
     }) => {
       await page.goto("/login");
@@ -192,8 +192,8 @@ test.describe("authenticated dashboard readability", () => {
       await login(page);
       await page.goto("/crm");
 
-      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-      expect(await bodyBackground(page)).toBe(MIST);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+      expect(await bodyBackground(page)).toBe(BASALT);
     });
   });
 });

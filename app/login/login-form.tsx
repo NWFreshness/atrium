@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { login, type LoginState } from "./actions";
+import { enterDemo, login, type LoginState } from "./actions";
 import styles from "../auth-stage.module.css";
 
 const INITIAL: LoginState = { error: null, email: "" };
@@ -44,6 +44,31 @@ export function LoginForm() {
       >
         Sign in
       </button>
+    </form>
+  );
+}
+
+/** Rendered only when the server has a demo pair to sign in with. */
+export function DemoEntry() {
+  const [error, formAction, pending] = useActionState(enterDemo, null);
+
+  return (
+    <form action={formAction} className={styles["auth-demo"]}>
+      <p className={styles["auth-or"]} aria-hidden="true">
+        or
+      </p>
+      <button
+        type="submit"
+        className={`atrium-btn ${styles["auth-submit"]}`}
+        disabled={pending}
+      >
+        Enter the demo
+      </button>
+      {error ? (
+        <p className={styles["auth-alert"]} role="alert">
+          {error}
+        </p>
+      ) : null}
     </form>
   );
 }

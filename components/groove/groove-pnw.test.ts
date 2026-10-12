@@ -34,21 +34,23 @@ const workroom = read("e2e/workroom.spec.ts");
 
 /** The spec's 15-row table, ported verbatim. */
 const PNW_INSTRUMENT: Record<string, string> = {
-  "--inst-deep": "#14181a",
-  "--inst-bg": "#1b1f21",
-  "--inst-panel": "#23282a",
-  "--inst-panel-hi": "#2c3234",
-  "--inst-line": "#3c4344",
-  "--inst-line-soft": "#2b3133",
-  "--inst-ink": "#eef1f2",
-  "--inst-dim": "#b3bfa9",
-  "--inst-faint": "#a3b19b",
-  "--inst-brass": "#dfa84a",
-  "--inst-brass-bright": "#efc272",
-  "--inst-brass-deep": "#8a6320",
-  "--inst-brass-glow": "rgba(223, 168, 74, 0.55)",
-  "--inst-moss": "#a3b19b",
-  "--inst-clay": "#b87355",
+  // Phase 14: the desk sits on the rack values (same amber, led green and red
+  // as the shared tokens), still in its own always-dark --inst-* scope.
+  "--inst-deep": "#101315",
+  "--inst-bg": "#171a1d",
+  "--inst-panel": "#1f2428",
+  "--inst-panel-hi": "#272d32",
+  "--inst-line": "#3d454a",
+  "--inst-line-soft": "#2c3236",
+  "--inst-ink": "#dfe5e3",
+  "--inst-dim": "#a4afac",
+  "--inst-faint": "#8f9b98",
+  "--inst-brass": "#ffb000",
+  "--inst-brass-bright": "#ffc640",
+  "--inst-brass-deep": "#a06a00",
+  "--inst-brass-glow": "rgba(255, 176, 0, 0.55)",
+  "--inst-moss": "#58e08c",
+  "--inst-clay": "#c7513d",
 };
 
 /** Whitespace- and leading-zero-insensitive, because prettier owns the write. */
@@ -295,13 +297,13 @@ describe("Groove hardware", () => {
       );
       return rule;
     };
-    expect(accent("groove-unit-drums")).toContain("--unit-accent: #dfa84a");
-    expect(accent("groove-unit-pads")).toContain("--unit-accent: #a3b19b");
+    expect(accent("groove-unit-drums")).toContain("--unit-accent: #ffb000");
+    expect(accent("groove-unit-pads")).toContain("--unit-accent: #58e08c");
     expect(accent("groove-unit-lead")).toContain(
       "--unit-accent: var(--inst-clay)",
     );
-    // rain stays the value 10.1 put in the data palette
-    expect(accent("groove-unit-bass")).toContain("--unit-accent: #8b9fc2");
+    // blue is the dark --slate value from the shared data palette
+    expect(accent("groove-unit-bass")).toContain("--unit-accent: #7fb2ff");
   });
 });
 
@@ -355,11 +357,11 @@ describe("Groove indicator contrast", () => {
 });
 
 describe("the Workroom smoke matches the recast", () => {
-  it("asserts the PNW instrument values, not the espresso ones", () => {
-    expect(workroom).toMatch(/chassis\.panel\)\.toBe\("#23282a"\)/);
-    expect(workroom).toMatch(/chassis\.ink\)\.toBe\("#eef1f2"\)/);
+  it("asserts the rack instrument values, not the espresso ones", () => {
+    expect(workroom).toMatch(/chassis\.panel\)\.toBe\("#1f2428"\)/);
+    expect(workroom).toMatch(/chassis\.ink\)\.toBe\("#dfe5e3"\)/);
     expect(workroom).toMatch(
-      /chassis\.color\)\.toBe\("rgb\(238, 241, 242\)"\)/,
+      /chassis\.color\)\.toBe\("rgb\(223, 229, 227\)"\)/,
     );
     expect(workroom).not.toContain("#1a1510");
     expect(workroom).not.toContain("#f4ecdc");

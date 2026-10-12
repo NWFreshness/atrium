@@ -50,7 +50,7 @@
   color: var(--ink);
 }
 
-/* person names read in Archivo, as everywhere else; brass stays the ring */
+/* person names read in the content sans, as everywhere else; brass stays the ring */
 .entry {
   font-family: var(--font-sans);
   font-size: 11px;

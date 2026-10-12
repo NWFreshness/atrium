@@ -3,34 +3,34 @@ import { describe, expect, it } from "vitest";
 
 const globals = readFileSync(new URL("./globals.css", import.meta.url), "utf8");
 
-describe("PNW design tokens (globals.css)", () => {
-  it("defines the basalt dark tokens in :root", () => {
-    expect(globals).toContain("--bg-0: #25282a");
-    expect(globals).toContain("--bg-1: #2b3330");
-    expect(globals).toContain("--bg-2: #313b37");
-    expect(globals).toContain("--bg-3: #39443f");
-    expect(globals).toContain("--ink: #eef1f2");
-    expect(globals).toContain("--ink-dim: #b3bfa9");
-    expect(globals).toContain("--brass: #dfa84a");
-    expect(globals).toContain("--moss: #2d4a3e");
-    expect(globals).toContain("--clay: #b87355");
-    expect(globals).toContain("--slate: #8b9fc2");
-    expect(globals).toContain("--clay-ink: #e0a488");
-    expect(globals).toContain("--timber: #b9ab93");
+describe("rack design tokens (globals.css)", () => {
+  it("defines the basalt chassis tokens in :root", () => {
+    expect(globals).toContain("--bg-0: #14171a");
+    expect(globals).toContain("--bg-1: #191d21");
+    expect(globals).toContain("--bg-2: #1f2428");
+    expect(globals).toContain("--bg-3: #272d32");
+    expect(globals).toContain("--ink: #dfe5e3");
+    expect(globals).toContain("--ink-dim: #a4afac");
+    expect(globals).toContain("--brass: #ffb000");
+    expect(globals).toContain("--moss: #58e08c");
+    expect(globals).toContain("--clay: #c7513d");
+    expect(globals).toContain("--slate: #7fb2ff");
+    expect(globals).toContain("--clay-ink: #ff7a66");
+    expect(globals).toContain("--timber: #c2b8a3");
     expect(globals).not.toMatch(/--violet\s*:/);
   });
 
-  it("defines matching mist values under [data-theme=light]", () => {
+  it("defines matching cream chassis values under [data-theme=light]", () => {
     expect(globals).toContain('[data-theme="light"]');
-    expect(globals).toContain("--bg-0: #eef1f2");
-    expect(globals).toContain("--ink: #25282a");
-    expect(globals).toContain("--brass: #8a6320");
+    expect(globals).toContain("--bg-0: #e4dfd0");
+    expect(globals).toContain("--ink: #1d1c1a");
+    expect(globals).toContain("--brass: #754b00");
   });
 
   it("maps the display/sans/mono type stack to the loaded font variables", () => {
-    expect(globals).toContain("--font-display: var(--font-outfit)");
-    expect(globals).toContain("--font-sans: var(--font-archivo)");
-    expect(globals).toMatch(/--font-mono:\s*var\(--font-geist-mono\)/);
+    expect(globals).toMatch(/--font-display:\s*var\(--font-jetbrains-mono\)/);
+    expect(globals).toContain("--font-sans: var(--font-plex-sans)");
+    expect(globals).toMatch(/--font-mono:\s*var\(--font-jetbrains-mono\)/);
   });
 
   it("keeps the --background/--foreground aliases per-app modules rely on", () => {
@@ -46,14 +46,15 @@ describe("base + overlays", () => {
     expect(globals).toContain("font-family: var(--font-sans)");
   });
 
-  it("adds a non-interactive grain overlay and a clearing-sky layer", () => {
+  it("adds a non-interactive grain overlay and a static grid-paper layer", () => {
     expect(globals).toContain("body::before");
-    expect(globals).toContain("body::after");
     expect(globals).toMatch(/::before\s*{[^}]*pointer-events:\s*none/);
-    expect(globals).toMatch(/::after\s*{[^}]*pointer-events:\s*none/);
+    // The grid is the body background, so it can never intercept a click.
+    expect(globals).not.toContain("body::after");
     expect(globals).toContain("fractalNoise");
-    expect(globals).toContain("radial-gradient");
-    expect(globals).toContain("@keyframes sky-drift");
+    expect(globals).toContain("var(--grid)");
+    expect(globals).toContain("background-size: 20px 20px");
+    expect(globals).not.toContain("@keyframes sky-drift");
   });
 
   it("tints text selection brass", () => {
@@ -69,13 +70,13 @@ describe("motion primitives", () => {
     expect(globals).toContain("calc(var(--i, 0) * 70ms)");
   });
 
-  it("disables reveal and sky drift under prefers-reduced-motion", () => {
+  it("disables reveal under prefers-reduced-motion", () => {
     expect(globals).toContain("@media (prefers-reduced-motion: reduce)");
     expect(globals).toContain("transition-duration: 0.01ms !important");
     const media = globals.slice(
       globals.indexOf("@media (prefers-reduced-motion: reduce)"),
     );
-    expect(media).toMatch(/body::after\s*\{[^}]*animation:\s*none/);
+    expect(media).toMatch(/\.reveal\s*\{[^}]*animation:\s*none/);
   });
 });
 
@@ -90,7 +91,7 @@ describe("no per-app module edits", () => {
 });
 
 describe("theme color-scheme handshake (13.4 AC5)", () => {
-  it("declares dark on :root and light on the mist override", () => {
+  it("declares dark on :root and light on the cream override", () => {
     expect(globals).toMatch(/:root\s*\{[^}]*color-scheme:\s*dark/);
     expect(globals).toMatch(
       /\[data-theme="light"\][^{]*\{[^}]*color-scheme:\s*light/,

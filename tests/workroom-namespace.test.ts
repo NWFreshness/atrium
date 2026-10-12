@@ -274,6 +274,10 @@ describe("both themes define the full Workroom token set", () => {
     "--clay-ink",
     "--slate",
     "--timber",
+    "--amber",
+    "--on-amber",
+    "--grid",
+    "--led-off",
   ];
 
   function block(start: string): string {
@@ -296,35 +300,46 @@ describe("both themes define the full Workroom token set", () => {
     }
   });
 
-  it("keeps dark basalt and light mist apart", () => {
-    expect(block(":root {")).toContain("--bg-0: #25282a");
-    expect(block('[data-theme="light"] {')).toContain("--bg-0: #eef1f2");
+  it("keeps dark basalt and light cream apart", () => {
+    expect(block(":root {")).toContain("--bg-0: #14171a");
+    expect(block('[data-theme="light"] {')).toContain("--bg-0: #e4dfd0");
   });
 });
 
 describe("the retired palette does not come back", () => {
-  /** The two recharts surfaces; both must paint from the PNW data tokens. */
+  /** The two recharts surfaces; both must paint from the signal tokens. */
   const CHART_FILES = [
     "components/crm/dashboard-charts.tsx",
     "components/rolodex/today-charts.tsx",
   ];
-  const DATA_TOKENS = ["#a3b19b", "#e0a488", "#8b9fc2", "#b9ab93", "#dfa84a"];
+  const DATA_TOKENS = [
+    "var(--moss)",
+    "var(--clay-ink)",
+    "var(--slate)",
+    "var(--timber)",
+    "var(--brass)",
+  ];
 
-  it("paints every chart series from the PNW data palette", () => {
+  it("paints every chart series from the signal tokens, never a literal", () => {
     for (const file of CHART_FILES) {
-      const hexes = [
-        ...read(resolve(root, file)).matchAll(/#[0-9a-fA-F]{3,8}\b/g),
-      ].map((match) => match[0]);
-      // recharts writes SVG attributes, where var(--token) does not resolve, so the
-      // palette is repeated as literals — these charts do have colours to check.
-      expect(hexes.length, `${file} declares no series colour`).toBeGreaterThan(
-        0,
+      const source = read(resolve(root, file));
+      // Phase 14: a var(--token) in an SVG presentation attribute resolves, so
+      // the series follow the theme and no hex is repeated in the charts.
+      expect(
+        [...source.matchAll(/#[0-9a-fA-F]{6}\b/g)].map((match) => match[0]),
+        `${file} pins a series colour as a literal`,
+      ).toEqual([]);
+      const series = [...source.matchAll(/^const [A-Z_]+ = "([^"]+)";/gm)].map(
+        (match) => match[1],
       );
-      for (const hex of hexes) {
-        expect(
-          DATA_TOKENS,
-          `${file} paints a series with the stock ${hex}`,
-        ).toContain(hex);
+      expect(
+        series.length,
+        `${file} declares no series colour`,
+      ).toBeGreaterThan(0);
+      for (const colour of series) {
+        expect(DATA_TOKENS, `${file} paints a series with ${colour}`).toContain(
+          colour,
+        );
       }
     }
   });
@@ -418,9 +433,7 @@ describe("shared chrome interaction and responsive states (13.1 refresh)", () =>
     expect(chrome).toMatch(
       /@media[^{]*max-width:\s*56rem[^{]*\{[^}]*\.atrium-nav-stack[^}]*flex-wrap:\s*wrap/,
     );
-    expect(chrome).toMatch(
-      /\.atrium-nav-endwrap\s*\{[^}]*flex-wrap:\s*wrap/,
-    );
+    expect(chrome).toMatch(/\.atrium-nav-endwrap\s*\{[^}]*flex-wrap:\s*wrap/);
     const nav = read(resolve(root, "components/atrium-nav.tsx"));
     expect(nav, "nav strip does not opt into atrium-nav-stack").toContain(
       "atrium-nav-stack",
@@ -430,12 +443,12 @@ describe("shared chrome interaction and responsive states (13.1 refresh)", () =>
     );
   });
 
-  it("keeps the shared primary a single golden fill with charcoal text (13.4)", () => {
+  it("keeps the shared primary a single amber fill with its paired ink (13.4, Phase 14 tokens)", () => {
     const from = chrome.indexOf(".atrium-btn-primary {");
     expect(from, "missing .atrium-btn-primary").toBeGreaterThanOrEqual(0);
     const block = chrome.slice(from, chrome.indexOf("}", from));
-    expect(block).toMatch(/background:\s*#dfa84a/);
-    expect(block).toMatch(/color:\s*#25282a/);
+    expect(block).toMatch(/background:\s*var\(--amber\)/);
+    expect(block).toMatch(/[^-]color:\s*var\(--on-amber\)/);
   });
 
   it("stacks the CRM pipeline board to one column at narrow widths (13.4)", () => {
