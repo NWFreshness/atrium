@@ -32,12 +32,18 @@ export type LauncherInput = {
   pages: { type: string }[];
 };
 
-const compactMoney = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
+/**
+ * "$184.3K", "$1.2M", "$0". Hand-rolled on purpose: `Intl` compact notation
+ * prints zero differently across Node/ICU versions, which made the figure (and
+ * its test) depend on the machine.
+ */
+function compactMoney(n: number): string {
+  const scaled = (value: number, suffix: string) =>
+    `$${value.toFixed(1).replace(/\.0$/, "")}${suffix}`;
+  if (n >= 1_000_000) return scaled(n / 1_000_000, "M");
+  if (n >= 1_000) return scaled(n / 1_000, "K");
+  return `$${Math.round(n)}`;
+}
 
 function count(label: string, n: number, tone?: Readout["tone"]): Readout {
   return tone && n > 0
@@ -76,7 +82,7 @@ export function launcherReadouts(
         count("Open", input.crm.tiles.openDealCount),
         {
           label: "Pipeline",
-          value: compactMoney.format(input.crm.tiles.pipelineValue),
+          value: compactMoney(input.crm.tiles.pipelineValue),
         },
         count(
           "Follow-ups",

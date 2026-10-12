@@ -52,6 +52,22 @@ describe("launcherReadouts", () => {
     expect(crm.status).toBe("warn");
   });
 
+  it("formats the pipeline figure the same on every machine", () => {
+    const pipeline = (pipelineValue: number) =>
+      launcherReadouts(
+        input({
+          crm: {
+            tiles: { openDealCount: 1, pipelineValue },
+            followUps: { overdue: [], upcoming: [] },
+          },
+        }),
+      ).crm.readouts[1].value;
+    expect(pipeline(0)).toBe("$0");
+    expect(pipeline(999)).toBe("$999");
+    expect(pipeline(130000)).toBe("$130K");
+    expect(pipeline(1250000)).toBe("$1.3M");
+  });
+
   it("turns CRM red when any follow-up is overdue", () => {
     const { crm } = launcherReadouts(
       input({
