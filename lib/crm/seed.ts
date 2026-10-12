@@ -1,27 +1,24 @@
+import { recordInserts, type SeedRow } from "../db/batch-transaction";
+import { organizations, contacts, deals, activities } from "./schema";
 import { STAGE_PROBABILITY, type DealStage } from "./constants";
 import {
+  createMemoryCrmStore,
   createActivity,
   createContact,
   createDeal,
   createOrganization,
   listOrganizations,
-  type CrmRepository,
+  type CrmStore,
 } from "./queries";
-import type { WriteOpts } from "../db/batch-transaction";
 
 export async function seedCrm(
   tenantId: string,
-  repo?: CrmRepository,
-  opts?: WriteOpts,
+  repo?: CrmStore,
 ): Promise<void> {
-  // A reset collects the wipe and this reseed into one batch, so the
-  // rows are still there to be found: the idempotence check only applies
-  // to a standalone seed (`npm run db:seed`), which runs immediately.
-  if (!opts?.batch) {
-    const existing = await listOrganizations(tenantId, repo);
-    if (existing.length > 0) {
-      return;
-    }
+  // Idempotent: a tenant that already has rows is left alone.
+  const existing = await listOrganizations(tenantId, repo);
+  if (existing.length > 0) {
+    return;
   }
 
   const northwind = await createOrganization(
@@ -32,7 +29,6 @@ export async function seedCrm(
       industry: "Logistics",
     },
     repo,
-    opts,
   );
   const bluepeak = await createOrganization(
     tenantId,
@@ -42,7 +38,6 @@ export async function seedCrm(
       industry: "Software",
     },
     repo,
-    opts,
   );
   const harbor = await createOrganization(
     tenantId,
@@ -52,7 +47,6 @@ export async function seedCrm(
       industry: "Professional services",
     },
     repo,
-    opts,
   );
 
   const ana = await createContact(
@@ -65,7 +59,6 @@ export async function seedCrm(
       status: "customer",
     },
     repo,
-    opts,
   );
   const marcus = await createContact(
     tenantId,
@@ -77,7 +70,6 @@ export async function seedCrm(
       status: "qualified",
     },
     repo,
-    opts,
   );
   const priya = await createContact(
     tenantId,
@@ -89,7 +81,6 @@ export async function seedCrm(
       status: "lead",
     },
     repo,
-    opts,
   );
   const jordan = await createContact(
     tenantId,
@@ -101,7 +92,6 @@ export async function seedCrm(
       status: "qualified",
     },
     repo,
-    opts,
   );
 
   async function deal(input: {
@@ -119,7 +109,6 @@ export async function seedCrm(
         probability: STAGE_PROBABILITY[input.stage],
       },
       repo,
-      opts,
     );
   }
 
@@ -183,7 +172,6 @@ export async function seedCrm(
       done: true,
     },
     repo,
-    opts,
   );
   await createActivity(
     tenantId,
@@ -196,7 +184,6 @@ export async function seedCrm(
       done: true,
     },
     repo,
-    opts,
   );
   await createActivity(
     tenantId,
@@ -209,7 +196,6 @@ export async function seedCrm(
       done: true,
     },
     repo,
-    opts,
   );
   await createActivity(
     tenantId,
@@ -221,6 +207,18 @@ export async function seedCrm(
       done: false,
     },
     repo,
-    opts,
+  );
+}
+
+/**
+ * The demo rows, in the order a reset must insert them, built without touching
+ * a database: the same seed runs against a throwaway memory store, so every
+ * row has passed the limits and reference checks the create functions enforce.
+ */
+export function crmSeedRows(tenantId: string): Promise<SeedRow[]> {
+  return recordInserts(
+    createMemoryCrmStore(),
+    { organizations, contacts, deals, activities },
+    (store) => seedCrm(tenantId, store),
   );
 }

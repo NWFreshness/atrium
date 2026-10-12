@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { BLOCK_TYPES } from "./constants";
+import { MAX_BLOCK_TEXT, MAX_SHORT_TEXT } from "../input/text";
+import type { Block, Page } from "./queries";
+import { blocks, pages } from "./schema";
+import { spaceSeedRows } from "./seed";
+import { BLOCK_TYPES, PAGE_TYPES } from "./constants";
 import {
-  createMemorySpaceRepository,
+  createMemorySpaceStore,
   listBlocks,
   listPages,
   listProperties,
@@ -16,7 +20,7 @@ const ownerTenant = "tenant-owner";
 
 describe("seedSpace", () => {
   it("populates the demo tenant with a nested icon tree and leaves owner empty", async () => {
-    const repo = createMemorySpaceRepository();
+    const repo = createMemorySpaceStore();
 
     await seedSpace(demoTenant, repo);
 
@@ -54,7 +58,7 @@ describe("seedSpace", () => {
   });
 
   it("seeds every block type onto the Home page", async () => {
-    const repo = createMemorySpaceRepository();
+    const repo = createMemorySpaceStore();
     await seedSpace(demoTenant, repo);
     const home = (await listPages(demoTenant, repo)).find(
       (page) => page.title === "Home",
@@ -67,7 +71,7 @@ describe("seedSpace", () => {
   });
 
   it("seeds Trip Planner with five rows and a Reading List database", async () => {
-    const repo = createMemorySpaceRepository();
+    const repo = createMemorySpaceStore();
     await seedSpace(demoTenant, repo);
     const pages = await listPages(demoTenant, repo);
     const trip = pages.find((page) => page.title === "Trip Planner");
@@ -106,7 +110,7 @@ describe("seedSpace", () => {
   });
 
   it("is a no-op when the tenant already has Space pages", async () => {
-    const repo = createMemorySpaceRepository();
+    const repo = createMemorySpaceStore();
 
     await seedSpace(demoTenant, repo);
     const afterFirst = (await listPages(demoTenant, repo)).length;
@@ -127,7 +131,7 @@ describe("seedSpace", () => {
  */
 describe("seedSpace content depth", () => {
   async function seededPages() {
-    const repo = createMemorySpaceRepository();
+    const repo = createMemorySpaceStore();
     await seedSpace(demoTenant, repo);
     return { repo, pages: await listPages(demoTenant, repo) };
   }
@@ -183,5 +187,47 @@ describe("seedSpace content depth", () => {
     expect(properties.map((property) => property.name)).toEqual(
       expect.arrayContaining(["Author", "Status", "Rating"]),
     );
+  });
+});
+
+describe("spaceSeedRows", () => {
+  it("builds the reset's rows, titles and block text inside the limits the create functions enforce", async () => {
+    const rows = await spaceSeedRows(demoTenant);
+    const seededPages = rows
+      .filter((entry) => entry.table === pages)
+      .map((entry) => entry.row as Page);
+    const seededBlocks = rows
+      .filter((entry) => entry.table === blocks)
+      .map((entry) => entry.row as Block);
+
+    expect(seededPages.length).toBeGreaterThan(0);
+    expect(seededBlocks.length).toBeGreaterThan(0);
+    for (const { row } of rows) {
+      expect(row).toMatchObject({ tenantId: demoTenant });
+    }
+    for (const page of seededPages) {
+      expect(page.title.length).toBeLessThanOrEqual(MAX_SHORT_TEXT);
+      expect(PAGE_TYPES).toContain(page.type);
+    }
+    const pageIds = new Set(seededPages.map((page) => page.id));
+    for (const block of seededBlocks) {
+      const text = (block.content as { text?: unknown }).text;
+      if (typeof text === "string") {
+        expect(text.length).toBeLessThanOrEqual(MAX_BLOCK_TEXT);
+      }
+      expect(BLOCK_TYPES).toContain(block.type);
+      expect(pageIds.has(block.pageId)).toBe(true);
+    }
+    // A page is always inserted before anything that points at it.
+    const seen = new Set<string>();
+    for (const { table, row } of rows) {
+      if (table === pages) {
+        const page = row as Page;
+        if (page.parentId) expect(seen.has(page.parentId)).toBe(true);
+        seen.add(page.id);
+      } else if (table === blocks) {
+        expect(seen.has((row as Block).pageId)).toBe(true);
+      }
+    }
   });
 });

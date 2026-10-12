@@ -1,18 +1,19 @@
 import { describe, expect, it } from "vitest";
+import { InputError } from "../input/result";
 import {
-  createDealForSession,
-  dealCascadePreviewForSession,
-  deleteDealForSession,
-  getDealForSession,
-  listDealsForSession,
-  moveDealForSession,
-  updateDealForSession,
-} from "./deal-actions";
+  createDealIn,
+  dealCascadePreviewIn,
+  deleteDealIn,
+  getDealIn,
+  listDealsIn,
+  moveDealIn,
+  updateDealIn,
+} from "./deal-ops";
 import {
   createActivity,
   createContact,
   createDeal,
-  createMemoryCrmRepository,
+  createMemoryCrmStore,
   createOrganization,
   getDeal,
 } from "./queries";
@@ -20,20 +21,8 @@ import {
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
 
-const sessionA = {
-  user: {
-    id: "user-a",
-    tenantId: tenantA,
-    role: "owner" as const,
-  },
-};
-
-function getSessionA() {
-  return Promise.resolve(sessionA);
-}
-
 function repo() {
-  return createMemoryCrmRepository();
+  return createMemoryCrmStore();
 }
 
 describe("deal session actions", () => {
@@ -45,15 +34,14 @@ describe("deal session actions", () => {
       { name: "Ada", status: "lead" },
       memory,
     );
-    const created = await createDealForSession(
-      getSessionA,
+    const created = await createDealIn(
+      tenantA,
       {
         name: "Widget rollout",
         organizationId: org.id,
         contactId: contact.id,
         stage: "Qualified",
         value: 25000,
-        tenantId: tenantB,
       },
       memory,
     );
@@ -66,17 +54,13 @@ describe("deal session actions", () => {
     expect(created?.boardOrder).toBe(0);
     expect(await getDeal(tenantB, created!.id, memory)).toBeNull();
 
-    expect(await listDealsForSession(getSessionA, {}, memory)).toEqual([
-      created,
-    ]);
-    expect(await getDealForSession(getSessionA, created!.id, memory)).toEqual(
-      created,
-    );
+    expect(await listDealsIn(tenantA, {}, memory)).toEqual([created]);
+    expect(await getDealIn(tenantA, created!.id, memory)).toEqual(created);
 
-    const updated = await updateDealForSession(
-      getSessionA,
+    const updated = await updateDealIn(
+      tenantA,
       created!.id,
-      { stage: "Proposal", tenantId: tenantB },
+      { stage: "Proposal" },
       memory,
     );
     expect(updated?.stage).toBe("Proposal");
@@ -84,22 +68,16 @@ describe("deal session actions", () => {
     expect(updated?.tenantId).toBe(tenantA);
     expect(updated?.name).toBe("Widget rollout");
 
-    const deleted = await deleteDealForSession(
-      getSessionA,
-      created!.id,
-      memory,
-    );
+    const deleted = await deleteDealIn(tenantA, created!.id, memory);
     expect(deleted?.id).toBe(created!.id);
-    expect(
-      await getDealForSession(getSessionA, created!.id, memory),
-    ).toBeNull();
+    expect(await getDealIn(tenantA, created!.id, memory)).toBeNull();
   });
 
   it("lists with search and organizationId against the session tenant only", async () => {
     const memory = repo();
     const acme = await createOrganization(tenantA, { name: "Acme" }, memory);
-    const widget = await createDealForSession(
-      getSessionA,
+    const widget = await createDealIn(
+      tenantA,
       {
         name: "Widget rollout",
         organizationId: acme.id,
@@ -108,8 +86,8 @@ describe("deal session actions", () => {
       },
       memory,
     );
-    await createDealForSession(
-      getSessionA,
+    await createDealIn(
+      tenantA,
       { name: "Other deal", stage: "New", value: 500 },
       memory,
     );
@@ -119,19 +97,11 @@ describe("deal session actions", () => {
       memory,
     );
 
+    expect(await listDealsIn(tenantA, { q: "widget" }, memory)).toEqual([
+      widget,
+    ]);
     expect(
-      await listDealsForSession(
-        getSessionA,
-        { q: "widget", tenantId: tenantB },
-        memory,
-      ),
-    ).toEqual([widget]);
-    expect(
-      await listDealsForSession(
-        getSessionA,
-        { organizationId: acme.id, tenantId: tenantB },
-        memory,
-      ),
+      await listDealsIn(tenantA, { organizationId: acme.id }, memory),
     ).toEqual([widget]);
   });
 
@@ -143,8 +113,8 @@ describe("deal session actions", () => {
       { name: "Ada", status: "lead" },
       memory,
     );
-    const wanted = await createDealForSession(
-      getSessionA,
+    const wanted = await createDealIn(
+      tenantA,
       {
         name: "Widget rollout",
         organizationId: acme.id,
@@ -155,8 +125,8 @@ describe("deal session actions", () => {
       },
       memory,
     );
-    await createDealForSession(
-      getSessionA,
+    await createDealIn(
+      tenantA,
       { name: "Other deal", stage: "New", value: 500 },
       memory,
     );
@@ -166,12 +136,12 @@ describe("deal session actions", () => {
       memory,
     );
 
+    expect(await listDealsIn(tenantA, { stage: "Qualified" }, memory)).toEqual([
+      wanted,
+    ]);
     expect(
-      await listDealsForSession(getSessionA, { stage: "Qualified" }, memory),
-    ).toEqual([wanted]);
-    expect(
-      await listDealsForSession(
-        getSessionA,
+      await listDealsIn(
+        tenantA,
         {
           q: "widget",
           organizationId: acme.id,
@@ -185,19 +155,14 @@ describe("deal session actions", () => {
     ).toEqual([wanted]);
     // The tenant-override probe: a hostile tenantId in the input is still
     // scoped to the session tenant, for the new keys exactly as for `q`.
+    expect(await listDealsIn(tenantA, { stage: "Qualified" }, memory)).toEqual([
+      wanted,
+    ]);
     expect(
-      await listDealsForSession(
-        getSessionA,
-        { stage: "Qualified", tenantId: tenantB },
-        memory,
-      ),
-    ).toEqual([wanted]);
-    expect(
-      await listDealsForSession(
-        getSessionA,
+      await listDealsIn(
+        tenantA,
         {
           closeAfter: new Date("2026-09-01T00:00:00.000Z"),
-          tenantId: tenantB,
         },
         memory,
       ),
@@ -212,19 +177,12 @@ describe("deal session actions", () => {
       memory,
     );
 
-    expect(await getDealForSession(getSessionA, other.id, memory)).toBeNull();
-    expect(await getDealForSession(getSessionA, "missing", memory)).toBeNull();
+    expect(await getDealIn(tenantA, other.id, memory)).toBeNull();
+    expect(await getDealIn(tenantA, "missing", memory)).toBeNull();
     expect(
-      await updateDealForSession(
-        getSessionA,
-        other.id,
-        { name: "Hacked" },
-        memory,
-      ),
+      await updateDealIn(tenantA, other.id, { name: "Hacked" }, memory),
     ).toBeNull();
-    expect(
-      await deleteDealForSession(getSessionA, other.id, memory),
-    ).toBeNull();
+    expect(await deleteDealIn(tenantA, other.id, memory)).toBeNull();
     expect(await getDeal(tenantB, other.id, memory)).toMatchObject({
       name: "Beta deal",
     });
@@ -238,9 +196,9 @@ describe("deal session actions", () => {
       memory,
     );
 
-    expect(
-      await createDealForSession(
-        getSessionA,
+    await expect(
+      createDealIn(
+        tenantA,
         {
           name: "Widget",
           organizationId: otherOrg.id,
@@ -249,8 +207,8 @@ describe("deal session actions", () => {
         },
         memory,
       ),
-    ).toBeNull();
-    expect(await listDealsForSession(getSessionA, {}, memory)).toEqual([]);
+    ).rejects.toBeInstanceOf(InputError);
+    expect(await listDealsIn(tenantA, {}, memory)).toEqual([]);
   });
 
   it("rejects create when contactId belongs to another tenant", async () => {
@@ -261,9 +219,9 @@ describe("deal session actions", () => {
       memory,
     );
 
-    expect(
-      await createDealForSession(
-        getSessionA,
+    await expect(
+      createDealIn(
+        tenantA,
         {
           name: "Widget",
           contactId: otherContact.id,
@@ -272,14 +230,14 @@ describe("deal session actions", () => {
         },
         memory,
       ),
-    ).toBeNull();
-    expect(await listDealsForSession(getSessionA, {}, memory)).toEqual([]);
+    ).rejects.toBeInstanceOf(InputError);
+    expect(await listDealsIn(tenantA, {}, memory)).toEqual([]);
   });
 
   it("rejects update when organizationId or contactId belongs to another tenant", async () => {
     const memory = repo();
-    const deal = await createDealForSession(
-      getSessionA,
+    const deal = await createDealIn(
+      tenantA,
       { name: "Widget", stage: "New", value: 1000 },
       memory,
     );
@@ -294,22 +252,12 @@ describe("deal session actions", () => {
       memory,
     );
 
-    expect(
-      await updateDealForSession(
-        getSessionA,
-        deal!.id,
-        { organizationId: otherOrg.id },
-        memory,
-      ),
-    ).toBeNull();
-    expect(
-      await updateDealForSession(
-        getSessionA,
-        deal!.id,
-        { contactId: otherContact.id },
-        memory,
-      ),
-    ).toBeNull();
+    await expect(
+      updateDealIn(tenantA, deal!.id, { organizationId: otherOrg.id }, memory),
+    ).rejects.toBeInstanceOf(InputError);
+    await expect(
+      updateDealIn(tenantA, deal!.id, { contactId: otherContact.id }, memory),
+    ).rejects.toBeInstanceOf(InputError);
     expect(await getDeal(tenantA, deal!.id, memory)).toMatchObject({
       name: "Widget",
       organizationId: null,
@@ -319,31 +267,27 @@ describe("deal session actions", () => {
 
   it("rejects create and update when stage is not a deal stage", async () => {
     const memory = repo();
-    const created = await createDealForSession(
-      getSessionA,
-      {
-        name: "Widget",
-        stage: "Prospect" as "New",
-        value: 1000,
-      },
-      memory,
-    );
-    expect(created).toBeNull();
-    expect(await listDealsForSession(getSessionA, {}, memory)).toEqual([]);
+    await expect(
+      createDealIn(
+        tenantA,
+        {
+          name: "Widget",
+          stage: "Prospect" as "New",
+          value: 1000,
+        },
+        memory,
+      ),
+    ).rejects.toBeInstanceOf(InputError);
+    expect(await listDealsIn(tenantA, {}, memory)).toEqual([]);
 
-    const deal = await createDealForSession(
-      getSessionA,
+    const deal = await createDealIn(
+      tenantA,
       { name: "Widget", stage: "New", value: 1000 },
       memory,
     );
-    expect(
-      await updateDealForSession(
-        getSessionA,
-        deal!.id,
-        { stage: "Prospect" as "New" },
-        memory,
-      ),
-    ).toBeNull();
+    await expect(
+      updateDealIn(tenantA, deal!.id, { stage: "Prospect" as "New" }, memory),
+    ).rejects.toBeInstanceOf(InputError);
     expect(await getDeal(tenantA, deal!.id, memory)).toMatchObject({
       stage: "New",
     });
@@ -363,36 +307,19 @@ describe("deal session actions", () => {
     );
 
     await expect(
-      dealCascadePreviewForSession(getSessionA, other.id, memory),
+      dealCascadePreviewIn(tenantA, other.id, memory),
     ).resolves.toEqual({ contacts: 0, deals: 0, activities: 0 });
-  });
-
-  it("throws when unauthenticated", async () => {
-    const memory = repo();
-    await expect(
-      createDealForSession(
-        async () => null,
-        { name: "Widget", stage: "New", value: 1000 },
-        memory,
-      ),
-    ).rejects.toThrow("Unauthenticated");
   });
 
   it("moves a deal using the session tenantId", async () => {
     const memory = repo();
-    const created = await createDealForSession(
-      getSessionA,
+    const created = await createDealIn(
+      tenantA,
       { name: "Widget", stage: "New", value: 1000, probability: 10 },
       memory,
     );
 
-    const moved = await moveDealForSession(
-      getSessionA,
-      created!.id,
-      "Won",
-      0,
-      memory,
-    );
+    const moved = await moveDealIn(tenantA, created!.id, "Won", 0, memory);
     expect(moved?.tenantId).toBe(tenantA);
     expect(moved?.stage).toBe("Won");
     expect(moved?.probability).toBe(100);
@@ -406,12 +333,8 @@ describe("deal session actions", () => {
       memory,
     );
 
-    expect(
-      await moveDealForSession(getSessionA, other.id, "Won", 0, memory),
-    ).toBeNull();
-    expect(
-      await moveDealForSession(getSessionA, "missing", "Won", 0, memory),
-    ).toBeNull();
+    expect(await moveDealIn(tenantA, other.id, "Won", 0, memory)).toBeNull();
+    expect(await moveDealIn(tenantA, "missing", "Won", 0, memory)).toBeNull();
     expect(await getDeal(tenantB, other.id, memory)).toMatchObject({
       name: "Beta deal",
       stage: "New",

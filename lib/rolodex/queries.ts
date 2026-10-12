@@ -1,62 +1,15 @@
-import type { WriteOpts } from "../db/batch-transaction";
+import { assertOneOf, InputError } from "../input/result";
+import {
+  CONNECTION_KINDS,
+  DATE_TYPES,
+  GIFT_KINDS,
+  INTERACTION_TYPES,
+} from "./constants";
 import { assertText, MAX_LONG_TEXT, MAX_SHORT_TEXT } from "../input/text";
-import {
-  insertConnection,
-  insertFact,
-  insertGift,
-  insertImportantDate,
-  insertInteraction,
-  insertNews,
-  insertPerson,
-  insertReminder,
-  deleteConnectionInDrizzle,
-  deleteGiftInDrizzle,
-  deleteImportantDateInDrizzle,
-  deletePersonInDrizzle,
-  getImportantDateInDrizzle,
-  getPersonInDrizzle,
-  getReminderInDrizzle,
-  listConnectionsInDrizzle,
-  listFactsInDrizzle,
-  listGiftsInDrizzle,
-  listImportantDatesInDrizzle,
-  listInteractionsInDrizzle,
-  listNewsInDrizzle,
-  listPeopleInDrizzle,
-  listRemindersInDrizzle,
-  updateImportantDateInDrizzle,
-  updatePersonInDrizzle,
-  updateReminderInDrizzle,
-} from "./queries-drizzle";
-import {
-  createConnectionInMemory,
-  createFactInMemory,
-  createGiftInMemory,
-  createImportantDateInMemory,
-  createInteractionInMemory,
-  createNewsInMemory,
-  createPersonInMemory,
-  createReminderInMemory,
-  deleteConnectionInMemory,
-  deleteGiftInMemory,
-  deleteImportantDateInMemory,
-  deletePersonInMemory,
-  getImportantDateInMemory,
-  getPersonInMemory,
-  getReminderInMemory,
-  listConnectionsInMemory,
-  listFactsInMemory,
-  listGiftsInMemory,
-  listImportantDatesInMemory,
-  listInteractionsInMemory,
-  listNewsInMemory,
-  listPeopleInMemory,
-  listRemindersInMemory,
-  updateImportantDateInMemory,
-  updatePersonInMemory,
-  updateReminderInMemory,
-} from "./queries-memory";
-import { newId, now, personRow, requireTenantId } from "./queries-shared";
+import { getDb } from "../db";
+import { createDrizzleRolodexStore, type RolodexStore } from "./store";
+import { newId, now, personRow } from "./queries-shared";
+import { requireTenantId } from "../tenancy";
 import type {
   Connection,
   CreateConnectionInput,
@@ -78,7 +31,6 @@ import type {
   Person,
   PersonComputed,
   Reminder,
-  RolodexRepository,
   UpdatePersonInput,
 } from "./queries-shared";
 
@@ -103,10 +55,19 @@ export type {
   Person,
   PersonComputed,
   Reminder,
-  RolodexRepository,
   UpdatePersonInput,
 };
 export { createMemoryRolodexRepository } from "./queries-memory";
+export type { RolodexRepository } from "./queries-shared";
+export { createMemoryRolodexStore, type RolodexStore } from "./store";
+
+/** Production storage. Resolved per call so a test that injects a store never opens a database. */
+function defaultStore(): RolodexStore {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("Rolodex store required");
+  }
+  return createDrizzleRolodexStore(getDb());
+}
 
 function short(value: unknown) {
   return assertText(value, MAX_SHORT_TEXT);
@@ -142,83 +103,86 @@ function assertPersonText(input: {
 
 export async function listPeople(
   tenantId: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
   opts?: ListPeopleOpts,
 ): Promise<PersonComputed[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listPeopleInMemory(repo, scoped, opts)
-    : listPeopleInDrizzle(scoped, opts);
+  return store.people.list(scoped, opts);
 }
 
 export async function getPerson(
   tenantId: string,
   id: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
 ): Promise<PersonComputed | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? getPersonInMemory(repo, scoped, id)
-    : getPersonInDrizzle(scoped, id);
+  return store.people.get(scoped, id);
 }
 
 export async function createPerson(
   tenantId: string,
   input: CreatePersonInput,
-  repo?: RolodexRepository,
-  opts?: WriteOpts,
+  store: RolodexStore = defaultStore(),
 ): Promise<Person> {
   const scoped = requireTenantId(tenantId);
   assertPersonText(input);
   const row = personRow(scoped, input);
-  if (repo) {
-    return createPersonInMemory(repo, row);
-  }
-  return insertPerson(row, opts);
+  return store.people.insert(row);
 }
 
 export async function updatePerson(
   tenantId: string,
   id: string,
   input: UpdatePersonInput,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
 ): Promise<Person | null> {
   const scoped = requireTenantId(tenantId);
   assertPersonText(input);
-  return repo
-    ? updatePersonInMemory(repo, scoped, id, input)
-    : updatePersonInDrizzle(scoped, id, input);
+  return store.people.update(scoped, id, input);
 }
 
 export async function deletePerson(
   tenantId: string,
   id: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
 ): Promise<boolean> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? deletePersonInMemory(repo, scoped, id)
-    : deletePersonInDrizzle(scoped, id);
+  return store.people.delete(scoped, id);
+}
+
+async function assertPerson(
+  tenantId: string,
+  field: string,
+  personId: string,
+  store: RolodexStore = defaultStore(),
+): Promise<void> {
+  if (!(await getPerson(tenantId, personId, store))) {
+    throw new InputError(field, "Person not found");
+  }
 }
 
 export async function listInteractions(
   tenantId: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
   opts?: ListByPersonOpts,
 ): Promise<Interaction[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listInteractionsInMemory(repo, scoped, opts)
-    : listInteractionsInDrizzle(scoped, opts);
+  return store.interactions.list(scoped, opts);
 }
 
 export async function createInteraction(
   tenantId: string,
   input: CreateInteractionInput,
-  repo?: RolodexRepository,
-  opts?: WriteOpts,
+  store: RolodexStore = defaultStore(),
 ): Promise<Interaction> {
   const scoped = requireTenantId(tenantId);
+  assertOneOf(
+    INTERACTION_TYPES,
+    input.type,
+    "type",
+    "Invalid interaction type",
+  );
+  await assertPerson(scoped, "personId", input.personId, store);
   const row: Interaction = {
     id: newId(),
     tenantId: scoped,
@@ -228,30 +192,26 @@ export async function createInteraction(
     notes: input.notes ?? null,
     createdAt: now(),
   };
-  if (repo) {
-    return createInteractionInMemory(repo, row);
-  }
-  return insertInteraction(row, opts);
+  return store.interactions.insert(row);
 }
 
 export async function listImportantDates(
   tenantId: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
   opts?: ListByPersonOpts,
 ): Promise<ImportantDate[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listImportantDatesInMemory(repo, scoped, opts)
-    : listImportantDatesInDrizzle(scoped, opts);
+  return store.importantDates.list(scoped, opts);
 }
 
 export async function createImportantDate(
   tenantId: string,
   input: CreateImportantDateInput,
-  repo?: RolodexRepository,
-  opts?: WriteOpts,
+  store: RolodexStore = defaultStore(),
 ): Promise<ImportantDate> {
   const scoped = requireTenantId(tenantId);
+  assertOneOf(DATE_TYPES, input.type, "type", "Invalid date type");
+  await assertPerson(scoped, "personId", input.personId, store);
   const row: ImportantDate = {
     id: newId(),
     tenantId: scoped,
@@ -263,64 +223,53 @@ export async function createImportantDate(
     year: input.year ?? null,
     createdAt: now(),
   };
-  if (repo) {
-    return createImportantDateInMemory(repo, row);
-  }
-  return insertImportantDate(row, opts);
+  return store.importantDates.insert(row);
 }
 
 export async function getImportantDate(
   tenantId: string,
   id: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
 ): Promise<ImportantDate | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? getImportantDateInMemory(repo, scoped, id)
-    : getImportantDateInDrizzle(scoped, id);
+  return store.importantDates.get(scoped, id);
 }
 
 export async function updateImportantDate(
   tenantId: string,
   id: string,
   input: Partial<CreateImportantDateInput>,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
 ): Promise<ImportantDate | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? updateImportantDateInMemory(repo, scoped, id, input)
-    : updateImportantDateInDrizzle(scoped, id, input);
+  return store.importantDates.update(scoped, id, input);
 }
 
 export async function deleteImportantDate(
   tenantId: string,
   id: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
 ): Promise<boolean> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? deleteImportantDateInMemory(repo, scoped, id)
-    : deleteImportantDateInDrizzle(scoped, id);
+  return store.importantDates.delete(scoped, id);
 }
 
 export async function listFacts(
   tenantId: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
   opts?: ListByPersonOpts,
 ): Promise<Fact[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listFactsInMemory(repo, scoped, opts)
-    : listFactsInDrizzle(scoped, opts);
+  return store.facts.list(scoped, opts);
 }
 
 export async function createFact(
   tenantId: string,
   input: CreateFactInput,
-  repo?: RolodexRepository,
-  opts?: WriteOpts,
+  store: RolodexStore = defaultStore(),
 ): Promise<Fact> {
   const scoped = requireTenantId(tenantId);
+  await assertPerson(scoped, "personId", input.personId, store);
   const row: Fact = {
     id: newId(),
     tenantId: scoped,
@@ -328,30 +277,25 @@ export async function createFact(
     text: input.text,
     createdAt: now(),
   };
-  if (repo) {
-    return createFactInMemory(repo, row);
-  }
-  return insertFact(row, opts);
+  return store.facts.insert(row);
 }
 
 export async function listNews(
   tenantId: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
   opts?: ListByPersonOpts,
 ): Promise<NewsItem[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listNewsInMemory(repo, scoped, opts)
-    : listNewsInDrizzle(scoped, opts);
+  return store.news.list(scoped, opts);
 }
 
 export async function createNews(
   tenantId: string,
   input: CreateNewsInput,
-  repo?: RolodexRepository,
-  opts?: WriteOpts,
+  store: RolodexStore = defaultStore(),
 ): Promise<NewsItem> {
   const scoped = requireTenantId(tenantId);
+  await assertPerson(scoped, "personId", input.personId, store);
   const row: NewsItem = {
     id: newId(),
     tenantId: scoped,
@@ -360,30 +304,25 @@ export async function createNews(
     date: input.date,
     createdAt: now(),
   };
-  if (repo) {
-    return createNewsInMemory(repo, row);
-  }
-  return insertNews(row, opts);
+  return store.news.insert(row);
 }
 
 export async function listReminders(
   tenantId: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
   opts?: ListByPersonOpts,
 ): Promise<Reminder[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listRemindersInMemory(repo, scoped, opts)
-    : listRemindersInDrizzle(scoped, opts);
+  return store.reminders.list(scoped, opts);
 }
 
 export async function createReminder(
   tenantId: string,
   input: CreateReminderInput,
-  repo?: RolodexRepository,
-  opts?: WriteOpts,
+  store: RolodexStore = defaultStore(),
 ): Promise<Reminder> {
   const scoped = requireTenantId(tenantId);
+  await assertPerson(scoped, "personId", input.personId, store);
   const row: Reminder = {
     id: newId(),
     tenantId: scoped,
@@ -394,53 +333,45 @@ export async function createReminder(
     doneAt: input.doneAt ?? null,
     createdAt: now(),
   };
-  if (repo) {
-    return createReminderInMemory(repo, row);
-  }
-  return insertReminder(row, opts);
+  return store.reminders.insert(row);
 }
 
 export async function getReminder(
   tenantId: string,
   id: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
 ): Promise<Reminder | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? getReminderInMemory(repo, scoped, id)
-    : getReminderInDrizzle(scoped, id);
+  return store.reminders.get(scoped, id);
 }
 
 export async function updateReminder(
   tenantId: string,
   id: string,
   input: { done?: boolean; doneAt?: string | null; text?: string },
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
 ): Promise<Reminder | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? updateReminderInMemory(repo, scoped, id, input)
-    : updateReminderInDrizzle(scoped, id, input);
+  return store.reminders.update(scoped, id, input);
 }
 
 export async function listGifts(
   tenantId: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
   opts?: ListByPersonOpts,
 ): Promise<Gift[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listGiftsInMemory(repo, scoped, opts)
-    : listGiftsInDrizzle(scoped, opts);
+  return store.gifts.list(scoped, opts);
 }
 
 export async function createGift(
   tenantId: string,
   input: CreateGiftInput,
-  repo?: RolodexRepository,
-  opts?: WriteOpts,
+  store: RolodexStore = defaultStore(),
 ): Promise<Gift> {
   const scoped = requireTenantId(tenantId);
+  assertOneOf(GIFT_KINDS, input.kind, "kind", "Invalid gift kind");
+  await assertPerson(scoped, "personId", input.personId, store);
   const row: Gift = {
     id: newId(),
     tenantId: scoped,
@@ -451,41 +382,39 @@ export async function createGift(
     date: input.date,
     createdAt: now(),
   };
-  if (repo) {
-    return createGiftInMemory(repo, row);
-  }
-  return insertGift(row, opts);
+  return store.gifts.insert(row);
 }
 
 export async function deleteGift(
   tenantId: string,
   id: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
 ): Promise<boolean> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? deleteGiftInMemory(repo, scoped, id)
-    : deleteGiftInDrizzle(scoped, id);
+  return store.gifts.delete(scoped, id);
 }
 
 export async function listConnections(
   tenantId: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
   opts?: { personId?: string },
 ): Promise<Connection[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listConnectionsInMemory(repo, scoped, opts)
-    : listConnectionsInDrizzle(scoped, opts);
+  return store.connections.list(scoped, opts);
 }
 
 export async function createConnection(
   tenantId: string,
   input: CreateConnectionInput,
-  repo?: RolodexRepository,
-  opts?: WriteOpts,
+  store: RolodexStore = defaultStore(),
 ): Promise<Connection> {
   const scoped = requireTenantId(tenantId);
+  assertOneOf(CONNECTION_KINDS, input.kind, "kind", "Invalid connection kind");
+  if (input.personA === input.personB) {
+    throw new InputError("personB", "Cannot connect a person to themselves");
+  }
+  await assertPerson(scoped, "personA", input.personA, store);
+  await assertPerson(scoped, "personB", input.personB, store);
   const row: Connection = {
     id: newId(),
     tenantId: scoped,
@@ -498,19 +427,47 @@ export async function createConnection(
     note: input.note ?? null,
     createdAt: now(),
   };
-  if (repo) {
-    return createConnectionInMemory(repo, row);
-  }
-  return insertConnection(row, opts);
+  return store.connections.insert(row);
 }
 
 export async function deleteConnection(
   tenantId: string,
   id: string,
-  repo?: RolodexRepository,
+  store: RolodexStore = defaultStore(),
 ): Promise<boolean> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? deleteConnectionInMemory(repo, scoped, id)
-    : deleteConnectionInDrizzle(scoped, id);
+  return store.connections.delete(scoped, id);
+}
+
+export type ImportedPerson = {
+  person: CreatePersonInput;
+  birthday?: { month: number; day: number; year: number | null } | null;
+};
+
+/** Builds every row first, then hands them over in one all-or-nothing write. */
+export async function createPeople(
+  tenantId: string,
+  entries: ImportedPerson[],
+  store: RolodexStore = defaultStore(),
+): Promise<void> {
+  const scoped = requireTenantId(tenantId);
+  const rows: Person[] = [];
+  const dates: ImportantDate[] = [];
+  for (const { person, birthday } of entries) {
+    assertPersonText(person);
+    const row = personRow(scoped, person);
+    rows.push(row);
+    if (birthday) {
+      dates.push({
+        id: newId(),
+        tenantId: scoped,
+        personId: row.id,
+        type: "birthday",
+        label: null,
+        ...birthday,
+        createdAt: now(),
+      });
+    }
+  }
+  await store.importPeople(rows, dates);
 }

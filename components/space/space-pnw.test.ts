@@ -327,7 +327,11 @@ describe("Space routes and frozen behaviour", () => {
     expect(editorTsx).toContain("DragDropContext");
     expect(editorTsx).toContain("addBlockAfter");
     expect(editorTsx).toContain("reorderBlocksAction");
-    expect(editorTsx).toMatch(/window\.setTimeout\([\s\S]*?,\s*300\)/);
+    // The debounce moved into the save queue; the editor still asks for 300 ms.
+    expect(editorTsx).toMatch(/createSaveQueue[\s\S]*?,\s*300,?\s*\)/);
+    expect(read("lib/space/save-queue.ts")).toMatch(
+      /setTimeout\([\s\S]*?,\s*delayMs\)/,
+    );
   });
 
   it("freezes the sidebar's server actions and accessible names", () => {

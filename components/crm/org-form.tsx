@@ -37,6 +37,7 @@ export function OrgForm({
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
   const [values, setValues] = useState<OrgFormValues>({
     name: organization?.name ?? "",
     website: organization?.website ?? "",
@@ -73,14 +74,19 @@ export function OrgForm({
       notes: emptyToNull(values.notes),
     };
     setPending(true);
+    setSaveFailed(false);
     try {
-      if (organization) {
-        await updateOrganizationAction(organization.id, input);
-      } else {
-        await createOrganizationAction(input);
+      const saved = organization
+        ? await updateOrganizationAction(organization.id, input)
+        : await createOrganizationAction(input);
+      if (saved.ok) {
+        router.refresh();
+        onClose();
+        return;
       }
-      router.refresh();
-      onClose();
+      setSaveFailed(true);
+    } catch {
+      setSaveFailed(true);
     } finally {
       setPending(false);
     }
@@ -96,6 +102,11 @@ export function OrgForm({
         onKeyDown={onDialogKeyDown}
       >
         <h2 id={titleId}>{title}</h2>
+        {saveFailed ? (
+          <p role="alert">
+            Could not save that organization. Check it and try again.
+          </p>
+        ) : null}
         <form onSubmit={onSubmit}>
           <div className={styles["crm-field"]}>
             <label htmlFor="org-name">Name</label>

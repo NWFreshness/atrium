@@ -1,9 +1,10 @@
-import { STAGE_PROBABILITY, type DealStage } from "./constants";
+import { assertOneOf } from "../input/result";
+import { DEAL_STAGES, STAGE_PROBABILITY, type DealStage } from "./constants";
 import {
   getDeal,
   listDeals,
-  updateDeal,
-  type CrmRepository,
+  reorderDeals,
+  type CrmStore,
   type Deal,
 } from "./queries";
 
@@ -19,8 +20,9 @@ export async function moveDeal(
   id: string,
   stage: DealStage,
   index?: number,
-  repo?: CrmRepository,
+  repo?: CrmStore,
 ): Promise<Deal | null> {
+  assertOneOf(DEAL_STAGES, stage, "stage");
   const deal = await getDeal(tenantId, id, repo);
   if (!deal) {
     return null;
@@ -47,24 +49,18 @@ export async function moveDeal(
   const ordered = [...column];
   ordered.splice(insertAt, 0, deal);
 
-  let moved: Deal | null = null;
-  for (let boardOrder = 0; boardOrder < ordered.length; boardOrder += 1) {
-    const row = ordered[boardOrder];
-    if (row.id === id) {
-      moved = await updateDeal(
-        tenantId,
-        id,
-        {
-          stage,
-          boardOrder,
-          ...(stageChanged ? { probability: STAGE_PROBABILITY[stage] } : {}),
-        },
-        repo,
-      );
-      continue;
-    }
-    await updateDeal(tenantId, row.id, { boardOrder }, repo);
-  }
-
-  return moved;
+  // The whole column goes down as one write, so a failure cannot leave gaps.
+  await reorderDeals(
+    tenantId,
+    ordered.map((row, boardOrder) => ({
+      id: row.id,
+      stage,
+      boardOrder,
+      ...(row.id === id && stageChanged
+        ? { probability: STAGE_PROBABILITY[stage] }
+        : {}),
+    })),
+    repo,
+  );
+  return getDeal(tenantId, id, repo);
 }

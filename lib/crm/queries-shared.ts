@@ -97,13 +97,6 @@ export type ListActivitiesOpts = {
   dealId?: string;
 };
 
-export function requireTenantId(tenantId: string): string {
-  if (typeof tenantId !== "string" || tenantId.trim() === "") {
-    throw new Error("tenantId is required");
-  }
-  return tenantId;
-}
-
 export function newId(): string {
   return crypto.randomUUID();
 }
@@ -211,4 +204,21 @@ export function nextProbabilityOnStageChange(
     return STAGE_PROBABILITY[input.stage];
   }
   return undefined;
+}
+
+/**
+ * The store-level refusal when two contacts in one tenant would hold the
+ * same email in any casing. Carries the clashing row so the action layer
+ * can name it and link to it; a bare instance with no `existing` is the
+ * race fallback, where the losing write never saw the winner's row.
+ */
+export class DuplicateContactEmailError extends Error {
+  readonly code = "duplicate_email" as const;
+  readonly existing?: { id: string; name: string; email: string };
+
+  constructor(existing?: { id: string; name: string; email: string }) {
+    super("A contact with this email already exists in this tenant.");
+    this.name = "DuplicateContactEmailError";
+    this.existing = existing;
+  }
 }

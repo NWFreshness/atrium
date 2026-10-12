@@ -38,9 +38,13 @@ const codeOnly = code(source);
  * markup, so a whole-file index comparison would compare the wrong two
  * positions and pass for the wrong reason.
  */
-const thead = codeOnly.slice(
-  codeOnly.indexOf("<thead>"),
-  codeOnly.indexOf("</thead>"),
+/** The shared chrome the table renders through; its header lives there now. */
+const chrome = code(
+  readFileSync(new URL("./crm-table.tsx", import.meta.url), "utf8"),
+);
+const thead = chrome.slice(
+  chrome.indexOf("<thead>"),
+  chrome.indexOf("</thead>"),
 );
 
 /**
@@ -54,16 +58,16 @@ describe("org-table", () => {
   });
 
   it("registers the sorting feature before its dependent row-model slot (AC1)", () => {
-    expect(codeOnly).toContain("rowSortingFeature,");
-    expect(codeOnly).toContain("sortedRowModel: createSortedRowModel()");
+    expect(chrome).toContain("rowSortingFeature,");
+    expect(chrome).toContain("sortedRowModel: createSortedRowModel()");
     // `tableFeatures` validates slot prerequisites in insertion order, so
     // the feature must precede the slot it gates. Dropping the feature while
     // keeping the slot is a type error — the card's injection probe #1.
-    expect(codeOnly.indexOf("rowSortingFeature,")).toBeLessThan(
-      codeOnly.indexOf("sortedRowModel: createSortedRowModel()"),
+    expect(chrome.indexOf("rowSortingFeature,")).toBeLessThan(
+      chrome.indexOf("sortedRowModel: createSortedRowModel()"),
     );
     // The pre-11.4 empty registration, for the record.
-    expect(codeOnly).not.toContain("tableFeatures({})");
+    expect(chrome).not.toContain("tableFeatures({})");
   });
 
   it("carries no v8 sorting fossil (AC2)", () => {
@@ -80,7 +84,7 @@ describe("org-table", () => {
     // option's spelling. Zero occurrences is still the right rule: the
     // tables render `getRowModel()`, the end of the row-model pipeline, so a
     // later edit cannot reach into the sorted model and skip the stages after.
-    expect(codeOnly).toContain("getRowModel()");
+    expect(chrome).toContain("getRowModel()");
   });
 
   it("puts aria-sort on the th, never on the button (AC3, AC4)", () => {
@@ -99,7 +103,7 @@ describe("org-table", () => {
     // `aria-hidden`, so `getByRole("button", { name: "Name" })` matches
     // exactly rather than "Name ▲".
     expect(thead).toContain(
-      'aria-label={String(header.column.columnDef.header)}',
+      "aria-label={String(header.column.columnDef.header)}",
     );
     expect(thead).toContain('aria-hidden="true"');
   });
@@ -135,8 +139,9 @@ describe("org-table", () => {
 
   it("keeps the empty-state branch first (AC7)", () => {
     expect(codeOnly).toContain("No organizations");
-    expect(codeOnly.indexOf('className={styles["crm-empty"]}')).toBeLessThan(
-      codeOnly.indexOf("<table"),
+    expect(codeOnly).toContain("<CrmTable");
+    expect(chrome.indexOf('className={styles["crm-empty"]}')).toBeLessThan(
+      chrome.indexOf("<table"),
     );
   });
 

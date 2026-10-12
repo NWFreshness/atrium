@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { connectionViews, describeConnection } from "./connections";
 import {
   createConnection,
-  createMemoryRolodexRepository,
+  createMemoryRolodexStore,
   createPerson,
   deletePerson,
   listConnections,
@@ -11,7 +11,7 @@ import {
 const tenant = "tenant-a";
 
 async function twoPeople() {
-  const memory = createMemoryRolodexRepository();
+  const memory = createMemoryRolodexStore();
   const sam = await createPerson(tenant, { name: "Sam Rivera" }, memory);
   const kate = await createPerson(tenant, { name: "Kate Okoye" }, memory);
   return { memory, sam, kate };

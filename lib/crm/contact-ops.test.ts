@@ -1,54 +1,48 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { InputError, toResult } from "../input/result";
 import {
-  contactCascadePreviewForSession,
-  createContactForSession,
-  deleteContactForSession,
-  getContactForSession,
-  listContactsForSession,
-  updateContactForSession,
-} from "./contact-actions";
+  contactCascadePreviewIn,
+  createContactIn,
+  deleteContactIn,
+  getContactIn,
+  listContactsIn,
+  updateContactIn,
+} from "./contact-ops";
 import {
   createActivity,
   createContact,
   createDeal,
-  createMemoryCrmRepository,
+  createMemoryCrmStore,
   createOrganization,
   DuplicateContactEmailError,
   duplicateEmailFailure,
   getContact,
   type Contact,
-  type ContactCreateResult,
-  type ContactUpdateResult,
+  type ContactResult,
 } from "./queries";
 
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
 
-const sessionA = {
-  user: {
-    id: "user-a",
-    tenantId: tenantA,
-    role: "owner" as const,
-  },
-};
-
-function getSessionA() {
-  return Promise.resolve(sessionA);
-}
-
 function repo() {
-  return createMemoryCrmRepository();
+  return createMemoryCrmStore();
 }
 
-function unwrap(
-  result: ContactCreateResult | ContactUpdateResult | null,
-): Contact {
-  if (!result || !result.ok) {
+function unwrap(result: ContactResult): Contact {
+  if (!result.ok) {
     throw new Error("expected a successful contact save");
   }
-  return result.contact;
+  return result.value;
+}
+
+/**
+ * What the action answers with: the plain call run through the same mapper the
+ * `"use server"` wrapper uses, without the session.
+ */
+function saving(work: () => Promise<Contact | null>) {
+  return toResult(work, duplicateEmailFailure);
 }
 
 describe("contact session actions", () => {
@@ -56,17 +50,18 @@ describe("contact session actions", () => {
     const memory = repo();
     const org = await createOrganization(tenantA, { name: "Acme" }, memory);
     const created = unwrap(
-      await createContactForSession(
-        getSessionA,
-        {
-          name: "Ada Lovelace",
-          email: "ada@acme.test",
-          jobTitle: "Analyst",
-          organizationId: org.id,
-          status: "lead",
-          tenantId: tenantB,
-        },
-        memory,
+      await saving(() =>
+        createContactIn(
+          tenantA,
+          {
+            name: "Ada Lovelace",
+            email: "ada@acme.test",
+            jobTitle: "Analyst",
+            organizationId: org.id,
+            status: "lead",
+          },
+          memory,
+        ),
       ),
     );
 
@@ -75,66 +70,47 @@ describe("contact session actions", () => {
     expect(created?.organizationId).toBe(org.id);
     expect(await getContact(tenantB, created!.id, memory)).toBeNull();
 
-    expect(await listContactsForSession(getSessionA, {}, memory)).toEqual([
-      created,
-    ]);
-    expect(
-      await getContactForSession(getSessionA, created!.id, memory),
-    ).toEqual(created);
+    expect(await listContactsIn(tenantA, {}, memory)).toEqual([created]);
+    expect(await getContactIn(tenantA, created!.id, memory)).toEqual(created);
 
     const updated = unwrap(
-      await updateContactForSession(
-        getSessionA,
-        created!.id,
-        { status: "qualified", tenantId: tenantB },
-        memory,
+      await saving(() =>
+        updateContactIn(tenantA, created!.id, { status: "qualified" }, memory),
       ),
     );
     expect(updated?.status).toBe("qualified");
     expect(updated?.tenantId).toBe(tenantA);
     expect(updated?.name).toBe("Ada Lovelace");
 
-    const deleted = await deleteContactForSession(
-      getSessionA,
-      created!.id,
-      memory,
-    );
+    const deleted = await deleteContactIn(tenantA, created!.id, memory);
     expect(deleted?.id).toBe(created!.id);
-    expect(
-      await getContactForSession(getSessionA, created!.id, memory),
-    ).toBeNull();
+    expect(await getContactIn(tenantA, created!.id, memory)).toBeNull();
   });
 
   it("lists with search and status against the session tenant only", async () => {
     const memory = repo();
     const ada = unwrap(
-      await createContactForSession(
-        getSessionA,
-        { name: "Ada Lovelace", email: "ada@acme.test", status: "lead" },
-        memory,
+      await saving(() =>
+        createContactIn(
+          tenantA,
+          { name: "Ada Lovelace", email: "ada@acme.test", status: "lead" },
+          memory,
+        ),
       ),
     );
-    await createContactForSession(
-      getSessionA,
-      { name: "Bob Martin", status: "qualified" },
-      memory,
+    await saving(() =>
+      createContactIn(
+        tenantA,
+        { name: "Bob Martin", status: "qualified" },
+        memory,
+      ),
     );
     await createContact(tenantB, { name: "Ada East", status: "lead" }, memory);
 
-    expect(
-      await listContactsForSession(
-        getSessionA,
-        { q: "ada", tenantId: tenantB },
-        memory,
-      ),
-    ).toEqual([ada]);
-    expect(
-      await listContactsForSession(
-        getSessionA,
-        { status: "lead", tenantId: tenantB },
-        memory,
-      ),
-    ).toEqual([ada]);
+    expect(await listContactsIn(tenantA, { q: "ada" }, memory)).toEqual([ada]);
+    expect(await listContactsIn(tenantA, { status: "lead" }, memory)).toEqual([
+      ada,
+    ]);
   });
 
   it("returns null for missing or other-tenant contacts", async () => {
@@ -145,23 +121,12 @@ describe("contact session actions", () => {
       memory,
     );
 
+    expect(await getContactIn(tenantA, other.id, memory)).toBeNull();
+    expect(await getContactIn(tenantA, "missing", memory)).toBeNull();
     expect(
-      await getContactForSession(getSessionA, other.id, memory),
+      await updateContactIn(tenantA, other.id, { name: "Hacked" }, memory),
     ).toBeNull();
-    expect(
-      await getContactForSession(getSessionA, "missing", memory),
-    ).toBeNull();
-    expect(
-      await updateContactForSession(
-        getSessionA,
-        other.id,
-        { name: "Hacked" },
-        memory,
-      ),
-    ).toBeNull();
-    expect(
-      await deleteContactForSession(getSessionA, other.id, memory),
-    ).toBeNull();
+    expect(await deleteContactIn(tenantA, other.id, memory)).toBeNull();
     expect(await getContact(tenantB, other.id, memory)).toMatchObject({
       name: "Bob",
     });
@@ -175,9 +140,9 @@ describe("contact session actions", () => {
       memory,
     );
 
-    expect(
-      await createContactForSession(
-        getSessionA,
+    await expect(
+      createContactIn(
+        tenantA,
         {
           name: "Ada",
           organizationId: otherOrg.id,
@@ -185,38 +150,38 @@ describe("contact session actions", () => {
         },
         memory,
       ),
-    ).toBeNull();
-    expect(await listContactsForSession(getSessionA, {}, memory)).toEqual([]);
+    ).rejects.toBeInstanceOf(InputError);
+    expect(await listContactsIn(tenantA, {}, memory)).toEqual([]);
   });
 
   it("rejects create and update when status is not a contact status", async () => {
     const memory = repo();
-    const created = await createContactForSession(
-      getSessionA,
-      {
-        name: "Ada",
-        status: "prospect" as "lead",
-      },
-      memory,
-    );
-    expect(created).toBeNull();
-    expect(await listContactsForSession(getSessionA, {}, memory)).toEqual([]);
-
-    const lead = unwrap(
-      await createContactForSession(
-        getSessionA,
-        { name: "Ada", status: "lead" },
+    const created = await saving(() =>
+      createContactIn(
+        tenantA,
+        {
+          name: "Ada",
+          status: "prospect" as "lead",
+        },
         memory,
       ),
     );
-    expect(
-      await updateContactForSession(
-        getSessionA,
+    expect(created).toEqual({ ok: false, code: "invalid", field: "status" });
+    expect(await listContactsIn(tenantA, {}, memory)).toEqual([]);
+
+    const lead = unwrap(
+      await saving(() =>
+        createContactIn(tenantA, { name: "Ada", status: "lead" }, memory),
+      ),
+    );
+    await expect(
+      updateContactIn(
+        tenantA,
         lead!.id,
         { status: "prospect" as "lead" },
         memory,
       ),
-    ).toBeNull();
+    ).rejects.toBeInstanceOf(InputError);
     expect(await getContact(tenantA, lead!.id, memory)).toMatchObject({
       status: "lead",
     });
@@ -247,49 +212,30 @@ describe("contact session actions", () => {
     );
 
     await expect(
-      contactCascadePreviewForSession(getSessionA, other.id, memory),
+      contactCascadePreviewIn(tenantA, other.id, memory),
     ).resolves.toEqual({ contacts: 0, deals: 0, activities: 0 });
   });
-
-  it("throws when unauthenticated", async () => {
-    const memory = repo();
-    await expect(
-      createContactForSession(
-        async () => null,
-        { name: "Ada", status: "lead" },
-        memory,
-      ),
-    ).rejects.toThrow("Unauthenticated");
-  });
 });
-
-const sessionB = {
-  user: {
-    id: "user-b",
-    tenantId: tenantB,
-    role: "owner" as const,
-  },
-};
-
-function getSessionB() {
-  return Promise.resolve(sessionB);
-}
 
 describe("contact duplicate-email results", () => {
   it("returns the taken contact for a same-tenant case-variant create", async () => {
     const memory = repo();
     const ana = unwrap(
-      await createContactForSession(
-        getSessionA,
-        { name: "Ana Ruiz", email: "Ana@x.test", status: "lead" },
-        memory,
+      await saving(() =>
+        createContactIn(
+          tenantA,
+          { name: "Ana Ruiz", email: "Ana@x.test", status: "lead" },
+          memory,
+        ),
       ),
     );
 
-    const result = await createContactForSession(
-      getSessionA,
-      { name: "Ana Clone", email: "ana@X.test", status: "lead" },
-      memory,
+    const result = await saving(() =>
+      createContactIn(
+        tenantA,
+        { name: "Ana Clone", email: "ana@X.test", status: "lead" },
+        memory,
+      ),
     );
     expect(result).toEqual({
       ok: false,
@@ -300,16 +246,20 @@ describe("contact duplicate-email results", () => {
 
   it("accepts the same address in another tenant with no existing key", async () => {
     const memory = repo();
-    await createContactForSession(
-      getSessionA,
-      { name: "Ana A", email: "ana@x.test", status: "lead" },
-      memory,
+    await saving(() =>
+      createContactIn(
+        tenantA,
+        { name: "Ana A", email: "ana@x.test", status: "lead" },
+        memory,
+      ),
     );
 
-    const result = await createContactForSession(
-      getSessionB,
-      { name: "Ana B", email: "ANA@X.TEST", status: "lead" },
-      memory,
+    const result = await saving(() =>
+      createContactIn(
+        tenantB,
+        { name: "Ana B", email: "ANA@X.TEST", status: "lead" },
+        memory,
+      ),
     );
     expect(result).toMatchObject({ ok: true });
     expect(result && "existing" in result).toBe(false);
@@ -341,25 +291,26 @@ describe("contact duplicate-email results", () => {
   it("refuses an update onto another contact's address with the linked shape", async () => {
     const memory = repo();
     const ana = unwrap(
-      await createContactForSession(
-        getSessionA,
-        { name: "Ana", email: "ana@x.test", status: "lead" },
-        memory,
+      await saving(() =>
+        createContactIn(
+          tenantA,
+          { name: "Ana", email: "ana@x.test", status: "lead" },
+          memory,
+        ),
       ),
     );
     const bob = unwrap(
-      await createContactForSession(
-        getSessionA,
-        { name: "Bob", email: "bob@x.test", status: "lead" },
-        memory,
+      await saving(() =>
+        createContactIn(
+          tenantA,
+          { name: "Bob", email: "bob@x.test", status: "lead" },
+          memory,
+        ),
       ),
     );
 
-    const refused = await updateContactForSession(
-      getSessionA,
-      bob.id,
-      { email: "ANA@x.test" },
-      memory,
+    const refused = await saving(() =>
+      updateContactIn(tenantA, bob.id, { email: "ANA@x.test" }, memory),
     );
     expect(refused).toEqual({
       ok: false,
@@ -371,21 +322,25 @@ describe("contact duplicate-email results", () => {
   it("keeps an own-address update with the contact", async () => {
     const memory = repo();
     const ana = unwrap(
-      await createContactForSession(
-        getSessionA,
-        { name: "Ana", email: "ANA@x.test", status: "lead" },
-        memory,
+      await saving(() =>
+        createContactIn(
+          tenantA,
+          { name: "Ana", email: "ANA@x.test", status: "lead" },
+          memory,
+        ),
       ),
     );
 
-    const result = await updateContactForSession(
-      getSessionA,
-      ana.id,
-      { email: "ana@x.test", jobTitle: "VP" },
-      memory,
+    const result = await saving(() =>
+      updateContactIn(
+        tenantA,
+        ana.id,
+        { email: "ana@x.test", jobTitle: "VP" },
+        memory,
+      ),
     );
-    expect(result?.ok).toBe(true);
-    expect(result && result.ok ? result.contact : null).toMatchObject({
+    expect(result.ok).toBe(true);
+    expect(result.ok ? result.value : null).toMatchObject({
       id: ana.id,
       email: "ana@x.test",
       jobTitle: "VP",
@@ -416,7 +371,7 @@ describe("contact form duplicate slot", () => {
   });
 
   it("refreshes and closes only on the successful save", () => {
-    expect(source).toMatch(/if \(saved && saved\.ok\) \{[\s\S]*?router\.refresh\(\);/);
+    expect(source).toMatch(/if \(saved\.ok\) \{[\s\S]*?router\.refresh\(\);/);
     expect(source.match(/router\.refresh\(\);/g)).toHaveLength(1);
   });
 

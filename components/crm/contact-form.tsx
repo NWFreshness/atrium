@@ -14,22 +14,9 @@ import {
   createContactAction,
   updateContactAction,
 } from "@/lib/crm/contact-actions";
+import { contactFormInput, type ContactFormValues } from "@/lib/crm/form-input";
 import type { Contact, Organization } from "@/lib/crm/queries";
 import styles from "./org.module.css";
-
-type ContactFormValues = {
-  name: string;
-  email: string;
-  phone: string;
-  jobTitle: string;
-  status: ContactStatus;
-  organizationId: string;
-};
-
-function emptyToNull(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed === "" ? null : trimmed;
-}
 
 export function ContactForm({
   contact,
@@ -76,18 +63,10 @@ export function ContactForm({
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const name = values.name.trim();
-    if (!name) {
+    const input = contactFormInput(values);
+    if (!input) {
       return;
     }
-    const input = {
-      name,
-      email: emptyToNull(values.email),
-      phone: emptyToNull(values.phone),
-      jobTitle: emptyToNull(values.jobTitle),
-      status: values.status,
-      organizationId: emptyToNull(values.organizationId),
-    };
     setPending(true);
     setTaken(null);
     setSaveFailed(false);
@@ -95,16 +74,19 @@ export function ContactForm({
       const saved = contact
         ? await updateContactAction(contact.id, input)
         : await createContactAction(input);
-      if (saved && saved.ok) {
+      if (saved.ok) {
         router.refresh();
         onClose();
         return;
       }
-      if (saved && !saved.ok && saved.existing) {
+      // Only the taken-address refusal carries the contact that holds it.
+      if ("existing" in saved && saved.existing) {
         setTaken(saved.existing);
       } else {
         setSaveFailed(true);
       }
+    } catch {
+      setSaveFailed(true);
     } finally {
       setPending(false);
     }

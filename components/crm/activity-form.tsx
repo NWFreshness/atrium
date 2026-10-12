@@ -51,6 +51,7 @@ export function ActivityForm({
   const typeSelectRef = useRef<HTMLSelectElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const [pending, setPending] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
   const [type, setType] = useState<ActivityType>(activity?.type ?? "note");
   const [description, setDescription] = useState(activity?.description ?? "");
   const [date, setDate] = useState(dateToInputValue(activity?.occurredAt));
@@ -90,29 +91,27 @@ export function ActivityForm({
       return;
     }
     setPending(true);
+    setSaveFailed(false);
     try {
-      if (isEditing && activity) {
-        const updated = await updateActivityAction(activity.id, {
-          type,
-          description: trimmed,
-          occurredAt: inputValueToDate(date),
-          dueDate: inputValueToDate(dueDate),
-          done,
-        });
-        // Null means the row was rejected (gone, wrong tenant, bad type).
-        // The dialog closes either way; the next render reflects the truth.
-        void updated;
+      const fields = {
+        type,
+        description: trimmed,
+        occurredAt: inputValueToDate(date),
+        dueDate: inputValueToDate(dueDate),
+        done,
+      };
+      const saved =
+        isEditing && activity
+          ? await updateActivityAction(activity.id, fields)
+          : await createActivityAction({ ...fields, contactId, dealId });
+      if (!saved.ok) {
+        // Stay open with what was typed; the message says it did not save.
+        setSaveFailed(true);
+        return;
+      }
+      if (isEditing) {
         onClose?.();
       } else {
-        await createActivityAction({
-          type,
-          description: trimmed,
-          contactId,
-          dealId,
-          occurredAt: inputValueToDate(date),
-          dueDate: inputValueToDate(dueDate),
-          done,
-        });
         setType("note");
         setDescription("");
         setDate("");
@@ -120,6 +119,8 @@ export function ActivityForm({
         setDone(false);
       }
       router.refresh();
+    } catch {
+      setSaveFailed(true);
     } finally {
       setPending(false);
     }
@@ -134,6 +135,11 @@ export function ActivityForm({
 
   const body = (
     <form onSubmit={onSubmit}>
+      {saveFailed ? (
+        <p role="alert">
+          Could not save that activity. Check it and try again.
+        </p>
+      ) : null}
       <div className={styles["crm-field"]}>
         <label htmlFor={fieldId("type")}>Type</label>
         <select

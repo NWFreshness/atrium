@@ -1,82 +1,17 @@
-import type { WriteOpts } from "../db/batch-transaction";
+import { assertOneOf, InputError } from "../input/result";
 import { assertText, MAX_BLOCK_TEXT, MAX_SHORT_TEXT } from "../input/text";
-import type { ViewKind } from "./constants";
 import {
-  createBlockInMemory,
-  createPageInMemory,
-  createPropertyInMemory,
-  createPropertyOptionInMemory,
-  createRowValueInMemory,
-  createViewInMemory,
-  deleteBlockInMemory,
-  deletePageInMemory,
-  deletePropertyInMemory,
-  deletePropertyOptionInMemory,
-  deleteRowValueInMemory,
-  deleteViewInMemory,
-  getBlockInMemory,
-  getPageInMemory,
-  getPropertyInMemory,
-  getPropertyOptionInMemory,
-  getRowValueInMemory,
-  getViewInMemory,
-  listBlocksInMemory,
-  listPagesInMemory,
-  listPropertiesInMemory,
-  listPropertyOptionsInMemory,
-  listRowValuesInMemory,
-  listViewsInMemory,
-  nextBlockPositionInMemory,
-  nextPagePositionInMemory,
-  nextPropertyOptionPositionInMemory,
-  nextPropertyPositionInMemory,
-  updateBlockInMemory,
-  updatePageInMemory,
-  updatePropertyInMemory,
-  updatePropertyOptionInMemory,
-  updateRowValueInMemory,
-  updateViewInMemory,
-} from "./queries-memory";
-import {
-  deleteBlockInDrizzle,
-  deletePageInDrizzle,
-  deletePropertyInDrizzle,
-  deletePropertyOptionInDrizzle,
-  deleteRowValueInDrizzle,
-  deleteViewInDrizzle,
-  getBlockInDrizzle,
-  getPageInDrizzle,
-  getPropertyInDrizzle,
-  getPropertyOptionInDrizzle,
-  getRowValueInDrizzle,
-  getViewInDrizzle,
-  insertBlock,
-  insertPage,
-  insertProperty,
-  insertPropertyOption,
-  insertRowValue,
-  insertView,
-  listBlocksInDrizzle,
-  listPagesInDrizzle,
-  listPropertiesInDrizzle,
-  listPropertyOptionsInDrizzle,
-  listRowValuesInDrizzle,
-  listViewsInDrizzle,
-  nextBlockPositionInDrizzle,
-  nextPagePositionInDrizzle,
-  nextPropertyOptionPositionInDrizzle,
-  nextPropertyPositionInDrizzle,
-  updateBlockInDrizzle,
-  updatePageInDrizzle,
-  updatePropertyInDrizzle,
-  updatePropertyOptionInDrizzle,
-  updateRowValueInDrizzle,
-  updateViewInDrizzle,
-} from "./queries-drizzle";
+  BLOCK_TYPES,
+  PAGE_TYPES,
+  PROPERTY_TYPES,
+  VIEW_KINDS,
+  type ViewKind,
+} from "./constants";
+import { getDb } from "../db";
+import { createDrizzleSpaceStore, type SpaceStore } from "./store";
 import {
   newId,
   now,
-  requireTenantId,
   type Block,
   type CreateBlockInput,
   type CreatePageInput,
@@ -94,7 +29,6 @@ import {
   type Property,
   type PropertyOption,
   type RowValue,
-  type SpaceRepository,
   type UpdateBlockInput,
   type UpdatePageInput,
   type UpdatePropertyInput,
@@ -103,8 +37,18 @@ import {
   type UpdateViewInput,
   type View,
 } from "./queries-shared";
+import { requireTenantId } from "../tenancy";
 
 export { createMemorySpaceRepository } from "./queries-memory";
+export { createMemorySpaceStore, type SpaceStore } from "./store";
+
+/** Production storage. Resolved per call so a test that injects a store never opens a database. */
+function defaultStore(): SpaceStore {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("Space store required");
+  }
+  return createDrizzleSpaceStore(getDb());
+}
 
 function short(value: unknown) {
   return assertText(value, MAX_SHORT_TEXT);
@@ -150,44 +94,57 @@ export type {
 
 export async function listPages(
   tenantId: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
   opts?: ListPagesOpts,
 ): Promise<Page[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listPagesInMemory(repo, scoped, opts)
-    : listPagesInDrizzle(scoped, opts);
+  return store.pages.list(scoped, opts);
 }
 
 export async function getPage(
   tenantId: string,
   id: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Page | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? getPageInMemory(repo, scoped, id)
-    : getPageInDrizzle(scoped, id);
+  return store.pages.get(scoped, id);
 }
 
-/**
- * A batched write cannot look a default up: the rows it is about to replace are
- * still there (the wipe travels in the same batch) and there is no database
- * handle to ask, so a caller collecting statements has to bring its own value.
- * The guard is here, before the row is built, so no `max(...)` read is even
- * reachable while a batch is open.
- */
+/** The tenant's own page, or a rejection: another tenant's id reads as missing. */
+export async function requirePage(
+  tenantId: string,
+  id: string,
+  store: SpaceStore = defaultStore(),
+  field = "pageId",
+): Promise<Page> {
+  const page = await getPage(tenantId, id, store);
+  if (!page) {
+    throw new InputError(field, "Page not found");
+  }
+  return page;
+}
+
+export async function requireDatabase(
+  tenantId: string,
+  id: string,
+  store: SpaceStore = defaultStore(),
+): Promise<Page> {
+  const page = await getPage(tenantId, id, store);
+  if (!page || page.type !== "database") {
+    throw new InputError("databaseId", "Page not found");
+  }
+  return page;
+}
+
 export async function createPage(
   tenantId: string,
   input: CreatePageInput,
-  repo?: SpaceRepository,
-  opts?: WriteOpts,
+  store: SpaceStore = defaultStore(),
 ): Promise<Page> {
   const scoped = requireTenantId(tenantId);
-  if (opts?.batch && input.position === undefined) {
-    throw new Error(
-      "createPage needs an explicit `position` when its writes are collected into a batch",
-    );
+  assertOneOf(PAGE_TYPES, input.type ?? "page", "type");
+  if (input.parentId) {
+    await requirePage(scoped, input.parentId, store, "parentId");
   }
   const parentId = input.parentId ?? null;
   const createdAt = now();
@@ -199,113 +156,128 @@ export async function createPage(
     title: short(input.title) as string,
     icon: input.icon ?? null,
     position:
-      input.position ??
-      (repo
-        ? nextPagePositionInMemory(repo, scoped, parentId)
-        : await nextPagePositionInDrizzle(scoped, parentId)),
+      input.position ?? (await store.pages.nextPosition(scoped, parentId)),
     createdAt,
     updatedAt: createdAt,
   };
-  return repo ? createPageInMemory(repo, row) : insertPage(row, opts);
+  // A page is never born empty: the editor needs a block to type into, and
+  // creating it here keeps the page render free of writes.
+  const opening =
+    input.blocks ??
+    (row.type === "database"
+      ? []
+      : [{ type: "paragraph" as const, content: { text: "" } }]);
+  return store.pages.insert(
+    row,
+    opening.map((block, position) => blockRow(scoped, row.id, block, position)),
+  );
 }
 
 export async function updatePage(
   tenantId: string,
   id: string,
   input: UpdatePageInput,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Page | null> {
   const scoped = requireTenantId(tenantId);
   if (input.title !== undefined) short(input.title);
   const updatedAt = now();
-  return repo
-    ? updatePageInMemory(repo, scoped, id, input, updatedAt)
-    : updatePageInDrizzle(scoped, id, input, updatedAt);
+  return store.pages.update(scoped, id, input, updatedAt);
 }
 
 export async function deletePage(
   tenantId: string,
   id: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Page | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? deletePageInMemory(repo, scoped, id)
-    : deletePageInDrizzle(scoped, id);
+  return store.pages.delete(scoped, id);
 }
 
 export async function listBlocks(
   tenantId: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
   opts?: ListBlocksOpts,
 ): Promise<Block[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listBlocksInMemory(repo, scoped, opts)
-    : listBlocksInDrizzle(scoped, opts);
+  return store.blocks.list(scoped, opts);
 }
 
 export async function getBlock(
   tenantId: string,
   id: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Block | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? getBlockInMemory(repo, scoped, id)
-    : getBlockInDrizzle(scoped, id);
+  return store.blocks.get(scoped, id);
+}
+
+/** Validates one block and builds its row. Pure: no reads, no writes. */
+function blockRow(
+  tenantId: string,
+  pageId: string,
+  input: Pick<CreateBlockInput, "type" | "content">,
+  position: number,
+): Block {
+  assertOneOf(BLOCK_TYPES, input.type, "type");
+  assertBlockContent(input.content);
+  return {
+    id: newId(),
+    tenantId,
+    pageId,
+    type: input.type,
+    content: input.content ?? {},
+    position,
+  };
+}
+
+/** A validated block for an existing page; the caller decides how it is written. */
+async function newBlock(
+  tenantId: string,
+  input: CreateBlockInput,
+  store: SpaceStore = defaultStore(),
+): Promise<Block> {
+  const scoped = requireTenantId(tenantId);
+  assertOneOf(BLOCK_TYPES, input.type, "type");
+  await requirePage(scoped, input.pageId, store);
+  return blockRow(
+    scoped,
+    input.pageId,
+    input,
+    input.position ?? (await store.blocks.nextPosition(scoped, input.pageId)),
+  );
 }
 
 export async function createBlock(
   tenantId: string,
   input: CreateBlockInput,
-  repo?: SpaceRepository,
-  opts?: WriteOpts,
+  store: SpaceStore = defaultStore(),
 ): Promise<Block> {
-  const scoped = requireTenantId(tenantId);
-  if (opts?.batch && input.position === undefined) {
-    throw new Error(
-      "createBlock needs an explicit `position` when its writes are collected into a batch",
-    );
-  }
-  assertBlockContent(input.content);
-  const row: Block = {
-    id: newId(),
-    tenantId: scoped,
-    pageId: input.pageId,
-    type: input.type,
-    content: input.content ?? {},
-    position:
-      input.position ??
-      (repo
-        ? nextBlockPositionInMemory(repo, scoped, input.pageId)
-        : await nextBlockPositionInDrizzle(scoped, input.pageId)),
-  };
-  return repo ? createBlockInMemory(repo, row) : insertBlock(row, opts);
+  const row = await newBlock(tenantId, input, store);
+  return store.blocks.insert(row);
 }
 
 export async function updateBlock(
   tenantId: string,
   id: string,
   input: UpdateBlockInput,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Block | null> {
   const scoped = requireTenantId(tenantId);
+  if (input.type !== undefined) {
+    assertOneOf(BLOCK_TYPES, input.type, "type");
+  }
   if (input.content !== undefined) assertBlockContent(input.content);
-  return repo
-    ? updateBlockInMemory(repo, scoped, id, input)
-    : updateBlockInDrizzle(scoped, id, input);
+  return store.blocks.update(scoped, id, input);
 }
 
 export async function deleteBlock(
   tenantId: string,
   id: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Block | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? deleteBlockInMemory(repo, scoped, id)
-    : deleteBlockInDrizzle(scoped, id);
+  return store.blocks.delete(scoped, id);
 }
 
 export async function insertBlockAt(
@@ -313,25 +285,34 @@ export async function insertBlockAt(
   pageId: string,
   index: number,
   input: Pick<CreateBlockInput, "type" | "content">,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Block> {
   const scoped = requireTenantId(tenantId);
-  const existing = await listBlocks(scoped, repo, { pageId });
+  const existing = await listBlocks(scoped, store, { pageId });
   const insertAt = Math.max(0, Math.min(index, existing.length));
-  for (const row of existing) {
-    if (row.position >= insertAt) {
-      await updateBlock(scoped, row.id, { position: row.position + 1 }, repo);
-    }
-  }
-  return createBlock(
+  const row = await newBlock(
     scoped,
-    {
-      pageId,
-      type: input.type,
-      content: input.content,
-      position: insertAt,
-    },
-    repo,
+    { pageId, type: input.type, content: input.content, position: insertAt },
+    store,
+  );
+  // The shift and the insert go down together, so a failure cannot leave a gap.
+  await store.blocks.reorder(
+    scoped,
+    existing
+      .filter((block) => block.position >= insertAt)
+      .map((block) => ({ id: block.id, position: block.position + 1 })),
+    row,
+  );
+  return row;
+}
+
+/** True when `orderedIds` is exactly the current rows, in some order. */
+function sameIds(current: { id: string }[], orderedIds: string[]): boolean {
+  const currentIds = current.map((row) => row.id).sort();
+  const nextIds = [...orderedIds].sort();
+  return (
+    currentIds.length === nextIds.length &&
+    currentIds.every((id, i) => id === nextIds[i])
   );
 }
 
@@ -339,59 +320,69 @@ export async function reorderBlocks(
   tenantId: string,
   pageId: string,
   orderedIds: string[],
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Block[] | null> {
   const scoped = requireTenantId(tenantId);
-  const current = await listBlocks(scoped, repo, { pageId });
-  const currentIds = [...current.map((row) => row.id)].sort();
-  const nextIds = [...orderedIds].sort();
-  if (
-    currentIds.length !== nextIds.length ||
-    currentIds.some((id, i) => id !== nextIds[i])
-  ) {
+  const current = await listBlocks(scoped, store, { pageId });
+  if (!sameIds(current, orderedIds)) {
     return null;
   }
-  for (let position = 0; position < orderedIds.length; position += 1) {
-    const id = orderedIds[position]!;
-    await updateBlock(scoped, id, { position }, repo);
+  await store.blocks.reorder(
+    scoped,
+    orderedIds.map((id, position) => ({ id, position })),
+  );
+  return listBlocks(scoped, store, { pageId });
+}
+
+/** Reorders the row pages of one database; anything but its exact rows is refused. */
+export async function reorderRows(
+  tenantId: string,
+  databaseId: string,
+  orderedIds: string[],
+  store: SpaceStore = defaultStore(),
+): Promise<Page[] | null> {
+  const scoped = requireTenantId(tenantId);
+  const rows = async () =>
+    (await listPages(scoped, store, { parentId: databaseId })).filter(
+      (page) => page.type === "row",
+    );
+  if (!sameIds(await rows(), orderedIds)) {
+    return null;
   }
-  return listBlocks(scoped, repo, { pageId });
+  await store.pages.reorder(
+    scoped,
+    orderedIds.map((id, position) => ({ id, position })),
+    now(),
+  );
+  return rows();
 }
 
 export async function listProperties(
   tenantId: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
   opts?: ListPropertiesOpts,
 ): Promise<Property[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listPropertiesInMemory(repo, scoped, opts)
-    : listPropertiesInDrizzle(scoped, opts);
+  return store.properties.list(scoped, opts);
 }
 
 export async function getProperty(
   tenantId: string,
   id: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Property | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? getPropertyInMemory(repo, scoped, id)
-    : getPropertyInDrizzle(scoped, id);
+  return store.properties.get(scoped, id);
 }
 
 export async function createProperty(
   tenantId: string,
   input: CreatePropertyInput,
-  repo?: SpaceRepository,
-  opts?: WriteOpts,
+  store: SpaceStore = defaultStore(),
 ): Promise<Property> {
   const scoped = requireTenantId(tenantId);
-  if (opts?.batch && input.position === undefined) {
-    throw new Error(
-      "createProperty needs an explicit `position` when its writes are collected into a batch",
-    );
-  }
+  assertOneOf(PROPERTY_TYPES, input.type, "type");
+  await requireDatabase(scoped, input.databaseId, store);
   const row: Property = {
     id: newId(),
     tenantId: scoped,
@@ -400,69 +391,56 @@ export async function createProperty(
     type: input.type,
     position:
       input.position ??
-      (repo
-        ? nextPropertyPositionInMemory(repo, scoped, input.databaseId)
-        : await nextPropertyPositionInDrizzle(scoped, input.databaseId)),
+      (await store.properties.nextPosition(scoped, input.databaseId)),
   };
-  return repo ? createPropertyInMemory(repo, row) : insertProperty(row, opts);
+  return store.properties.insert(row);
 }
 
 export async function updateProperty(
   tenantId: string,
   id: string,
   input: UpdatePropertyInput,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Property | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? updatePropertyInMemory(repo, scoped, id, input)
-    : updatePropertyInDrizzle(scoped, id, input);
+  return store.properties.update(scoped, id, input);
 }
 
 export async function deleteProperty(
   tenantId: string,
   id: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<Property | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? deletePropertyInMemory(repo, scoped, id)
-    : deletePropertyInDrizzle(scoped, id);
+  return store.properties.delete(scoped, id);
 }
 
 export async function listPropertyOptions(
   tenantId: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
   opts?: ListPropertyOptionsOpts,
 ): Promise<PropertyOption[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listPropertyOptionsInMemory(repo, scoped, opts)
-    : listPropertyOptionsInDrizzle(scoped, opts);
+  return store.propertyOptions.list(scoped, opts);
 }
 
 export async function getPropertyOption(
   tenantId: string,
   id: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<PropertyOption | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? getPropertyOptionInMemory(repo, scoped, id)
-    : getPropertyOptionInDrizzle(scoped, id);
+  return store.propertyOptions.get(scoped, id);
 }
 
 export async function createPropertyOption(
   tenantId: string,
   input: CreatePropertyOptionInput,
-  repo?: SpaceRepository,
-  opts?: WriteOpts,
+  store: SpaceStore = defaultStore(),
 ): Promise<PropertyOption> {
   const scoped = requireTenantId(tenantId);
-  if (opts?.batch && input.position === undefined) {
-    throw new Error(
-      "createPropertyOption needs an explicit `position` when its writes are collected into a batch",
-    );
+  if (!(await getProperty(scoped, input.propertyId, store))) {
+    throw new InputError("propertyId", "Page not found");
   }
   const row: PropertyOption = {
     id: newId(),
@@ -472,66 +450,53 @@ export async function createPropertyOption(
     color: input.color,
     position:
       input.position ??
-      (repo
-        ? nextPropertyOptionPositionInMemory(repo, scoped, input.propertyId)
-        : await nextPropertyOptionPositionInDrizzle(scoped, input.propertyId)),
+      (await store.propertyOptions.nextPosition(scoped, input.propertyId)),
   };
-  return repo
-    ? createPropertyOptionInMemory(repo, row)
-    : insertPropertyOption(row, opts);
+  return store.propertyOptions.insert(row);
 }
 
 export async function updatePropertyOption(
   tenantId: string,
   id: string,
   input: UpdatePropertyOptionInput,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<PropertyOption | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? updatePropertyOptionInMemory(repo, scoped, id, input)
-    : updatePropertyOptionInDrizzle(scoped, id, input);
+  return store.propertyOptions.update(scoped, id, input);
 }
 
 export async function deletePropertyOption(
   tenantId: string,
   id: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<PropertyOption | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? deletePropertyOptionInMemory(repo, scoped, id)
-    : deletePropertyOptionInDrizzle(scoped, id);
+  return store.propertyOptions.delete(scoped, id);
 }
 
 export async function listRowValues(
   tenantId: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
   opts?: ListRowValuesOpts,
 ): Promise<RowValue[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listRowValuesInMemory(repo, scoped, opts)
-    : listRowValuesInDrizzle(scoped, opts);
+  return store.rowValues.list(scoped, opts);
 }
 
 export async function getRowValue(
   tenantId: string,
   rowId: string,
   propertyId: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<RowValue | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? getRowValueInMemory(repo, scoped, rowId, propertyId)
-    : getRowValueInDrizzle(scoped, rowId, propertyId);
+  return store.rowValues.get(scoped, rowId, propertyId);
 }
 
 export async function createRowValue(
   tenantId: string,
   input: CreateRowValueInput,
-  repo?: SpaceRepository,
-  opts?: WriteOpts,
+  store: SpaceStore = defaultStore(),
 ): Promise<RowValue> {
   const scoped = requireTenantId(tenantId);
   const row: RowValue = {
@@ -540,7 +505,7 @@ export async function createRowValue(
     propertyId: input.propertyId,
     value: input.value ?? null,
   };
-  return repo ? createRowValueInMemory(repo, row) : insertRowValue(row, opts);
+  return store.rowValues.insert(row);
 }
 
 export async function updateRowValue(
@@ -548,63 +513,56 @@ export async function updateRowValue(
   rowId: string,
   propertyId: string,
   input: UpdateRowValueInput,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<RowValue | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? updateRowValueInMemory(repo, scoped, rowId, propertyId, input)
-    : updateRowValueInDrizzle(scoped, rowId, propertyId, input);
+  return store.rowValues.update(scoped, rowId, propertyId, input);
 }
 
 export async function deleteRowValue(
   tenantId: string,
   rowId: string,
   propertyId: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<RowValue | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? deleteRowValueInMemory(repo, scoped, rowId, propertyId)
-    : deleteRowValueInDrizzle(scoped, rowId, propertyId);
+  return store.rowValues.delete(scoped, rowId, propertyId);
 }
 
 export async function listViews(
   tenantId: string,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
   opts?: ListViewsOpts,
 ): Promise<View[]> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? listViewsInMemory(repo, scoped, opts)
-    : listViewsInDrizzle(scoped, opts);
+  return store.views.list(scoped, opts);
 }
 
 export async function getView(
   tenantId: string,
   databaseId: string,
   kind: ViewKind,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<View | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? getViewInMemory(repo, scoped, databaseId, kind)
-    : getViewInDrizzle(scoped, databaseId, kind);
+  return store.views.get(scoped, databaseId, kind);
 }
 
 export async function createView(
   tenantId: string,
   input: CreateViewInput,
-  repo?: SpaceRepository,
-  opts?: WriteOpts,
+  store: SpaceStore = defaultStore(),
 ): Promise<View> {
   const scoped = requireTenantId(tenantId);
+  assertOneOf(VIEW_KINDS, input.kind, "kind");
+  await requireDatabase(scoped, input.databaseId, store);
   const row: View = {
     tenantId: scoped,
     databaseId: input.databaseId,
     kind: input.kind,
     config: input.config ?? {},
   };
-  return repo ? createViewInMemory(repo, row) : insertView(row, opts);
+  return store.views.insert(row);
 }
 
 export async function updateView(
@@ -612,22 +570,18 @@ export async function updateView(
   databaseId: string,
   kind: ViewKind,
   input: UpdateViewInput,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<View | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? updateViewInMemory(repo, scoped, databaseId, kind, input)
-    : updateViewInDrizzle(scoped, databaseId, kind, input);
+  return store.views.update(scoped, databaseId, kind, input);
 }
 
 export async function deleteView(
   tenantId: string,
   databaseId: string,
   kind: ViewKind,
-  repo?: SpaceRepository,
+  store: SpaceStore = defaultStore(),
 ): Promise<View | null> {
   const scoped = requireTenantId(tenantId);
-  return repo
-    ? deleteViewInMemory(repo, scoped, databaseId, kind)
-    : deleteViewInDrizzle(scoped, databaseId, kind);
+  return store.views.delete(scoped, databaseId, kind);
 }

@@ -1,6 +1,5 @@
-import { and, eq, isNull, max } from "drizzle-orm";
-import { getDb } from "../db";
-import type { WriteOpts } from "../db/batch-transaction";
+import { and, eq, inArray, isNull, max } from "drizzle-orm";
+import type { Database } from "../db";
 import type { ViewKind } from "./constants";
 import {
   type Block,
@@ -21,7 +20,6 @@ import {
   type UpdateRowValueInput,
   type UpdateViewInput,
   type View,
-  clone,
 } from "./queries-shared";
 import {
   blocks,
@@ -31,13 +29,6 @@ import {
   rowValues,
   views,
 } from "./schema";
-
-function requireSpaceDb() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("Space store required");
-  }
-  return getDb();
-}
 
 function tenantRow(
   table:
@@ -49,12 +40,13 @@ function tenantRow(
 }
 
 export async function nextPagePositionInDrizzle(
+  db: Database,
   tenantId: string,
   parentId: string | null,
 ): Promise<number> {
   const parentFilter =
     parentId === null ? isNull(pages.parentId) : eq(pages.parentId, parentId);
-  const [agg] = await requireSpaceDb()
+  const [agg] = await db
     .select({ maxOrder: max(pages.position) })
     .from(pages)
     .where(and(eq(pages.tenantId, tenantId), parentFilter));
@@ -62,10 +54,11 @@ export async function nextPagePositionInDrizzle(
 }
 
 export async function nextBlockPositionInDrizzle(
+  db: Database,
   tenantId: string,
   pageId: string,
 ): Promise<number> {
-  const [agg] = await requireSpaceDb()
+  const [agg] = await db
     .select({ maxOrder: max(blocks.position) })
     .from(blocks)
     .where(and(eq(blocks.tenantId, tenantId), eq(blocks.pageId, pageId)));
@@ -74,10 +67,11 @@ export async function nextBlockPositionInDrizzle(
 }
 
 export async function nextPropertyPositionInDrizzle(
+  db: Database,
   tenantId: string,
   databaseId: string,
 ): Promise<number> {
-  const [agg] = await requireSpaceDb()
+  const [agg] = await db
     .select({ maxOrder: max(properties.position) })
     .from(properties)
     .where(
@@ -91,10 +85,11 @@ export async function nextPropertyPositionInDrizzle(
 }
 
 export async function nextPropertyOptionPositionInDrizzle(
+  db: Database,
   tenantId: string,
   propertyId: string,
 ): Promise<number> {
-  const [agg] = await requireSpaceDb()
+  const [agg] = await db
     .select({ maxOrder: max(propertyOptions.position) })
     .from(propertyOptions)
     .where(
@@ -108,6 +103,7 @@ export async function nextPropertyOptionPositionInDrizzle(
 }
 
 export async function listPagesInDrizzle(
+  db: Database,
   tenantId: string,
   opts?: ListPagesOpts,
 ): Promise<Page[]> {
@@ -121,7 +117,7 @@ export async function listPagesInDrizzle(
             : eq(pages.parentId, opts.parentId),
         ]),
   ];
-  return requireSpaceDb()
+  return db
     .select()
     .from(pages)
     .where(and(...filters))
@@ -129,10 +125,11 @@ export async function listPagesInDrizzle(
 }
 
 export async function getPageInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
 ): Promise<Page | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .select()
     .from(pages)
     .where(tenantRow(pages, tenantId, id))
@@ -140,26 +137,19 @@ export async function getPageInDrizzle(
   return row ?? null;
 }
 
-export async function insertPage(row: Page, opts?: WriteOpts): Promise<Page> {
-  if (opts?.batch) {
-    opts.batch.insert(pages, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireSpaceDb()
-    .insert(pages)
-    .values(row)
-    .returning();
+export async function insertPage(db: Database, row: Page): Promise<Page> {
+  const [inserted] = await db.insert(pages).values(row).returning();
   return inserted;
 }
 
 export async function updatePageInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
   input: UpdatePageInput,
   updatedAt: Date,
 ): Promise<Page | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .update(pages)
     .set({
       ...(input.title !== undefined ? { title: input.title } : {}),
@@ -175,10 +165,11 @@ export async function updatePageInDrizzle(
 }
 
 export async function deletePageInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
 ): Promise<Page | null> {
-  const [removed] = await requireSpaceDb()
+  const [removed] = await db
     .delete(pages)
     .where(tenantRow(pages, tenantId, id))
     .returning();
@@ -186,6 +177,7 @@ export async function deletePageInDrizzle(
 }
 
 export async function listBlocksInDrizzle(
+  db: Database,
   tenantId: string,
   opts?: ListBlocksOpts,
 ): Promise<Block[]> {
@@ -193,7 +185,7 @@ export async function listBlocksInDrizzle(
     eq(blocks.tenantId, tenantId),
     ...(opts?.pageId !== undefined ? [eq(blocks.pageId, opts.pageId)] : []),
   ];
-  return requireSpaceDb()
+  return db
     .select()
     .from(blocks)
     .where(and(...filters))
@@ -201,10 +193,11 @@ export async function listBlocksInDrizzle(
 }
 
 export async function getBlockInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
 ): Promise<Block | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .select()
     .from(blocks)
     .where(tenantRow(blocks, tenantId, id))
@@ -212,28 +205,18 @@ export async function getBlockInDrizzle(
   return row ?? null;
 }
 
-export async function insertBlock(
-  row: Block,
-  opts?: WriteOpts,
-): Promise<Block> {
-  if (opts?.batch) {
-    opts.batch.insert(blocks, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireSpaceDb()
-    .insert(blocks)
-    .values(row)
-    .returning();
+export async function insertBlock(db: Database, row: Block): Promise<Block> {
+  const [inserted] = await db.insert(blocks).values(row).returning();
   return inserted;
 }
 
 export async function updateBlockInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
   input: UpdateBlockInput,
 ): Promise<Block | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .update(blocks)
     .set({
       ...(input.pageId !== undefined ? { pageId: input.pageId } : {}),
@@ -247,10 +230,11 @@ export async function updateBlockInDrizzle(
 }
 
 export async function deleteBlockInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
 ): Promise<Block | null> {
-  const [removed] = await requireSpaceDb()
+  const [removed] = await db
     .delete(blocks)
     .where(tenantRow(blocks, tenantId, id))
     .returning();
@@ -258,6 +242,7 @@ export async function deleteBlockInDrizzle(
 }
 
 export async function listPropertiesInDrizzle(
+  db: Database,
   tenantId: string,
   opts?: ListPropertiesOpts,
 ): Promise<Property[]> {
@@ -267,7 +252,7 @@ export async function listPropertiesInDrizzle(
       ? [eq(properties.databaseId, opts.databaseId)]
       : []),
   ];
-  return requireSpaceDb()
+  return db
     .select()
     .from(properties)
     .where(and(...filters))
@@ -275,10 +260,11 @@ export async function listPropertiesInDrizzle(
 }
 
 export async function getPropertyInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
 ): Promise<Property | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .select()
     .from(properties)
     .where(tenantRow(properties, tenantId, id))
@@ -287,27 +273,20 @@ export async function getPropertyInDrizzle(
 }
 
 export async function insertProperty(
+  db: Database,
   row: Property,
-  opts?: WriteOpts,
 ): Promise<Property> {
-  if (opts?.batch) {
-    opts.batch.insert(properties, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireSpaceDb()
-    .insert(properties)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(properties).values(row).returning();
   return inserted;
 }
 
 export async function updatePropertyInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
   input: UpdatePropertyInput,
 ): Promise<Property | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .update(properties)
     .set({
       ...(input.name !== undefined ? { name: input.name } : {}),
@@ -319,17 +298,32 @@ export async function updatePropertyInDrizzle(
 }
 
 export async function deletePropertyInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
 ): Promise<Property | null> {
-  const [removed] = await requireSpaceDb()
+  const [removed] = await db
     .delete(properties)
     .where(tenantRow(properties, tenantId, id))
     .returning();
   return removed ?? null;
 }
 
+/** Subquery: the ids of one database's properties, inside the tenant. */
+function propertyIdsOf(db: Database, tenantId: string, databaseId: string) {
+  return db
+    .select({ id: properties.id })
+    .from(properties)
+    .where(
+      and(
+        eq(properties.tenantId, tenantId),
+        eq(properties.databaseId, databaseId),
+      ),
+    );
+}
+
 export async function listPropertyOptionsInDrizzle(
+  db: Database,
   tenantId: string,
   opts?: ListPropertyOptionsOpts,
 ): Promise<PropertyOption[]> {
@@ -338,8 +332,16 @@ export async function listPropertyOptionsInDrizzle(
     ...(opts?.propertyId !== undefined
       ? [eq(propertyOptions.propertyId, opts.propertyId)]
       : []),
+    ...(opts?.databaseId !== undefined
+      ? [
+          inArray(
+            propertyOptions.propertyId,
+            propertyIdsOf(db, tenantId, opts.databaseId),
+          ),
+        ]
+      : []),
   ];
-  return requireSpaceDb()
+  return db
     .select()
     .from(propertyOptions)
     .where(and(...filters))
@@ -347,10 +349,11 @@ export async function listPropertyOptionsInDrizzle(
 }
 
 export async function getPropertyOptionInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
 ): Promise<PropertyOption | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .select()
     .from(propertyOptions)
     .where(tenantRow(propertyOptions, tenantId, id))
@@ -359,27 +362,20 @@ export async function getPropertyOptionInDrizzle(
 }
 
 export async function insertPropertyOption(
+  db: Database,
   row: PropertyOption,
-  opts?: WriteOpts,
 ): Promise<PropertyOption> {
-  if (opts?.batch) {
-    opts.batch.insert(propertyOptions, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireSpaceDb()
-    .insert(propertyOptions)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(propertyOptions).values(row).returning();
   return inserted;
 }
 
 export async function updatePropertyOptionInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
   input: UpdatePropertyOptionInput,
 ): Promise<PropertyOption | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .update(propertyOptions)
     .set({
       ...(input.name !== undefined ? { name: input.name } : {}),
@@ -392,10 +388,11 @@ export async function updatePropertyOptionInDrizzle(
 }
 
 export async function deletePropertyOptionInDrizzle(
+  db: Database,
   tenantId: string,
   id: string,
 ): Promise<PropertyOption | null> {
-  const [removed] = await requireSpaceDb()
+  const [removed] = await db
     .delete(propertyOptions)
     .where(tenantRow(propertyOptions, tenantId, id))
     .returning();
@@ -403,6 +400,7 @@ export async function deletePropertyOptionInDrizzle(
 }
 
 export async function listRowValuesInDrizzle(
+  db: Database,
   tenantId: string,
   opts?: ListRowValuesOpts,
 ): Promise<RowValue[]> {
@@ -412,19 +410,28 @@ export async function listRowValuesInDrizzle(
     ...(opts?.propertyId !== undefined
       ? [eq(rowValues.propertyId, opts.propertyId)]
       : []),
+    ...(opts?.databaseId !== undefined
+      ? [
+          inArray(
+            rowValues.propertyId,
+            propertyIdsOf(db, tenantId, opts.databaseId),
+          ),
+        ]
+      : []),
   ];
-  return requireSpaceDb()
+  return db
     .select()
     .from(rowValues)
     .where(and(...filters));
 }
 
 export async function getRowValueInDrizzle(
+  db: Database,
   tenantId: string,
   rowId: string,
   propertyId: string,
 ): Promise<RowValue | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .select()
     .from(rowValues)
     .where(
@@ -439,28 +446,21 @@ export async function getRowValueInDrizzle(
 }
 
 export async function insertRowValue(
+  db: Database,
   row: RowValue,
-  opts?: WriteOpts,
 ): Promise<RowValue> {
-  if (opts?.batch) {
-    opts.batch.insert(rowValues, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireSpaceDb()
-    .insert(rowValues)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(rowValues).values(row).returning();
   return inserted;
 }
 
 export async function updateRowValueInDrizzle(
+  db: Database,
   tenantId: string,
   rowId: string,
   propertyId: string,
   input: UpdateRowValueInput,
 ): Promise<RowValue | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .update(rowValues)
     .set({
       ...(input.value !== undefined ? { value: input.value } : {}),
@@ -477,11 +477,12 @@ export async function updateRowValueInDrizzle(
 }
 
 export async function deleteRowValueInDrizzle(
+  db: Database,
   tenantId: string,
   rowId: string,
   propertyId: string,
 ): Promise<RowValue | null> {
-  const [removed] = await requireSpaceDb()
+  const [removed] = await db
     .delete(rowValues)
     .where(
       and(
@@ -495,6 +496,7 @@ export async function deleteRowValueInDrizzle(
 }
 
 export async function listViewsInDrizzle(
+  db: Database,
   tenantId: string,
   opts?: ListViewsOpts,
 ): Promise<View[]> {
@@ -504,18 +506,19 @@ export async function listViewsInDrizzle(
       ? [eq(views.databaseId, opts.databaseId)]
       : []),
   ];
-  return requireSpaceDb()
+  return db
     .select()
     .from(views)
     .where(and(...filters));
 }
 
 export async function getViewInDrizzle(
+  db: Database,
   tenantId: string,
   databaseId: string,
   kind: ViewKind,
 ): Promise<View | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .select()
     .from(views)
     .where(
@@ -529,26 +532,19 @@ export async function getViewInDrizzle(
   return row ?? null;
 }
 
-export async function insertView(row: View, opts?: WriteOpts): Promise<View> {
-  if (opts?.batch) {
-    opts.batch.insert(views, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireSpaceDb()
-    .insert(views)
-    .values(row)
-    .returning();
+export async function insertView(db: Database, row: View): Promise<View> {
+  const [inserted] = await db.insert(views).values(row).returning();
   return inserted;
 }
 
 export async function updateViewInDrizzle(
+  db: Database,
   tenantId: string,
   databaseId: string,
   kind: ViewKind,
   input: UpdateViewInput,
 ): Promise<View | null> {
-  const [row] = await requireSpaceDb()
+  const [row] = await db
     .update(views)
     .set({
       ...(input.config !== undefined ? { config: input.config } : {}),
@@ -565,11 +561,12 @@ export async function updateViewInDrizzle(
 }
 
 export async function deleteViewInDrizzle(
+  db: Database,
   tenantId: string,
   databaseId: string,
   kind: ViewKind,
 ): Promise<View | null> {
-  const [removed] = await requireSpaceDb()
+  const [removed] = await db
     .delete(views)
     .where(
       and(

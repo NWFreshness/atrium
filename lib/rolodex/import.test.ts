@@ -14,10 +14,11 @@ import {
   parseCSV,
   parseVcf,
 } from "./import";
-import { parseImportForSession } from "./import-actions";
+import { parseImportIn } from "./import-ops";
 import { MAX_IMPORT_NOTES } from "./import-limits";
 import {
   createMemoryRolodexRepository,
+  createMemoryRolodexStore,
   createPerson,
   listImportantDates,
   listPeople,
@@ -120,7 +121,7 @@ describe("findDuplicates", () => {
 
 describe("applyImport", () => {
   it("imports people and birthday into the session tenant only", async () => {
-    const repo = createMemoryRolodexRepository();
+    const repo = createMemoryRolodexStore();
     await createPerson(tenantB(), { name: "Owner Person" }, repo);
     const result = await applyImport(
       tenantA(),
@@ -155,7 +156,7 @@ describe("applyImport", () => {
   });
 
   it("does not create a second copy of a duplicate", async () => {
-    const repo = createMemoryRolodexRepository();
+    const repo = createMemoryRolodexStore();
     await createPerson(
       tenantA(),
       { name: "Ada Lovelace", email: "ada@example.com" },
@@ -183,16 +184,17 @@ describe("applyImport", () => {
   });
 
   it("rolls back the memory repo when apply throws", async () => {
-    const repo = createMemoryRolodexRepository();
-    const push = repo.people.push.bind(repo.people);
+    const rows = createMemoryRolodexRepository();
+    const repo = createMemoryRolodexStore(rows);
+    const push = rows.people.push.bind(rows.people);
     let count = 0;
-    repo.people.push = ((...args: Parameters<typeof push>) => {
+    rows.people.push = ((...args: Parameters<typeof push>) => {
       count += 1;
       if (count > 1) {
         throw new Error("boom");
       }
       return push(...args);
-    }) as typeof repo.people.push;
+    }) as typeof rows.people.push;
 
     await expect(
       applyImport(
@@ -222,11 +224,11 @@ describe("applyImport", () => {
         repo,
       ),
     ).rejects.toThrow("boom");
-    expect(repo.people).toHaveLength(0);
+    expect(rows.people).toHaveLength(0);
   });
 
   it("refuses 501 people before listing", async () => {
-    const repo = createMemoryRolodexRepository();
+    const repo = createMemoryRolodexStore();
     const people = Array.from({ length: MAX_IMPORT_ROWS + 1 }, (_, index) =>
       person(`Person ${index}`),
     );
@@ -260,12 +262,10 @@ describe("import size caps", () => {
     expect(skipped).toBe(1);
   });
 
-  it("surfaces That file is too large from parseImportForSession", async () => {
-    const repo = createMemoryRolodexRepository();
-    const result = await parseImportForSession(
-      async () => ({
-        user: { id: "user-a", tenantId: tenantA(), role: "owner" },
-      }),
+  it("surfaces That file is too large from parseImportIn", async () => {
+    const repo = createMemoryRolodexStore();
+    const result = await parseImportIn(
+      tenantA(),
       { text: "a".repeat(MAX_IMPORT_CHARS + 1), filename: "huge.csv" },
       repo,
     );

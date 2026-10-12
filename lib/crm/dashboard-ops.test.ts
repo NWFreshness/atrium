@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getDashboardForSession } from "./dashboard-actions";
+import { getDashboardIn } from "./dashboard-ops";
 import {
   createDeal,
-  createMemoryCrmRepository,
+  createMemoryCrmStore,
   createOrganization,
 } from "./queries";
 
@@ -10,21 +10,9 @@ const tenantA = "tenant-a";
 const tenantB = "tenant-b";
 const now = new Date("2026-09-15T12:00:00.000Z");
 
-const sessionA = {
-  user: {
-    id: "user-a",
-    tenantId: tenantA,
-    role: "owner" as const,
-  },
-};
-
-function getSessionA() {
-  return Promise.resolve(sessionA);
-}
-
-describe("getDashboardForSession", () => {
+describe("getDashboardIn", () => {
   it("uses the session tenant and ignores a client tenantId", async () => {
-    const repo = createMemoryCrmRepository();
+    const repo = createMemoryCrmStore();
     const acme = await createOrganization(tenantA, { name: "Acme" }, repo);
     await createDeal(
       tenantA,
@@ -49,12 +37,7 @@ describe("getDashboardForSession", () => {
       repo,
     );
 
-    const dashboard = await getDashboardForSession(
-      getSessionA,
-      { tenantId: tenantB },
-      repo,
-      now,
-    );
+    const dashboard = await getDashboardIn(tenantA, repo, now);
 
     expect(dashboard.tiles.openDealCount).toBe(1);
     expect(dashboard.tiles.pipelineValue).toBe(1000);
