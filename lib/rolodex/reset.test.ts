@@ -1,22 +1,14 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { createWriteBatch } from "../db/batch-transaction";
+import { describe, expect, it } from "vitest";
+import { createBatchRunner, createWriteBatch } from "../db/batch-transaction";
 import {
   createRecordingDb,
   statementShape,
   statementSql,
+  statementsMissingTenant,
 } from "../db/batch-test-helpers";
-import {
-  clearDemoResetters,
-  registerDemoResetter,
-  resetDemo,
-} from "../tenancy/reset-demo";
-import {
-  createMemoryRolodexRepository,
-  createPerson,
-  listPeople,
-  type RolodexRepository,
-} from "./queries";
-import { registerRolodexDemoResetter, resetRolodex } from "./reset";
+import { resetDemo } from "../tenancy/reset-demo";
+import { createMemoryRolodexStore, listPeople } from "./queries";
+import { collectRolodexReset } from "./reset";
 import { seedRolodex } from "./seed";
 
 const demoTenant = "tenant-demo";
@@ -30,82 +22,62 @@ const demoSession = {
   },
 };
 
-function cloneRepo(repo: RolodexRepository): RolodexRepository {
-  return {
-    people: repo.people.map((row) => ({ ...row })),
-    interactions: repo.interactions.map((row) => ({ ...row })),
-    importantDates: repo.importantDates.map((row) => ({ ...row })),
-    facts: repo.facts.map((row) => ({ ...row })),
-    news: repo.news.map((row) => ({ ...row })),
-    reminders: repo.reminders.map((row) => ({ ...row })),
-    gifts: repo.gifts.map((row) => ({ ...row })),
-    connections: repo.connections.map((row) => ({ ...row })),
-  };
+/** The reset as it would be sent: collected against a database that records instead of running. */
+async function collected() {
+  const recorded = createRecordingDb();
+  const batch = createWriteBatch(() => recorded.db);
+  await collectRolodexReset(batch, demoTenant);
+  return { ...recorded, sent: batch.statements.map(statementSql) };
 }
 
-function commitRepo(
-  target: RolodexRepository,
-  source: RolodexRepository,
-): void {
-  target.people.splice(0, target.people.length, ...source.people);
-  target.interactions.splice(
-    0,
-    target.interactions.length,
-    ...source.interactions,
-  );
-  target.importantDates.splice(
-    0,
-    target.importantDates.length,
-    ...source.importantDates,
-  );
-  target.facts.splice(0, target.facts.length, ...source.facts);
-  target.news.splice(0, target.news.length, ...source.news);
-  target.reminders.splice(0, target.reminders.length, ...source.reminders);
-  target.gifts.splice(0, target.gifts.length, ...source.gifts);
-  target.connections.splice(
-    0,
-    target.connections.length,
-    ...source.connections,
-  );
-}
-
-describe("resetRolodex", () => {
+describe("collectRolodexReset", () => {
   it("wipes then reseeds the demo tenant", async () => {
-    const repo = createMemoryRolodexRepository();
-    await seedRolodex(demoTenant, repo);
-    await createPerson(demoTenant, { name: "Stale Scratch" }, repo);
-    const seededNames = (await listPeople(demoTenant, repo))
-      .filter((person) => person.name !== "Stale Scratch")
-      .map((person) => person.name)
+    const { sent } = await collected();
+    const seeded = createMemoryRolodexStore();
+    await seedRolodex(demoTenant, seeded);
+    const names = (await listPeople(demoTenant, seeded))
+      .map((row) => row.name)
       .sort();
 
-    await resetRolodex(undefined, demoTenant, repo);
-
-    const people = await listPeople(demoTenant, repo);
-    expect(people.map((person) => person.name).sort()).toEqual(seededNames);
-    expect(people.some((person) => person.name === "Stale Scratch")).toBe(
-      false,
+    // Every table is emptied for the tenant before the first row goes back,
+    // so a stale row cannot survive whatever it was called.
+    const firstInsert = sent.findIndex(({ sql }) => sql.startsWith("insert"));
+    expect(firstInsert).toBe(8);
+    for (const { sql, params } of sent.slice(0, firstInsert)) {
+      expect(sql).toMatch(/^delete from "\w+" where "\w+"\."tenantId" = \$1$/);
+      expect(params).toEqual([demoTenant]);
+    }
+    const reseeded = sent.filter(({ sql }) =>
+      sql.startsWith('insert into "people"'),
     );
+    expect(reseeded).toHaveLength(names.length);
+    for (const name of names) {
+      expect(
+        reseeded.some(({ params }) => params.includes(name)),
+        name,
+      ).toBe(true);
+    }
   });
 
   it("does not change the owner tenant", async () => {
-    const repo = createMemoryRolodexRepository();
-    await seedRolodex(demoTenant, repo);
-    await createPerson(ownerTenant, { name: "Owner Notes" }, repo);
-
-    await resetRolodex(undefined, demoTenant, repo);
-
-    const ownerPeople = await listPeople(ownerTenant, repo);
-    expect(ownerPeople.map((person) => person.name)).toEqual(["Owner Notes"]);
+    const { sent } = await collected();
+    expect(statementsMissingTenant(sent, demoTenant)).toEqual([]);
+    expect(sent.some(({ params }) => params.includes(ownerTenant))).toBe(false);
   });
 
-  it("throws when no memory repo and no DATABASE_URL", async () => {
+  it("reads nothing and sends nothing while it collects", async () => {
+    const { queries, batches } = await collected();
+    expect(queries).toEqual([]);
+    expect(batches).toEqual([]);
+  });
+
+  it("fails without DATABASE_URL instead of reporting a reset that did nothing", async () => {
     const previous = process.env.DATABASE_URL;
     delete process.env.DATABASE_URL;
     try {
-      await expect(resetRolodex(undefined, demoTenant)).rejects.toThrow(
-        "Rolodex store required",
-      );
+      await expect(
+        resetDemo(async () => demoSession, [collectRolodexReset]),
+      ).rejects.toThrow("DATABASE_URL is required");
     } finally {
       if (previous === undefined) {
         delete process.env.DATABASE_URL;
@@ -116,48 +88,34 @@ describe("resetRolodex", () => {
   });
 });
 
-describe("registerRolodexDemoResetter", () => {
-  beforeEach(() => {
-    clearDemoResetters();
-  });
-
-  it("rolls back when a resetter throws inside injected runInTransaction", async () => {
-    const committed = createMemoryRolodexRepository();
-    await seedRolodex(demoTenant, committed);
-    await createPerson(demoTenant, { name: "Stale Scratch" }, committed);
-
-    async function runInTransaction(
-      work: (tx: RolodexRepository) => Promise<void>,
-    ): Promise<void> {
-      const tx = cloneRepo(committed);
-      try {
-        await work(tx);
-        commitRepo(committed, tx);
-      } catch (error) {
-        throw error;
-      }
-    }
-
-    registerRolodexDemoResetter(committed);
-    registerDemoResetter(async () => {
-      throw new Error("resetter failed");
-    });
+describe("collectRolodexReset inside resetDemo", () => {
+  it("sends nothing when a later resetter throws", async () => {
+    const { db, batches, queries } = createRecordingDb();
 
     await expect(
-      resetDemo(async () => demoSession, { runInTransaction }),
+      resetDemo(
+        async () => demoSession,
+        [
+          collectRolodexReset,
+          async () => {
+            throw new Error("resetter failed");
+          },
+        ],
+        createBatchRunner(() => db),
+      ),
     ).rejects.toThrow("resetter failed");
 
-    const people = await listPeople(demoTenant, committed);
-    expect(people.some((person) => person.name === "Stale Scratch")).toBe(true);
+    expect(batches).toEqual([]);
+    expect(queries).toEqual([]);
   });
 });
 
-describe("resetRolodex inside a reset batch", () => {
+describe("collectRolodexReset inside a reset batch", () => {
   it("collects the deletes in FK order, then the whole reseed, as one batch", async () => {
     const { db, batches } = createRecordingDb();
     const batch = createWriteBatch(() => db);
 
-    await resetRolodex(batch, demoTenant);
+    await collectRolodexReset(batch, demoTenant);
 
     expect(batches).toHaveLength(0);
 

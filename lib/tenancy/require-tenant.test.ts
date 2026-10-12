@@ -1,5 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { requireTenant } from "./index";
+import { describe, expect, it, vi } from "vitest";
+import { requireTenant, requireTenantId, sessionTenant } from "./index";
+
+const auth = vi.hoisted(() => vi.fn());
+vi.mock("@/auth", () => ({ auth }));
 
 const ownerSession = {
   user: {
@@ -50,12 +53,11 @@ describe("requireTenant", () => {
     ).rejects.toThrow("Unauthenticated");
   });
 
-  it("ignores tenantId supplied in credentials", async () => {
-    const result = await requireTenant(async () => ownerSession, {
-      tenantId: "attacker-tenant",
-    });
+  it("takes the tenant from the session and has no parameter to supply another", async () => {
+    const result = await requireTenant(async () => ownerSession);
 
     expect(result.tenantId).toBe(ownerSession.user.tenantId);
+    expect(requireTenant).toHaveLength(1);
   });
 
   it("returns demo role from the session", async () => {
@@ -100,5 +102,37 @@ describe("requireTenant", () => {
         },
       })),
     ).rejects.toThrow("Unauthenticated");
+  });
+});
+
+describe("requireTenantId", () => {
+  it("returns a non-blank tenant id unchanged", () => {
+    expect(requireTenantId("tenant-a")).toBe("tenant-a");
+  });
+
+  it("throws on a blank or missing tenant id", () => {
+    expect(() => requireTenantId("")).toThrow("tenantId is required");
+    expect(() => requireTenantId("   ")).toThrow("tenantId is required");
+    expect(() => requireTenantId(undefined as unknown as string)).toThrow(
+      "tenantId is required",
+    );
+  });
+});
+
+describe("sessionTenant", () => {
+  it("returns the signed-in session's tenant", async () => {
+    auth.mockResolvedValue(ownerSession);
+    await expect(sessionTenant()).resolves.toBe("tenant-owner");
+    expect(sessionTenant).toHaveLength(0);
+  });
+
+  it("throws when unauthenticated, so no action runs without a session", async () => {
+    auth.mockResolvedValue(null);
+    await expect(sessionTenant()).rejects.toThrow("Unauthenticated");
+  });
+
+  it("throws when the session carries no tenant", async () => {
+    auth.mockResolvedValue({ user: { id: "user-owner", role: "owner" } });
+    await expect(sessionTenant()).rejects.toThrow("Unauthenticated");
   });
 });

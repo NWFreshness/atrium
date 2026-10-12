@@ -4,12 +4,12 @@ import {
   lastContactedAt,
   daysSinceContacted,
 } from "./last-contacted";
-import { createActivity, createMemoryCrmRepository } from "./queries";
+import { createActivity, createMemoryCrmStore } from "./queries";
 
 const tenantId = "tenant-a";
 
 function repo() {
-  return createMemoryCrmRepository();
+  return createMemoryCrmStore();
 }
 
 describe("last-contacted", () => {

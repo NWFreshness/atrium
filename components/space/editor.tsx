@@ -18,6 +18,7 @@ import {
   filterBlockMenu,
   type BlockType,
 } from "@/lib/space/constants";
+import { createSaveQueue } from "@/lib/space/save-queue";
 import type { Block } from "@/lib/space/queries";
 import { SlashMenu } from "./slash-menu";
 import styles from "./editor.module.css";
@@ -102,8 +103,13 @@ export function BlockEditor({
   const [slashIndex, setSlashIndex] = useState(0);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [addMenuIndex, setAddMenuIndex] = useState(0);
-  const pending = useRef(new Map<string, Record<string, unknown>>());
-  const timers = useRef(new Map<string, number>());
+  // One queue for the editor's life: unsaved block content and its 300 ms timers.
+  const [saves] = useState(() =>
+    createSaveQueue<Record<string, unknown>>(
+      (id, content) => void updateBlockAction(id, { content }),
+      300,
+    ),
+  );
   const textareas = useRef(new Map<string, HTMLTextAreaElement>());
   const addWrap = useRef<HTMLDivElement | null>(null);
   const addButton = useRef<HTMLButtonElement | null>(null);
@@ -121,18 +127,8 @@ export function BlockEditor({
     node?.focus();
   }, [focusId, blocks]);
 
-  useEffect(() => {
-    const pendingMap = pending.current;
-    const timerMap = timers.current;
-    return () => {
-      for (const timer of timerMap.values()) {
-        window.clearTimeout(timer);
-      }
-      for (const [id, content] of pendingMap) {
-        void updateBlockAction(id, { content });
-      }
-    };
-  }, []);
+  // Leaving the page must not lose what the debounce was still holding.
+  useEffect(() => () => saves.flush(), [saves]);
 
   useEffect(() => {
     if (addMenuOpen) {
@@ -154,17 +150,7 @@ export function BlockEditor({
   }, [addMenuOpen]);
 
   function scheduleSave(id: string, content: Record<string, unknown>) {
-    pending.current.set(id, content);
-    const previous = timers.current.get(id);
-    if (previous !== undefined) {
-      window.clearTimeout(previous);
-    }
-    const timer = window.setTimeout(() => {
-      pending.current.delete(id);
-      timers.current.delete(id);
-      void updateBlockAction(id, { content });
-    }, 300);
-    timers.current.set(id, timer);
+    saves.schedule(id, content);
   }
 
   function patchBlock(id: string, patch: Partial<EditorBlock>) {
@@ -178,7 +164,7 @@ export function BlockEditor({
   async function convertType(id: string, type: BlockType) {
     const content = defaultContent(type);
     patchBlock(id, { type, content });
-    pending.current.delete(id);
+    saves.forget(id);
     setSlashIndex(0);
     await updateBlockAction(id, { type, content });
   }

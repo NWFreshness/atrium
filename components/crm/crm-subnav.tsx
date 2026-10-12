@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { isCrmSection } from "@/lib/crm/nav";
+import { AtriumSubnav } from "../atrium-subnav";
 import styles from "./crm-subnav.module.css";
 
 function icon(children: React.ReactNode) {
@@ -81,31 +79,12 @@ const SECTIONS = [
 ] as const;
 
 export function CrmSubnav() {
-  const pathname = usePathname();
-
   return (
-    <nav className={`atrium-subnav ${styles["crm-subnav"]}`} aria-label="CRM">
-      <ul className={styles["crm-subnav-list"]}>
-        {SECTIONS.map((section) => {
-          const current = isCrmSection(pathname, section.href);
-          return (
-            <li key={section.href}>
-              <Link
-                href={section.href}
-                className={
-                  current
-                    ? "atrium-subtab atrium-subtab-active"
-                    : "atrium-subtab"
-                }
-                aria-current={current ? "page" : undefined}
-              >
-                {section.icon}
-                {section.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+    <AtriumSubnav
+      label="CRM"
+      sections={SECTIONS}
+      className={styles["crm-subnav"]}
+      listClassName={styles["crm-subnav-list"]}
+    />
   );
 }

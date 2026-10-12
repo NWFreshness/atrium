@@ -23,9 +23,13 @@ function code(input: string): string {
 }
 
 const codeOnly = code(source);
-const thead = codeOnly.slice(
-  codeOnly.indexOf("<thead>"),
-  codeOnly.indexOf("</thead>"),
+/** The shared chrome the table renders through; its header lives there now. */
+const chrome = code(
+  readFileSync(new URL("./crm-table.tsx", import.meta.url), "utf8"),
+);
+const thead = chrome.slice(
+  chrome.indexOf("<thead>"),
+  chrome.indexOf("</thead>"),
 );
 
 /** See `org-table.test.ts` for why these are source greps. */
@@ -35,10 +39,10 @@ describe("deal-table", () => {
   });
 
   it("registers the sorting feature before its dependent row-model slot (AC1)", () => {
-    expect(codeOnly.indexOf("rowSortingFeature,")).toBeLessThan(
-      codeOnly.indexOf("sortedRowModel: createSortedRowModel()"),
+    expect(chrome.indexOf("rowSortingFeature,")).toBeLessThan(
+      chrome.indexOf("sortedRowModel: createSortedRowModel()"),
     );
-    expect(codeOnly).not.toContain("tableFeatures({})");
+    expect(chrome).not.toContain("tableFeatures({})");
   });
 
   it("carries no v8 sorting fossil (AC2)", () => {
@@ -51,7 +55,7 @@ describe("deal-table", () => {
     ]) {
       expect(codeOnly).not.toContain(fossil);
     }
-    expect(codeOnly).toContain("getRowModel()");
+    expect(chrome).toContain("getRowModel()");
   });
 
   it("starts Value and Close date descending, everything else ascending (AC3)", () => {
@@ -73,8 +77,9 @@ describe("deal-table", () => {
     expect(codeOnly).toContain("resolveDataValue");
     expect(codeOnly).toContain("sortFn: sortByName(orgNames)");
     expect(codeOnly).toContain("sortFn: sortByName(contactNames)");
-    // Both maps stay in the dependency array.
-    expect(codeOnly).toContain("[contactNames, orgNames, router]");
+    // Both maps stay in the dependency array (the router left with the
+    // delete flow, which is now the `onDelete` the hook hands back).
+    expect(codeOnly).toContain("[contactNames, orgNames, onDelete]");
   });
 
   it("parks blank close dates last (AC3's recorded limit)", () => {
@@ -97,9 +102,7 @@ describe("deal-table", () => {
       /sortNumber = constructSortFn\(\{\s*sort: \(a, b\)/,
     );
     // `sortByName` spreads a built-in the same way.
-    expect(codeOnly).toMatch(
-      /function sortByName[\s\S]*?constructSortFn\(\{/,
-    );
+    expect(codeOnly).toMatch(/function sortByName[\s\S]*?constructSortFn\(\{/);
   });
 
   it("carries the aria-sort / Actions / empty contracts (AC4, AC7)", () => {
@@ -112,8 +115,9 @@ describe("deal-table", () => {
     expect(codeOnly).toContain("enableSorting: false");
     expect(codeOnly).toContain("enableMultiSort: false");
     expect(codeOnly).toContain("No deals");
-    expect(codeOnly.indexOf('className={styles["crm-empty"]}')).toBeLessThan(
-      codeOnly.indexOf("<table"),
+    expect(codeOnly).toContain("<CrmTable");
+    expect(chrome.indexOf('className={styles["crm-empty"]}')).toBeLessThan(
+      chrome.indexOf("<table"),
     );
   });
 

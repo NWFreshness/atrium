@@ -1,37 +1,26 @@
 import { describe, expect, it } from "vitest";
+import { InputError } from "../input/result";
 import {
-  createActivityForSession,
-  deleteActivityForSession,
-  getActivityForSession,
-  listActivitiesForSession,
-  toggleActivityDoneForSession,
-  updateActivityForSession,
-} from "./activity-actions";
+  createActivityIn,
+  deleteActivityIn,
+  getActivityIn,
+  listActivitiesIn,
+  toggleActivityDoneIn,
+  updateActivityIn,
+} from "./activity-ops";
 import {
   createActivity,
   createContact,
   createDeal,
-  createMemoryCrmRepository,
+  createMemoryCrmStore,
   getActivity,
 } from "./queries";
 
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
 
-const sessionA = {
-  user: {
-    id: "user-a",
-    tenantId: tenantA,
-    role: "owner" as const,
-  },
-};
-
-function getSessionA() {
-  return Promise.resolve(sessionA);
-}
-
 function repo() {
-  return createMemoryCrmRepository();
+  return createMemoryCrmStore();
 }
 
 describe("activity session actions", () => {
@@ -42,19 +31,18 @@ describe("activity session actions", () => {
       { name: "Ada", status: "lead" },
       memory,
     );
-    const older = await createActivityForSession(
-      getSessionA,
+    const older = await createActivityIn(
+      tenantA,
       {
         type: "note",
         contactId: contact.id,
         description: "First note",
         occurredAt: new Date("2026-01-01T12:00:00.000Z"),
-        tenantId: tenantB,
       },
       memory,
     );
-    const call = await createActivityForSession(
-      getSessionA,
+    const call = await createActivityIn(
+      tenantA,
       {
         type: "call",
         contactId: contact.id,
@@ -63,8 +51,8 @@ describe("activity session actions", () => {
       },
       memory,
     );
-    const email = await createActivityForSession(
-      getSessionA,
+    const email = await createActivityIn(
+      tenantA,
       {
         type: "email",
         contactId: contact.id,
@@ -83,11 +71,7 @@ describe("activity session actions", () => {
     expect(await getActivity(tenantB, older!.id, memory)).toBeNull();
 
     expect(
-      await listActivitiesForSession(
-        getSessionA,
-        { contactId: contact.id, tenantId: tenantB },
-        memory,
-      ),
+      await listActivitiesIn(tenantA, { contactId: contact.id }, memory),
     ).toEqual([email, call, older]);
   });
 
@@ -105,8 +89,8 @@ describe("activity session actions", () => {
       memory,
     );
     const before = Date.now();
-    const created = await createActivityForSession(
-      getSessionA,
+    const created = await createActivityIn(
+      tenantA,
       {
         type: "note",
         dealId: deal.id,
@@ -122,15 +106,15 @@ describe("activity session actions", () => {
     expect(created!.occurredAt!.getTime()).toBeGreaterThanOrEqual(before);
     expect(created!.occurredAt!.getTime()).toBeLessThanOrEqual(after);
     expect(
-      await listActivitiesForSession(getSessionA, { dealId: deal.id }, memory),
+      await listActivitiesIn(tenantA, { dealId: deal.id }, memory),
     ).toEqual([created]);
   });
 
   it("persists dueDate and toggles done", async () => {
     const memory = repo();
     const dueDate = new Date("2026-09-15T15:00:00.000Z");
-    const created = await createActivityForSession(
-      getSessionA,
+    const created = await createActivityIn(
+      tenantA,
       {
         type: "call",
         description: "Follow up",
@@ -143,20 +127,18 @@ describe("activity session actions", () => {
     expect(created?.dueDate).toEqual(dueDate);
     expect(created?.done).toBe(false);
 
-    const toggled = await toggleActivityDoneForSession(
-      getSessionA,
+    const toggled = await toggleActivityDoneIn(
+      tenantA,
       created!.id,
       true,
       memory,
     );
     expect(toggled?.done).toBe(true);
     expect(toggled?.dueDate).toEqual(dueDate);
-    expect(
-      await getActivityForSession(getSessionA, created!.id, memory),
-    ).toEqual(toggled);
+    expect(await getActivityIn(tenantA, created!.id, memory)).toEqual(toggled);
 
-    const undone = await toggleActivityDoneForSession(
-      getSessionA,
+    const undone = await toggleActivityDoneIn(
+      tenantA,
       created!.id,
       false,
       memory,
@@ -172,13 +154,11 @@ describe("activity session actions", () => {
       memory,
     );
 
+    expect(await getActivityIn(tenantA, other.id, memory)).toBeNull();
     expect(
-      await getActivityForSession(getSessionA, other.id, memory),
+      await toggleActivityDoneIn(tenantA, other.id, false, memory),
     ).toBeNull();
-    expect(
-      await toggleActivityDoneForSession(getSessionA, other.id, false, memory),
-    ).toBeNull();
-    expect(await listActivitiesForSession(getSessionA, {}, memory)).toEqual([]);
+    expect(await listActivitiesIn(tenantA, {}, memory)).toEqual([]);
     expect(await getActivity(tenantB, other.id, memory)).toMatchObject({
       description: "Congrats",
       done: true,
@@ -204,9 +184,9 @@ describe("activity session actions", () => {
       memory,
     );
 
-    expect(
-      await createActivityForSession(
-        getSessionA,
+    await expect(
+      createActivityIn(
+        tenantA,
         {
           type: "note",
           contactId: otherContact.id,
@@ -214,10 +194,10 @@ describe("activity session actions", () => {
         },
         memory,
       ),
-    ).toBeNull();
-    expect(
-      await createActivityForSession(
-        getSessionA,
+    ).rejects.toBeInstanceOf(InputError);
+    await expect(
+      createActivityIn(
+        tenantA,
         {
           type: "note",
           dealId: otherDeal.id,
@@ -225,49 +205,30 @@ describe("activity session actions", () => {
         },
         memory,
       ),
-    ).toBeNull();
-    expect(await listActivitiesForSession(getSessionA, {}, memory)).toEqual([]);
+    ).rejects.toBeInstanceOf(InputError);
+    expect(await listActivitiesIn(tenantA, {}, memory)).toEqual([]);
   });
 
   it("rejects empty or whitespace description and invalid type", async () => {
     const memory = repo();
 
-    expect(
-      await createActivityForSession(
-        getSessionA,
-        { type: "note", description: "" },
-        memory,
-      ),
-    ).toBeNull();
-    expect(
-      await createActivityForSession(
-        getSessionA,
-        { type: "note", description: "   " },
-        memory,
-      ),
-    ).toBeNull();
-    expect(
-      await createActivityForSession(
-        getSessionA,
+    await expect(
+      createActivityIn(tenantA, { type: "note", description: "" }, memory),
+    ).rejects.toBeInstanceOf(InputError);
+    await expect(
+      createActivityIn(tenantA, { type: "note", description: "   " }, memory),
+    ).rejects.toBeInstanceOf(InputError);
+    await expect(
+      createActivityIn(
+        tenantA,
         { type: "meeting" as "note", description: "Hello" },
         memory,
       ),
-    ).toBeNull();
-    expect(await listActivitiesForSession(getSessionA, {}, memory)).toEqual([]);
+    ).rejects.toBeInstanceOf(InputError);
+    expect(await listActivitiesIn(tenantA, {}, memory)).toEqual([]);
   });
 
-  it("throws when unauthenticated", async () => {
-    const memory = repo();
-    await expect(
-      createActivityForSession(
-        async () => null,
-        { type: "note", description: "Hello" },
-        memory,
-      ),
-    ).rejects.toThrow("Unauthenticated");
-  });
-
-  it("updateActivityForSession updates description and occurredAt for this tenant", async () => {
+  it("updateActivityIn updates description and occurredAt for this tenant", async () => {
     const memory = repo();
     const created = await createActivity(
       tenantA,
@@ -280,8 +241,8 @@ describe("activity session actions", () => {
       memory,
     );
 
-    const updated = await updateActivityForSession(
-      getSessionA,
+    const updated = await updateActivityIn(
+      tenantA,
       created.id,
       {
         description: "Edited",
@@ -297,7 +258,7 @@ describe("activity session actions", () => {
     expect(updated?.type).toBe("call");
   });
 
-  it("updateActivityForSession returns null for an unknown activity type", async () => {
+  it("updateActivityIn returns null for an unknown activity type", async () => {
     const memory = repo();
     const created = await createActivity(
       tenantA,
@@ -308,17 +269,18 @@ describe("activity session actions", () => {
     // The unknown-type check is between the miss-check and the dispatch:
     // getActivity succeeds (the row exists), the type guard fails, the call
     // returns null without dispatching to updateActivity.
-    const result = await updateActivityForSession(
-      getSessionA,
-      created.id,
-      {
-        type: "carrier-pigeon" as unknown as "call",
-        description: "Whatever",
-        done: false,
-      },
-      memory,
-    );
-    expect(result).toBeNull();
+    await expect(
+      updateActivityIn(
+        tenantA,
+        created.id,
+        {
+          type: "carrier-pigeon" as unknown as "call",
+          description: "Whatever",
+          done: false,
+        },
+        memory,
+      ),
+    ).rejects.toBeInstanceOf(InputError);
     // The row is unchanged.
     expect(await getActivity(tenantA, created.id, memory)).toMatchObject({
       description: "Call me",
@@ -326,7 +288,7 @@ describe("activity session actions", () => {
     });
   });
 
-  it("updateActivityForSession returns null for another tenant's id (AC1)", async () => {
+  it("updateActivityIn returns null for another tenant's id (AC1)", async () => {
     const memory = repo();
     const other = await createActivity(
       tenantB,
@@ -335,8 +297,8 @@ describe("activity session actions", () => {
     );
 
     expect(
-      await updateActivityForSession(
-        getSessionA,
+      await updateActivityIn(
+        tenantA,
         other.id,
         { type: "call", description: "Hijack", done: false },
         memory,
@@ -347,7 +309,7 @@ describe("activity session actions", () => {
     });
   });
 
-  it("deleteActivityForSession removes the row for this tenant (AC1)", async () => {
+  it("deleteActivityIn removes the row for this tenant (AC1)", async () => {
     const memory = repo();
     const created = await createActivity(
       tenantA,
@@ -355,16 +317,12 @@ describe("activity session actions", () => {
       memory,
     );
 
-    const removed = await deleteActivityForSession(
-      getSessionA,
-      created.id,
-      memory,
-    );
+    const removed = await deleteActivityIn(tenantA, created.id, memory);
     expect(removed?.id).toBe(created.id);
     expect(await getActivity(tenantA, created.id, memory)).toBeNull();
   });
 
-  it("deleteActivityForSession returns null for another tenant's id (AC1)", async () => {
+  it("deleteActivityIn returns null for another tenant's id (AC1)", async () => {
     const memory = repo();
     const other = await createActivity(
       tenantB,
@@ -372,9 +330,7 @@ describe("activity session actions", () => {
       memory,
     );
 
-    expect(
-      await deleteActivityForSession(getSessionA, other.id, memory),
-    ).toBeNull();
+    expect(await deleteActivityIn(tenantA, other.id, memory)).toBeNull();
     expect(await getActivity(tenantB, other.id, memory)).toMatchObject({
       description: "Other",
     });

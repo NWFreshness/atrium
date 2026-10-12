@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createInteraction,
-  createMemoryRolodexRepository,
+  createMemoryRolodexStore,
   createPerson,
   getPerson,
   updatePerson,
@@ -13,7 +13,7 @@ const tenantB = "tenant-b";
 
 describe("movePersonCircle", () => {
   it("returns null for a missing or other-tenant person", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const other = await createPerson(tenantB, { name: "Other" }, memory);
     expect(
       await movePersonCircle(tenantA, "missing", "inner", memory),
@@ -24,7 +24,7 @@ describe("movePersonCircle", () => {
   });
 
   it("changes circle and recomputes status from the new cadence", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const person = await createPerson(
       tenantA,
       { name: "Maya Chen", circle: "inner" },
@@ -44,7 +44,7 @@ describe("movePersonCircle", () => {
   });
 
   it("is a no-op when the circle does not change", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const person = await createPerson(
       tenantA,
       { name: "Sam Okoye", circle: "close" },
@@ -58,7 +58,7 @@ describe("movePersonCircle", () => {
 
 describe("status overrides", () => {
   it("turns check-ins off and snooze away from overdue", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const person = await createPerson(
       tenantA,
       { name: "Luis Andrade", circle: "inner" },

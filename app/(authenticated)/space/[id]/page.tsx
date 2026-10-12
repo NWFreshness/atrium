@@ -4,7 +4,7 @@ import { RowProperties } from "@/components/space/database-table";
 import { BlockEditor } from "@/components/space/editor";
 import { SpaceGlyph } from "@/components/space/space-icons";
 import styles from "@/components/space/space-shell.module.css";
-import { createBlockAction, listBlocksAction } from "@/lib/space/block-actions";
+import { listBlocksAction } from "@/lib/space/block-actions";
 import { getDatabaseSnapshotAction } from "@/lib/space/database-actions";
 import { getPageAction } from "@/lib/space/page-actions";
 
@@ -54,16 +54,8 @@ export default async function SpacePage({
     } catch {
       notFound();
     }
-    let blocks = await listBlocksAction(id);
-    if (blocks.length === 0) {
-      blocks = [
-        await createBlockAction({
-          pageId: id,
-          type: "paragraph",
-          content: { text: "" },
-        }),
-      ];
-    }
+    // A render never writes: a legacy page with no blocks shows the empty editor.
+    const blocks = await listBlocksAction(id);
     return (
       <main>
         {header}
@@ -73,16 +65,7 @@ export default async function SpacePage({
     );
   }
 
-  let blocks = await listBlocksAction(id);
-  if (blocks.length === 0) {
-    blocks = [
-      await createBlockAction({
-        pageId: id,
-        type: "paragraph",
-        content: { text: "" },
-      }),
-    ];
-  }
+  const blocks = await listBlocksAction(id);
 
   return (
     <main>

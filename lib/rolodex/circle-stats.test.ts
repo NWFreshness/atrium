@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { circleColumnStats } from "./circle-stats";
 import {
   createInteraction,
-  createMemoryRolodexRepository,
+  createMemoryRolodexStore,
   createPerson,
   listPeople,
 } from "./queries";
@@ -17,7 +17,7 @@ const tenantA = "tenant-a";
 
 describe("circleColumnStats", () => {
   it("counts people and overdue per circle", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const inner = await createPerson(
       tenantA,
       { name: "Overdue Inner", circle: "inner" },

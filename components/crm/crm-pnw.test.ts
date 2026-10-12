@@ -19,6 +19,7 @@ const orgCss = read("components/crm/org.module.css");
 const pipelineCss = read("components/crm/pipeline-board.module.css");
 const subnavCss = read("components/crm/crm-subnav.module.css");
 const subnav = read("components/crm/crm-subnav.tsx");
+const sharedSubnav = read("components/atrium-subnav.tsx");
 const charts = read("components/crm/dashboard-charts.tsx");
 const statTile = read("components/crm/stat-tile.tsx");
 const dashboardPage = read("app/(authenticated)/crm/page.tsx");
@@ -194,10 +195,13 @@ describe("PNW data palette in the charts", () => {
 
 describe("one golden element per screen", () => {
   it("marks the active CRM tab through the shared layer, once", () => {
-    expect(subnav).toContain("atrium-subnav");
-    expect(subnav.match(/atrium-subtab-active/g)).toHaveLength(1);
-    expect(subnav).toMatch(/current\s*\?[^:]*atrium-subtab-active/);
-    expect(subnav).toContain('aria-current={current ? "page" : undefined}');
+    expect(subnav).toContain("AtriumSubnav");
+    expect(sharedSubnav).toContain("atrium-subnav");
+    expect(sharedSubnav.match(/atrium-subtab-active/g)).toHaveLength(1);
+    expect(sharedSubnav).toMatch(/current\s*\?[^:]*atrium-subtab-active/);
+    expect(sharedSubnav).toContain(
+      'aria-current={current ? "page" : undefined}',
+    );
   });
 
   it("does not re-declare a second golden state in the CRM subnav module", () => {

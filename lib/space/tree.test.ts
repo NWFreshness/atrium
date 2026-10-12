@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { createMemorySpaceRepository, createPage } from "./queries";
+import {
+  createMemorySpaceRepository,
+  createMemorySpaceStore,
+  createPage,
+} from "./queries";
 import { buildPageTree, firstSidebarPageId, pagesForSidebar } from "./tree";
 
 const tenantA = "tenant-a";
 
 describe("pagesForSidebar", () => {
   it("omits row pages from the tree", async () => {
-    const repo = createMemorySpaceRepository();
+    const rows = createMemorySpaceRepository();
+    const repo = createMemorySpaceStore(rows);
     const database = await createPage(
       tenantA,
       { title: "Tasks", type: "database" },
@@ -18,14 +23,15 @@ describe("pagesForSidebar", () => {
       repo,
     );
 
-    const visible = pagesForSidebar(repo.pages);
+    const visible = pagesForSidebar(rows.pages);
     expect(visible.map((page) => page.title)).toEqual(["Tasks"]);
   });
 });
 
 describe("buildPageTree", () => {
   it("nests pages by parentId and sorts siblings by position", async () => {
-    const repo = createMemorySpaceRepository();
+    const rows = createMemorySpaceRepository();
+    const repo = createMemorySpaceStore(rows);
     const projects = await createPage(
       tenantA,
       { title: "Projects", icon: "🗂️" },
@@ -43,7 +49,7 @@ describe("buildPageTree", () => {
     );
     await createPage(tenantA, { title: "Home", icon: "🏠" }, repo);
 
-    const tree = buildPageTree(repo.pages);
+    const tree = buildPageTree(rows.pages);
     expect(tree.map((node) => node.title)).toEqual(["Projects", "Home"]);
     expect(tree[0]?.children.map((node) => node.title)).toEqual(["Garden"]);
     expect(tree[0]?.children[0]?.children.map((node) => node.title)).toEqual([

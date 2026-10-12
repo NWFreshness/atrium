@@ -9,10 +9,10 @@ import {
 } from "./import-limits";
 import { PERSON_FIELDS } from "./person-fields";
 import {
-  createImportantDate,
-  createPerson,
+  createPeople,
   listPeople,
-  type RolodexRepository,
+  type ImportedPerson,
+  type RolodexStore,
 } from "./queries";
 
 export {
@@ -376,104 +376,39 @@ export function birthdayParts(
   return null;
 }
 
-function snapshotRepo(repo: RolodexRepository): RolodexRepository {
-  return {
-    people: [...repo.people],
-    interactions: [...repo.interactions],
-    importantDates: [...repo.importantDates],
-    facts: [...repo.facts],
-    news: [...repo.news],
-    reminders: [...repo.reminders],
-    gifts: [...repo.gifts],
-    connections: [...repo.connections],
-  };
-}
-
-function restoreRepo(
-  target: RolodexRepository,
-  source: RolodexRepository,
-): void {
-  target.people.splice(0, target.people.length, ...source.people);
-  target.interactions.splice(
-    0,
-    target.interactions.length,
-    ...source.interactions,
-  );
-  target.importantDates.splice(
-    0,
-    target.importantDates.length,
-    ...source.importantDates,
-  );
-  target.facts.splice(0, target.facts.length, ...source.facts);
-  target.news.splice(0, target.news.length, ...source.news);
-  target.reminders.splice(0, target.reminders.length, ...source.reminders);
-  target.gifts.splice(0, target.gifts.length, ...source.gifts);
-  target.connections.splice(
-    0,
-    target.connections.length,
-    ...source.connections,
-  );
-}
-
 export async function applyImport(
   tenantId: string,
   people: ParsedPerson[],
-  repo?: RolodexRepository,
+  store?: RolodexStore,
 ): Promise<{ imported: number; skippedDuplicate: number }> {
   assertImportRowCount(people.length);
-  const snapshot = repo ? snapshotRepo(repo) : null;
-  try {
-    const existing = (await listPeople(tenantId, repo)).map((person) => ({
-      id: person.id,
-      name: person.name,
-      email: person.email,
-    }));
-    let imported = 0;
-    let skippedDuplicate = 0;
-    for (const person of people) {
-      if (findDuplicates(person, existing).isDuplicate) {
-        skippedDuplicate += 1;
-        continue;
-      }
-      const created = await createPerson(
-        tenantId,
-        {
-          name: person.name,
-          email: person.email,
-          phone: person.phone,
-          jobTitle: person.jobTitle,
-          company: person.company,
-          city: person.city,
-          notes: person.notes,
-        },
-        repo,
-      );
-      existing.push({
-        id: created.id,
-        name: created.name,
-        email: created.email,
-      });
-      const parts = birthdayParts(person.birthday);
-      if (parts) {
-        await createImportantDate(
-          tenantId,
-          {
-            personId: created.id,
-            type: "birthday",
-            month: parts.month,
-            day: parts.day,
-            year: parts.year,
-          },
-          repo,
-        );
-      }
-      imported += 1;
+  const existing = (await listPeople(tenantId, store)).map((person) => ({
+    id: person.id,
+    name: person.name,
+    email: person.email,
+  }));
+  const entries: ImportedPerson[] = [];
+  let skippedDuplicate = 0;
+  for (const person of people) {
+    if (findDuplicates(person, existing).isDuplicate) {
+      skippedDuplicate += 1;
+      continue;
     }
-    return { imported, skippedDuplicate };
-  } catch (error) {
-    if (snapshot && repo) {
-      restoreRepo(repo, snapshot);
-    }
-    throw error;
+    entries.push({
+      person: {
+        name: person.name,
+        email: person.email,
+        phone: person.phone,
+        jobTitle: person.jobTitle,
+        company: person.company,
+        city: person.city,
+        notes: person.notes,
+      },
+      birthday: birthdayParts(person.birthday),
+    });
+    // Later rows in the same file dedupe against this one too.
+    existing.push({ id: "", name: person.name, email: person.email });
   }
+  await createPeople(tenantId, entries, store);
+  return { imported: entries.length, skippedDuplicate };
 }

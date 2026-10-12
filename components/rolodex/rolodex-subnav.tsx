@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { isRolodexSection } from "@/lib/rolodex/nav";
+import { AtriumSubnav } from "../atrium-subnav";
 import styles from "./rolodex-subnav.module.css";
 
 function icon(children: React.ReactNode) {
@@ -75,34 +73,12 @@ const SECTIONS = [
 ] as const;
 
 export function RolodexSubnav() {
-  const pathname = usePathname();
-
   return (
-    <nav
-      className={`atrium-subnav ${styles["rolodex-subnav"]}`}
-      aria-label="Rolodex"
-    >
-      <ul className={styles["rolodex-subnav-list"]}>
-        {SECTIONS.map((section) => {
-          const current = isRolodexSection(pathname, section.href);
-          return (
-            <li key={section.href}>
-              <Link
-                href={section.href}
-                className={
-                  current
-                    ? "atrium-subtab atrium-subtab-active"
-                    : "atrium-subtab"
-                }
-                aria-current={current ? "page" : undefined}
-              >
-                {section.icon}
-                {section.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+    <AtriumSubnav
+      label="Rolodex"
+      sections={SECTIONS}
+      className={styles["rolodex-subnav"]}
+      listClassName={styles["rolodex-subnav-list"]}
+    />
   );
 }

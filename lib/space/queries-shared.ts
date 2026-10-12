@@ -31,9 +31,14 @@ export type CreatePageInput = {
   parentId?: string | null;
   icon?: string | null;
   position?: number;
+  /**
+   * The blocks the page opens with. Left out, a page or a row gets one empty
+   * paragraph and a database gets none; an empty list means no blocks at all.
+   */
+  blocks?: Pick<CreateBlockInput, "type" | "content">[];
 };
 
-export type UpdatePageInput = Partial<CreatePageInput>;
+export type UpdatePageInput = Partial<Omit<CreatePageInput, "blocks">>;
 
 export type ListPagesOpts = {
   parentId?: string | null;
@@ -82,6 +87,8 @@ export type UpdatePropertyOptionInput = Partial<
 
 export type ListPropertyOptionsOpts = {
   propertyId?: string;
+  /** Only options of properties that belong to this database. */
+  databaseId?: string;
 };
 
 export type CreateRowValueInput = {
@@ -97,6 +104,8 @@ export type UpdateRowValueInput = {
 export type ListRowValuesOpts = {
   rowId?: string;
   propertyId?: string;
+  /** Only values of properties that belong to this database. */
+  databaseId?: string;
 };
 
 export type CreateViewInput = {
@@ -112,13 +121,6 @@ export type UpdateViewInput = {
 export type ListViewsOpts = {
   databaseId?: string;
 };
-
-export function requireTenantId(tenantId: string): string {
-  if (typeof tenantId !== "string" || tenantId.trim() === "") {
-    throw new Error("tenantId is required");
-  }
-  return tenantId;
-}
 
 export function newId(): string {
   return crypto.randomUUID();

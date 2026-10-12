@@ -1,68 +1,24 @@
-import type { WriteOpts } from "../db/batch-transaction";
 import { assertMoney, assertPercent, MAX_MONEY } from "../input/numbers";
 import { assertText, MAX_LONG_TEXT, MAX_SHORT_TEXT } from "../input/text";
-import { STAGE_PROBABILITY } from "./constants";
+import { assertOneOf, assertRef, type ActionResult } from "../input/result";
 import {
-  deleteActivityInDrizzle,
-  deleteContactInDrizzle,
-  deleteDealInDrizzle,
-  deleteOrganizationInDrizzle,
-  findContactByEmailInDrizzle,
-  contactCascadePreviewInDrizzle,
-  dealCascadePreviewInDrizzle,
-  organizationCascadePreviewInDrizzle,
-  getActivityInDrizzle,
-  getContactInDrizzle,
-  getDealInDrizzle,
-  getOrganizationInDrizzle,
-  insertActivity,
-  insertContact,
-  insertDeal,
-  insertOrganization,
-  isUniqueViolation,
-  listActivitiesInDrizzle,
-  listContactsInDrizzle,
-  listDealsInDrizzle,
-  listOrganizationsInDrizzle,
-  nextBoardOrderInDrizzle,
-  updateActivityInDrizzle,
-  updateContactInDrizzle,
-  updateDealInDrizzle,
-  updateOrganizationInDrizzle,
-} from "./queries-drizzle";
+  ACTIVITY_TYPES,
+  CONTACT_STATUSES,
+  DEAL_STAGES,
+  STAGE_PROBABILITY,
+} from "./constants";
+import { getDb } from "../db";
+import { normalizeContactEmail } from "./queries-memory";
 import {
-  contactCascadePreviewInMemory,
-  createActivityInMemory,
-  createContactInMemory,
-  createDealInMemory,
-  createOrganizationInMemory,
-  dealCascadePreviewInMemory,
-  organizationCascadePreviewInMemory,
-  deleteActivityInMemory,
-  deleteContactInMemory,
-  deleteDealInMemory,
-  deleteOrganizationInMemory,
+  createDrizzleCrmStore,
+  type CrmStore,
+  type DealPlacement,
+} from "./store";
+import {
   DuplicateContactEmailError,
-  getActivityInMemory,
-  getContactInMemory,
-  getDealInMemory,
-  getOrganizationInMemory,
-  listActivitiesInMemory,
-  listContactsInMemory,
-  listDealsInMemory,
-  listOrganizationsInMemory,
-  nextBoardOrderInMemory,
-  normalizeContactEmail,
-  updateActivityInMemory,
-  updateContactInMemory,
-  updateDealInMemory,
-  updateOrganizationInMemory,
-} from "./queries-memory";
-import {
   type Activity,
   type CascadePreview,
   type Contact,
-  type CrmRepository,
   type CreateActivityInput,
   type CreateContactInput,
   type CreateDealInput,
@@ -78,8 +34,8 @@ import {
   type UpdateOrganizationInput,
   newId,
   now,
-  requireTenantId,
 } from "./queries-shared";
+import { requireTenantId } from "../tenancy";
 
 export type {
   Activity,
@@ -101,7 +57,40 @@ export type {
   UpdateOrganizationInput,
 } from "./queries-shared";
 export { createMemoryCrmRepository } from "./queries-memory";
-export { DuplicateContactEmailError } from "./queries-memory";
+export { DuplicateContactEmailError } from "./queries-shared";
+export { createMemoryCrmStore, type CrmStore } from "./store";
+
+/** Production storage. Resolved per call so a test that injects a store never opens a database. */
+function defaultStore(): CrmStore {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("CRM store required");
+  }
+  return createDrizzleCrmStore(getDb());
+}
+
+/** One tenant, one address in any casing. The pre-check names the clash; the unique index settles a race. */
+async function assertEmailFree(
+  store: CrmStore,
+  tenantId: string,
+  email: string | null | undefined,
+  excludeId?: string,
+): Promise<void> {
+  if (!email) {
+    return;
+  }
+  const clash = await store.contacts.findByEmail(
+    tenantId,
+    email.trim().toLowerCase(),
+    excludeId,
+  );
+  if (clash) {
+    throw new DuplicateContactEmailError({
+      id: clash.id,
+      name: clash.name,
+      email: clash.email ?? email,
+    });
+  }
+}
 
 /** The contact the address already belongs to — named and linked in the UI. */
 export type TakenContactRef = {
@@ -116,24 +105,22 @@ export type DuplicateEmailFailure = {
   existing?: TakenContactRef;
 };
 
-export type ContactCreateResult =
-  | { ok: true; contact: Contact }
-  | DuplicateEmailFailure;
-
-export type ContactUpdateResult =
-  | { ok: true; contact: Contact }
-  | DuplicateEmailFailure;
+/** A contact write: the shared outcomes, plus the one refusal contacts add. */
+export type ContactResult = ActionResult<Contact> | DuplicateEmailFailure;
 
 /**
- * Maps the store refusal to the typed result. The pre-check path carries
- * the clashing contact for the link; the race path (a 23505 the pre-check
- * passed) has no `existing` key — the losing write never saw the winner.
- * (Defined here, not in the action module, because `"use server"` files
- * may only export async functions.)
+ * Maps the store refusal to the typed result; anything else is not ours to
+ * map. The pre-check path carries the clashing contact for the link; the race
+ * path (a 23505 the pre-check passed) has no `existing` key — the losing write
+ * never saw the winner. (Defined here, not in the action module, because
+ * `"use server"` files may only export async functions.)
  */
 export function duplicateEmailFailure(
-  error: DuplicateContactEmailError,
-): DuplicateEmailFailure {
+  error: unknown,
+): DuplicateEmailFailure | undefined {
+  if (!(error instanceof DuplicateContactEmailError)) {
+    return undefined;
+  }
   return error.existing
     ? {
         ok: false,
@@ -153,33 +140,26 @@ function long(value: unknown) {
 
 export async function listOrganizations(
   tenantId: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
   q?: string,
 ): Promise<Organization[]> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return listOrganizationsInMemory(repo, scoped, q);
-  }
-  return listOrganizationsInDrizzle(scoped, q);
+  return store.organizations.list(scoped, q);
 }
 
 export async function getOrganization(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Organization | null> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return getOrganizationInMemory(repo, scoped, id);
-  }
-  return getOrganizationInDrizzle(scoped, id);
+  return store.organizations.get(scoped, id);
 }
 
 export async function createOrganization(
   tenantId: string,
   input: CreateOrganizationInput,
-  repo?: CrmRepository,
-  opts?: WriteOpts,
+  store: CrmStore = defaultStore(),
 ): Promise<Organization> {
   const scoped = requireTenantId(tenantId);
   const row: Organization = {
@@ -191,84 +171,69 @@ export async function createOrganization(
     notes: long(input.notes ?? null) ?? null,
     createdAt: now(),
   };
-  if (repo) {
-    return createOrganizationInMemory(repo, row);
-  }
-  return insertOrganization(row, opts);
+  return store.organizations.insert(row);
 }
 
 export async function updateOrganization(
   tenantId: string,
   id: string,
   input: UpdateOrganizationInput,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Organization | null> {
   const scoped = requireTenantId(tenantId);
   if (input.name !== undefined) short(input.name);
   if (input.website !== undefined) short(input.website);
   if (input.industry !== undefined) short(input.industry);
   if (input.notes !== undefined) long(input.notes);
-  if (repo) {
-    return updateOrganizationInMemory(repo, scoped, id, input);
-  }
-  return updateOrganizationInDrizzle(scoped, id, input);
+  return store.organizations.update(scoped, id, input);
 }
 
 export async function deleteOrganization(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Organization | null> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return deleteOrganizationInMemory(repo, scoped, id);
-  }
-  return deleteOrganizationInDrizzle(scoped, id);
+  return store.organizations.delete(scoped, id);
 }
 
 export async function organizationCascadePreview(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<CascadePreview> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return organizationCascadePreviewInMemory(repo, scoped, id);
-  }
-  return organizationCascadePreviewInDrizzle(scoped, id);
+  return store.organizations.cascadePreview(scoped, id);
 }
 
 export async function listContacts(
   tenantId: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
   opts?: ListContactsOpts,
 ): Promise<Contact[]> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return listContactsInMemory(repo, scoped, opts);
-  }
-  return listContactsInDrizzle(scoped, opts);
+  return store.contacts.list(scoped, opts);
 }
 
 export async function getContact(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Contact | null> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return getContactInMemory(repo, scoped, id);
-  }
-  return getContactInDrizzle(scoped, id);
+  return store.contacts.get(scoped, id);
 }
 
 export async function createContact(
   tenantId: string,
   input: CreateContactInput,
-  repo?: CrmRepository,
-  opts?: WriteOpts,
+  store: CrmStore = defaultStore(),
 ): Promise<Contact> {
   const scoped = requireTenantId(tenantId);
+  assertOneOf(CONTACT_STATUSES, input.status, "status");
+  await assertRef("organizationId", input.organizationId, (id) =>
+    getOrganization(scoped, id, store),
+  );
   const row: Contact = {
     id: newId(),
     tenantId: scoped,
@@ -280,144 +245,92 @@ export async function createContact(
     status: input.status,
     createdAt: now(),
   };
-  if (repo) {
-    return createContactInMemory(repo, row);
-  }
-  // A batched write cannot read: the wipe travels in the same batch, so the
-  // pre-check is skipped and the unique index owns the guarantee at flush.
-  if (!opts?.batch && row.email) {
-    const clash = await findContactByEmailInDrizzle(scoped, row.email);
-    if (clash) {
-      throw new DuplicateContactEmailError({
-        id: clash.id,
-        name: clash.name,
-        email: clash.email ?? row.email,
-      });
-    }
-  }
-  if (opts?.batch) {
-    return insertContact(row, opts);
-  }
-  try {
-    return await insertContact(row, opts);
-  } catch (error) {
-    // The race the pre-check cannot win: two concurrent creates both passed
-    // it, and the index refused the loser. No `existing` link — the losing
-    // write never saw the winner's row.
-    if (isUniqueViolation(error)) {
-      throw new DuplicateContactEmailError();
-    }
-    throw error;
-  }
+  await assertEmailFree(store, scoped, row.email);
+  return store.contacts.insert(row);
 }
 
 export async function updateContact(
   tenantId: string,
   id: string,
   input: UpdateContactInput,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Contact | null> {
   const scoped = requireTenantId(tenantId);
   if (input.name !== undefined) short(input.name);
   if (input.email !== undefined) short(input.email);
   if (input.phone !== undefined) short(input.phone);
   if (input.jobTitle !== undefined) short(input.jobTitle);
+  if (input.status !== undefined) {
+    assertOneOf(CONTACT_STATUSES, input.status, "status");
+  }
+  await assertRef("organizationId", input.organizationId, (ref) =>
+    getOrganization(scoped, ref, store),
+  );
   const normalized: UpdateContactInput =
     input.email !== undefined
       ? { ...input, email: normalizeContactEmail(input.email) }
       : input;
-  if (repo) {
-    return updateContactInMemory(repo, scoped, id, normalized);
-  }
-  const email = normalized.email ?? undefined;
-  if (email) {
-    const clash = await findContactByEmailInDrizzle(scoped, email, id);
-    if (clash) {
-      throw new DuplicateContactEmailError({
-        id: clash.id,
-        name: clash.name,
-        email: clash.email ?? email,
-      });
-    }
-  }
-  try {
-    return await updateContactInDrizzle(scoped, id, normalized);
-  } catch (error) {
-    if (isUniqueViolation(error)) {
-      throw new DuplicateContactEmailError();
-    }
-    throw error;
-  }
+  await assertEmailFree(store, scoped, normalized.email, id);
+  return store.contacts.update(scoped, id, normalized);
 }
 
 export async function deleteContact(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Contact | null> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return deleteContactInMemory(repo, scoped, id);
-  }
-  return deleteContactInDrizzle(scoped, id);
+  return store.contacts.delete(scoped, id);
 }
 
 export async function contactCascadePreview(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<CascadePreview> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return contactCascadePreviewInMemory(repo, scoped, id);
-  }
-  return contactCascadePreviewInDrizzle(scoped, id);
+  return store.contacts.cascadePreview(scoped, id);
+}
+
+async function assertDealRefs(
+  tenantId: string,
+  input: UpdateDealInput,
+  store: CrmStore = defaultStore(),
+): Promise<void> {
+  await assertRef("organizationId", input.organizationId, (id) =>
+    getOrganization(tenantId, id, store),
+  );
+  await assertRef("contactId", input.contactId, (id) =>
+    getContact(tenantId, id, store),
+  );
 }
 
 export async function listDeals(
   tenantId: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
   opts?: ListDealsOpts,
 ): Promise<Deal[]> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return listDealsInMemory(repo, scoped, opts);
-  }
-  return listDealsInDrizzle(scoped, opts);
+  return store.deals.list(scoped, opts);
 }
 
 export async function getDeal(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Deal | null> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return getDealInMemory(repo, scoped, id);
-  }
-  return getDealInDrizzle(scoped, id);
+  return store.deals.get(scoped, id);
 }
-
-/**
- * A batched write cannot look a default up: the rows it is about to replace are
- * still there (the wipe travels in the same batch) and there is no database
- * handle to ask, so a caller collecting statements has to bring its own value.
- * The guard is here, before the row is built, so no `max(...)` read is even
- * reachable while a batch is open.
- */
 
 export async function createDeal(
   tenantId: string,
   input: CreateDealInput,
-  repo?: CrmRepository,
-  opts?: WriteOpts,
+  store: CrmStore = defaultStore(),
 ): Promise<Deal> {
   const scoped = requireTenantId(tenantId);
-  if (opts?.batch && input.boardOrder === undefined) {
-    throw new Error(
-      "createDeal needs an explicit `boardOrder` when its writes are collected into a batch",
-    );
-  }
+  assertOneOf(DEAL_STAGES, input.stage, "stage");
+  await assertDealRefs(scoped, input, store);
   const value = assertMoney(input.value, { min: 0, max: MAX_MONEY });
   const probability = assertPercent(
     input.probability ?? STAGE_PROBABILITY[input.stage],
@@ -435,22 +348,17 @@ export async function createDeal(
     closeDate: input.closeDate ?? null,
     boardOrder:
       input.boardOrder ??
-      (repo
-        ? nextBoardOrderInMemory(repo, scoped, input.stage)
-        : await nextBoardOrderInDrizzle(scoped, input.stage)),
+      (await store.deals.nextBoardOrder(scoped, input.stage)),
     createdAt: now(),
   };
-  if (repo) {
-    return createDealInMemory(repo, row);
-  }
-  return insertDeal(row, opts);
+  return store.deals.insert(row);
 }
 
 export async function updateDeal(
   tenantId: string,
   id: string,
   input: UpdateDealInput,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Deal | null> {
   const scoped = requireTenantId(tenantId);
   if (input.name !== undefined) short(input.name);
@@ -460,67 +368,77 @@ export async function updateDeal(
   if (input.probability !== undefined) {
     assertPercent(input.probability, { min: 0, max: 100 });
   }
-  if (repo) {
-    return updateDealInMemory(repo, scoped, id, input);
+  if (input.stage !== undefined) {
+    assertOneOf(DEAL_STAGES, input.stage, "stage");
   }
-  return updateDealInDrizzle(scoped, id, input);
+  await assertDealRefs(scoped, input, store);
+  return store.deals.update(scoped, id, input);
+}
+
+/** Writes a whole column's new order at once; the caller has already decided it. */
+export async function reorderDeals(
+  tenantId: string,
+  rows: DealPlacement[],
+  store: CrmStore = defaultStore(),
+): Promise<void> {
+  await store.deals.reorder(requireTenantId(tenantId), rows);
 }
 
 export async function deleteDeal(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Deal | null> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return deleteDealInMemory(repo, scoped, id);
-  }
-  return deleteDealInDrizzle(scoped, id);
+  return store.deals.delete(scoped, id);
 }
 
 export async function dealCascadePreview(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<CascadePreview> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return dealCascadePreviewInMemory(repo, scoped, id);
-  }
-  return dealCascadePreviewInDrizzle(scoped, id);
+  return store.deals.cascadePreview(scoped, id);
+}
+
+async function assertActivityRefs(
+  tenantId: string,
+  input: UpdateActivityInput,
+  store: CrmStore = defaultStore(),
+): Promise<void> {
+  await assertRef("contactId", input.contactId, (id) =>
+    getContact(tenantId, id, store),
+  );
+  await assertRef("dealId", input.dealId, (id) => getDeal(tenantId, id, store));
 }
 
 export async function listActivities(
   tenantId: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
   opts?: ListActivitiesOpts,
 ): Promise<Activity[]> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return listActivitiesInMemory(repo, scoped, opts);
-  }
-  return listActivitiesInDrizzle(scoped, opts);
+  return store.activities.list(scoped, opts);
 }
 
 export async function getActivity(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Activity | null> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return getActivityInMemory(repo, scoped, id);
-  }
-  return getActivityInDrizzle(scoped, id);
+  return store.activities.get(scoped, id);
 }
 
 export async function createActivity(
   tenantId: string,
   input: CreateActivityInput,
-  repo?: CrmRepository,
-  opts?: WriteOpts,
+  store: CrmStore = defaultStore(),
 ): Promise<Activity> {
   const scoped = requireTenantId(tenantId);
+  assertOneOf(ACTIVITY_TYPES, input.type, "type");
+  await assertActivityRefs(scoped, input, store);
   const row: Activity = {
     id: newId(),
     tenantId: scoped,
@@ -533,34 +451,29 @@ export async function createActivity(
     done: input.done,
     createdAt: now(),
   };
-  if (repo) {
-    return createActivityInMemory(repo, row);
-  }
-  return insertActivity(row, opts);
+  return store.activities.insert(row);
 }
 
 export async function updateActivity(
   tenantId: string,
   id: string,
   input: UpdateActivityInput,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Activity | null> {
   const scoped = requireTenantId(tenantId);
   if (input.description !== undefined) long(input.description);
-  if (repo) {
-    return updateActivityInMemory(repo, scoped, id, input);
+  if (input.type !== undefined) {
+    assertOneOf(ACTIVITY_TYPES, input.type, "type");
   }
-  return updateActivityInDrizzle(scoped, id, input);
+  await assertActivityRefs(scoped, input, store);
+  return store.activities.update(scoped, id, input);
 }
 
 export async function deleteActivity(
   tenantId: string,
   id: string,
-  repo?: CrmRepository,
+  store: CrmStore = defaultStore(),
 ): Promise<Activity | null> {
   const scoped = requireTenantId(tenantId);
-  if (repo) {
-    return deleteActivityInMemory(repo, scoped, id);
-  }
-  return deleteActivityInDrizzle(scoped, id);
+  return store.activities.delete(scoped, id);
 }

@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
-  createDatabaseForSession,
-  createPropertyForSession,
-  createPropertyOptionForSession,
-  createRowForSession,
-  deletePropertyForSession,
-  deleteRowForSession,
-  getDatabaseSnapshotForSession,
-  setRowValueForSession,
-} from "./database-actions";
-import { createPageForSession } from "./page-actions";
+  createDatabaseIn,
+  createPropertyIn,
+  createPropertyOptionIn,
+  createRowIn,
+  deletePropertyIn,
+  deleteRowIn,
+  getDatabaseSnapshotIn,
+  setRowValueIn,
+} from "./database-ops";
+import { createPageIn } from "./page-ops";
 import {
-  createMemorySpaceRepository,
+  createMemorySpaceStore,
   createPage,
   getPage,
   listPropertyOptions,
@@ -21,61 +21,44 @@ import {
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
 
-const sessionA = {
-  user: {
-    id: "user-a",
-    tenantId: tenantA,
-    role: "owner" as const,
-  },
-};
-
-function getSessionA() {
-  return Promise.resolve(sessionA);
-}
-
 describe("database session actions", () => {
   it("creates a database, properties, options, rows, and values on the session tenant", async () => {
-    const memory = createMemorySpaceRepository();
-    const database = await createDatabaseForSession(
-      getSessionA,
-      { title: "Trip Planner", tenantId: tenantB },
+    const memory = createMemorySpaceStore();
+    const database = await createDatabaseIn(
+      tenantA,
+      { title: "Trip Planner" },
       memory,
     );
     expect(database.tenantId).toBe(tenantA);
     expect(database.type).toBe("database");
     expect(await getPage(tenantB, database.id, memory)).toBeNull();
 
-    const status = await createPropertyForSession(
-      getSessionA,
+    const status = await createPropertyIn(
+      tenantA,
       { databaseId: database.id, name: "Status", type: "select" },
       memory,
     );
-    const booked = await createPropertyOptionForSession(
-      getSessionA,
+    const booked = await createPropertyOptionIn(
+      tenantA,
       { propertyId: status.id, name: "Booked", color: "green" },
       memory,
     );
-    const row = await createRowForSession(
-      getSessionA,
+    const row = await createRowIn(
+      tenantA,
       { databaseId: database.id, title: "Japan, ten days" },
       memory,
     );
     expect(row.type).toBe("row");
     expect(row.parentId).toBe(database.id);
 
-    const value = await setRowValueForSession(
-      getSessionA,
+    const value = await setRowValueIn(
+      tenantA,
       { rowId: row.id, propertyId: status.id, value: booked.id },
       memory,
     );
     expect(value?.value).toBe(booked.id);
 
-    const snapshot = await getDatabaseSnapshotForSession(
-      getSessionA,
-      database.id,
-      {},
-      memory,
-    );
+    const snapshot = await getDatabaseSnapshotIn(tenantA, database.id, memory);
     expect(snapshot.rows.map((item) => item.title)).toEqual([
       "Japan, ten days",
     ]);
@@ -84,7 +67,7 @@ describe("database session actions", () => {
   });
 
   it("isolates other-tenant databases", async () => {
-    const memory = createMemorySpaceRepository();
+    const memory = createMemorySpaceStore();
     const other = await createPage(
       tenantB,
       { title: "Secret DB", type: "database" },
@@ -92,38 +75,30 @@ describe("database session actions", () => {
     );
 
     await expect(
-      getDatabaseSnapshotForSession(getSessionA, other.id, {}, memory),
+      getDatabaseSnapshotIn(tenantA, other.id, memory),
     ).rejects.toThrow("Page not found");
     await expect(
-      createPropertyForSession(
-        getSessionA,
+      createPropertyIn(
+        tenantA,
         { databaseId: other.id, name: "Status", type: "select" },
         memory,
       ),
     ).rejects.toThrow("Page not found");
     await expect(
-      createRowForSession(
-        getSessionA,
-        { databaseId: other.id, title: "Hacked" },
-        memory,
-      ),
+      createRowIn(tenantA, { databaseId: other.id, title: "Hacked" }, memory),
     ).rejects.toThrow("Page not found");
   });
 
   it("does not set a value using another tenant's row or property", async () => {
-    const memory = createMemorySpaceRepository();
-    const ownDb = await createDatabaseForSession(
-      getSessionA,
-      { title: "Mine" },
-      memory,
-    );
-    const ownProp = await createPropertyForSession(
-      getSessionA,
+    const memory = createMemorySpaceStore();
+    const ownDb = await createDatabaseIn(tenantA, { title: "Mine" }, memory);
+    const ownProp = await createPropertyIn(
+      tenantA,
       { databaseId: ownDb.id, name: "Notes", type: "text" },
       memory,
     );
-    const ownRow = await createRowForSession(
-      getSessionA,
+    const ownRow = await createRowIn(
+      tenantA,
       { databaseId: ownDb.id, title: "Row" },
       memory,
     );
@@ -139,15 +114,13 @@ describe("database session actions", () => {
     );
 
     expect(
-      await setRowValueForSession(
-        getSessionA,
+      await setRowValueIn(
+        tenantA,
         { rowId: otherRow.id, propertyId: ownProp.id, value: "nope" },
         memory,
       ),
     ).toBeNull();
-    expect(
-      await deleteRowForSession(getSessionA, otherRow.id, memory),
-    ).toBeNull();
+    expect(await deleteRowIn(tenantA, otherRow.id, memory)).toBeNull();
     expect(await getPage(tenantB, otherRow.id, memory)).toMatchObject({
       title: "Other row",
     });
@@ -155,51 +128,39 @@ describe("database session actions", () => {
   });
 
   it("deletes a property and its options/values in memory", async () => {
-    const memory = createMemorySpaceRepository();
-    const database = await createDatabaseForSession(
-      getSessionA,
-      { title: "DB" },
-      memory,
-    );
-    const status = await createPropertyForSession(
-      getSessionA,
+    const memory = createMemorySpaceStore();
+    const database = await createDatabaseIn(tenantA, { title: "DB" }, memory);
+    const status = await createPropertyIn(
+      tenantA,
       { databaseId: database.id, name: "Status", type: "select" },
       memory,
     );
-    await createPropertyOptionForSession(
-      getSessionA,
+    await createPropertyOptionIn(
+      tenantA,
       { propertyId: status.id, name: "Todo", color: "gray" },
       memory,
     );
-    const row = await createRowForSession(
-      getSessionA,
+    const row = await createRowIn(
+      tenantA,
       { databaseId: database.id, title: "Item" },
       memory,
     );
-    await setRowValueForSession(
-      getSessionA,
+    await setRowValueIn(
+      tenantA,
       { rowId: row.id, propertyId: status.id, value: "x" },
       memory,
     );
 
-    await deletePropertyForSession(getSessionA, status.id, memory);
+    await deletePropertyIn(tenantA, status.id, memory);
     expect(await listPropertyOptions(tenantA, memory)).toEqual([]);
     expect(await listRowValues(tenantA, memory)).toEqual([]);
   });
 
   it("refuses to treat a normal page as a database", async () => {
-    const memory = createMemorySpaceRepository();
-    const page = await createPageForSession(
-      getSessionA,
-      { title: "Home" },
-      memory,
-    );
+    const memory = createMemorySpaceStore();
+    const page = await createPageIn(tenantA, { title: "Home" }, memory);
     await expect(
-      createRowForSession(
-        getSessionA,
-        { databaseId: page.id, title: "Nope" },
-        memory,
-      ),
+      createRowIn(tenantA, { databaseId: page.id, title: "Nope" }, memory),
     ).rejects.toThrow("Page not found");
   });
 });

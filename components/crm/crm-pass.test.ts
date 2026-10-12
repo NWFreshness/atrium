@@ -6,6 +6,7 @@ const read = (p: string) => readFileSync(`${root}/${p}`, "utf8");
 
 const subnav = read("components/crm/crm-subnav.tsx");
 const subnavCss = read("components/crm/crm-subnav.module.css");
+const sharedSubnav = read("components/atrium-subnav.tsx");
 const charts = read("components/crm/dashboard-charts.tsx");
 const dashboardCss = read("components/crm/dashboard.module.css");
 const orgCss = read("components/crm/org.module.css");
@@ -16,8 +17,9 @@ const orgsPage = read("app/(authenticated)/crm/organizations/page.tsx");
 describe("CRM subnav", () => {
   it("uses inline SVG glyphs and the shared subtab classes", () => {
     expect(subnav).toContain("<svg");
-    expect(subnav).toContain("atrium-subtab");
-    expect(subnav).toContain('aria-label="CRM"');
+    expect(sharedSubnav).toContain("atrium-subtab");
+    expect(sharedSubnav).toContain("aria-label={label}");
+    expect(subnav).toContain('label="CRM"');
   });
 
   it("drops the unicode glyph literals", () => {

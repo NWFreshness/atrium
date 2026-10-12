@@ -1,9 +1,9 @@
 import type { MelodicStep, Patch, UnitId } from "../types";
-import { DRUM_LANES, STEPS, SWEEP_BARS, UNIT_IDS } from "../types";
+import { DRUM_LANES, STEPS, UNIT_IDS } from "../types";
 import { Master } from "./master";
 import { triggerDrum } from "./drums";
 import { MonoSynth, PadSynth } from "./synths";
-import { gapToNext, sweepValue } from "./schedule";
+import { gapToNext, nextSteps } from "./schedule";
 
 export interface EngineState {
   patch: Patch;
@@ -12,10 +12,8 @@ export interface EngineState {
 }
 
 const LOOKAHEAD_MS = 25;
-const SCHEDULE_AHEAD = 0.12;
 
 export class Engine {
-  readonly ctx: AudioContext;
   private master: Master;
   private bass = new MonoSynth("bass");
   private lead = new MonoSynth("lead");
@@ -34,20 +32,30 @@ export class Engine {
     phase: number;
   }[] = [];
 
-  playing = false;
+  private playing = false;
   onStep: (step: number) => void = () => undefined;
-  /** last scheduled filter macro and sweep phase, read by the scope */
-  filterMacro = 0.5;
-  sweepPhase = 0;
+  private filterMacro = 0.5;
+  private sweepPhase = 0;
 
-  constructor(private getState: () => EngineState) {
-    this.ctx = new AudioContext({ latencyHint: "interactive" });
+  constructor(
+    private getState: () => EngineState,
+    private ctx = new AudioContext({ latencyHint: "interactive" }),
+  ) {
     this.master = new Master(this.ctx);
     this.applyParams(getState());
   }
 
   get analyser() {
     return this.master.analyser;
+  }
+
+  get running(): boolean {
+    return this.playing;
+  }
+
+  /** last sounded filter position and sweep phase, read by the scope */
+  get meter(): { filter: number; phase: number } {
+    return { filter: this.filterMacro, phase: this.sweepPhase };
   }
 
   async resume() {
@@ -171,42 +179,35 @@ export class Engine {
     };
   }
 
-  /** Effective filter position at a given absolute step, including the sweep. */
-  private filterAt(absStep: number, m: Patch["master"]) {
-    const bars = SWEEP_BARS[Math.round(m.sweepBars)] ?? 0;
-    if (!bars || m.sweepDepth <= 0.001) return { macro: m.filter, phase: 0 };
-    const phase = (absStep % (bars * STEPS)) / (bars * STEPS);
-    const open = sweepValue(phase, m.sweepShape);
-    const macro = Math.max(
-      0,
-      Math.min(1, m.filter - m.sweepDepth * (1 - open)),
-    );
-    return { macro, phase };
-  }
-
   private tick = () => {
     const s = this.getState();
     this.applyParams(s);
     const secPerStep = 15 / s.patch.bpm;
-    const swing = s.patch.swing * 0.66;
     const m = s.patch.master;
+    const cursor = {
+      nextGridTime: this.nextGridTime,
+      step: this.step,
+      absStep: this.absStep,
+    };
 
-    while (this.nextGridTime < this.ctx.currentTime + SCHEDULE_AHEAD) {
-      const time =
-        this.nextGridTime + (this.step % 2 === 1 ? swing * secPerStep : 0);
-      const { macro, phase } = this.filterAt(this.absStep, m);
+    for (const due of nextSteps(this.ctx.currentTime, cursor, s.patch)) {
       this.master.setFilter(
-        macro,
+        due.filter,
         m.filterReso,
         m.filterDrive,
-        this.nextGridTime,
+        due.gridTime,
         secPerStep,
       );
-      this.scheduleStep(this.step, time, secPerStep, s);
-      this.queue.push({ step: this.step, time, filter: macro, phase });
-      this.nextGridTime += secPerStep;
-      this.step = (this.step + 1) % STEPS;
-      this.absStep++;
+      this.scheduleStep(due.step, due.time, secPerStep, s);
+      this.queue.push({
+        step: due.step,
+        time: due.time,
+        filter: due.filter,
+        phase: due.phase,
+      });
+      this.nextGridTime = due.gridTime + secPerStep;
+      this.step = (due.step + 1) % STEPS;
+      this.absStep = due.absStep + 1;
     }
   };
 

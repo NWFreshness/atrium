@@ -1,55 +1,49 @@
 import { describe, expect, it } from "vitest";
 import {
-  createBlockForSession,
-  deleteBlockForSession,
-  listBlocksForSession,
-  reorderBlocksForSession,
-  updateBlockForSession,
-} from "./block-actions";
-import { createPageForSession } from "./page-actions";
+  createBlockIn,
+  deleteBlockIn,
+  listBlocksIn,
+  reorderBlocksIn,
+  updateBlockIn,
+} from "./block-ops";
+import { createPageIn } from "./page-ops";
 import {
   createBlock,
-  createMemorySpaceRepository,
+  createMemorySpaceStore,
   createPage,
+  deleteBlock,
   getBlock,
+  listBlocks,
+  type SpaceStore,
 } from "./queries";
 
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
 
-const sessionA = {
-  user: {
-    id: "user-a",
-    tenantId: tenantA,
-    role: "owner" as const,
-  },
-};
-
-function getSessionA() {
-  return Promise.resolve(sessionA);
+/** These tests count blocks from zero; a new page now opens with one. */
+async function clearOpeningBlock(memory: SpaceStore, pageId: string) {
+  for (const block of await listBlocks(tenantA, memory, { pageId })) {
+    await deleteBlock(tenantA, block.id, memory);
+  }
 }
 
 describe("block session actions", () => {
   it("creates, updates, reorders, and deletes using the session tenantId", async () => {
-    const memory = createMemorySpaceRepository();
-    const page = await createPageForSession(
-      getSessionA,
-      { title: "Home", tenantId: tenantB },
-      memory,
-    );
+    const memory = createMemorySpaceStore();
+    const page = await createPageIn(tenantA, { title: "Home" }, memory);
+    await clearOpeningBlock(memory, page.id);
 
-    const first = await createBlockForSession(
-      getSessionA,
+    const first = await createBlockIn(
+      tenantA,
       {
         pageId: page.id,
         type: "paragraph",
         content: { text: "one" },
-        tenantId: tenantB,
       },
       memory,
     );
-    const second = await createBlockForSession(
-      getSessionA,
+    const second = await createBlockIn(
+      tenantA,
       {
         pageId: page.id,
         type: "heading1",
@@ -61,53 +55,47 @@ describe("block session actions", () => {
     expect(first.tenantId).toBe(tenantA);
     expect(second.position).toBe(1);
 
-    const updated = await updateBlockForSession(
-      getSessionA,
+    const updated = await updateBlockIn(
+      tenantA,
       first.id,
-      { content: { text: "edited" }, tenantId: tenantB },
+      { content: { text: "edited" } },
       memory,
     );
     expect(updated?.content).toEqual({ text: "edited" });
     expect(updated?.tenantId).toBe(tenantA);
 
-    const reordered = await reorderBlocksForSession(
-      getSessionA,
+    const reordered = await reorderBlocksIn(
+      tenantA,
       page.id,
       [second.id, first.id],
-      { tenantId: tenantB },
       memory,
     );
     expect(reordered?.map((block) => block.id)).toEqual([second.id, first.id]);
     expect(reordered?.map((block) => block.position)).toEqual([0, 1]);
 
-    const deleted = await deleteBlockForSession(getSessionA, first.id, memory);
+    const deleted = await deleteBlockIn(tenantA, first.id, memory);
     expect(deleted?.id).toBe(first.id);
     expect(
-      (await listBlocksForSession(getSessionA, page.id, {}, memory)).map(
-        (block) => block.id,
-      ),
+      (await listBlocksIn(tenantA, page.id, memory)).map((block) => block.id),
     ).toEqual([second.id]);
   });
 
   it("inserts a block at an index and shifts later blocks", async () => {
-    const memory = createMemorySpaceRepository();
-    const page = await createPageForSession(
-      getSessionA,
-      { title: "Home" },
-      memory,
-    );
-    const first = await createBlockForSession(
-      getSessionA,
+    const memory = createMemorySpaceStore();
+    const page = await createPageIn(tenantA, { title: "Home" }, memory);
+    await clearOpeningBlock(memory, page.id);
+    const first = await createBlockIn(
+      tenantA,
       { pageId: page.id, type: "paragraph", content: { text: "a" } },
       memory,
     );
-    const third = await createBlockForSession(
-      getSessionA,
+    const third = await createBlockIn(
+      tenantA,
       { pageId: page.id, type: "paragraph", content: { text: "c" } },
       memory,
     );
-    const inserted = await createBlockForSession(
-      getSessionA,
+    const inserted = await createBlockIn(
+      tenantA,
       {
         pageId: page.id,
         type: "paragraph",
@@ -117,7 +105,7 @@ describe("block session actions", () => {
       memory,
     );
 
-    const listed = await listBlocksForSession(getSessionA, page.id, {}, memory);
+    const listed = await listBlocksIn(tenantA, page.id, memory);
     expect(listed.map((block) => block.id)).toEqual([
       first.id,
       inserted.id,
@@ -126,7 +114,7 @@ describe("block session actions", () => {
   });
 
   it("does not let another tenant write blocks", async () => {
-    const memory = createMemorySpaceRepository();
+    const memory = createMemorySpaceStore();
     const otherPage = await createPage(tenantB, { title: "Beta" }, memory);
     const otherBlock = await createBlock(
       tenantB,
@@ -135,32 +123,24 @@ describe("block session actions", () => {
     );
 
     await expect(
-      createBlockForSession(
-        getSessionA,
+      createBlockIn(
+        tenantA,
         { pageId: otherPage.id, type: "paragraph" },
         memory,
       ),
     ).rejects.toThrow("Page not found");
 
     expect(
-      await updateBlockForSession(
-        getSessionA,
+      await updateBlockIn(
+        tenantA,
         otherBlock.id,
         { content: { text: "hacked" } },
         memory,
       ),
     ).toBeNull();
-    expect(
-      await deleteBlockForSession(getSessionA, otherBlock.id, memory),
-    ).toBeNull();
+    expect(await deleteBlockIn(tenantA, otherBlock.id, memory)).toBeNull();
     await expect(
-      reorderBlocksForSession(
-        getSessionA,
-        otherPage.id,
-        [otherBlock.id],
-        {},
-        memory,
-      ),
+      reorderBlocksIn(tenantA, otherPage.id, [otherBlock.id], memory),
     ).rejects.toThrow("Page not found");
     expect(await getBlock(tenantB, otherBlock.id, memory)).toMatchObject({
       content: { text: "secret" },
@@ -168,26 +148,16 @@ describe("block session actions", () => {
   });
 
   it("rejects a reorder that is not a permutation of the page's blocks", async () => {
-    const memory = createMemorySpaceRepository();
-    const page = await createPageForSession(
-      getSessionA,
-      { title: "Home" },
-      memory,
-    );
-    const block = await createBlockForSession(
-      getSessionA,
+    const memory = createMemorySpaceStore();
+    const page = await createPageIn(tenantA, { title: "Home" }, memory);
+    const block = await createBlockIn(
+      tenantA,
       { pageId: page.id, type: "paragraph" },
       memory,
     );
 
     expect(
-      await reorderBlocksForSession(
-        getSessionA,
-        page.id,
-        [block.id, "missing"],
-        {},
-        memory,
-      ),
+      await reorderBlocksIn(tenantA, page.id, [block.id, "missing"], memory),
     ).toBeNull();
   });
 });
