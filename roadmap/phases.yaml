@@ -1,1 +1,253 @@
-phases: []
+# Long-tail roadmap. Read by /factory-spec only when pulling the next intent.
+#
+# One phase entry + one intent line per feature. Each intent becomes exactly one
+# specs/<id>-<slug>.md via /factory-spec, then one job card in inbox/ via
+# /factory-intake. Keep intents to the "why" plus the pointers that save the next
+# session a grep; do not put implementation steps here.
+#
+# Ids are quoted. Unquoted 12.10 parses as the float 12.1 and silently collides
+# with 12.1; the same bit every dependsOn entry.
+#
+# Gaps G1-G16 are numbered in docs/crm-feature-ideas.md. Phase 12's rationale and
+# the vendor evidence behind it are in docs/crm-phase-12-evidence.md.
+
+phases:
+  # Phase 11 — the CRM integrity sweep. Authoritative design:
+  # docs/superpowers/specs/2026-09-29-crm-integrity-design.md, whose own phase
+  # table is the dependency source of truth for this block.
+  # 11.1, 11.2 and 11.4 already shipped; their job cards stay in
+  # factory/archive/pre-migration/inbox/ and are listed here only so the
+  # dependency chain reads correctly. The other seven intents were migrated out of
+  # inbox/ on 2026-10-06 and now live here.
+  - id: phase-11
+    title: CRM integrity — close the dead ends, keep the surfaces honest
+    status: in_progress
+    intent: >-
+      Close every gap where the CRM can hold a state the user cannot correct, or
+      ship a surface they can only read. Seven intents: activities become
+      correctable and backdatable, detail pages become editable, duplicate contacts
+      and silent orphaning stop being possible, deals and tasks gain real filters
+      and a real surface, and one keystroke finds anything.
+    design: docs/superpowers/specs/2026-09-29-crm-integrity-design.md
+    dependsOn: []
+    features:
+      - id: "11.1"
+        title: Gate and land CRM e2e coverage for pipeline and activities
+        status: passing
+        intent: >-
+          The e2e gate for pipeline drag and activities, proven by a real Playwright
+          run against the dev Neon branch so the later behaviour changes land on
+          evidence rather than on PR prose.
+        effort: 4-6h
+        dependsOn: []
+        landedAs: "b777ffa test(crm): e2e coverage for pipeline and activities (#92)"
+        jobFile: factory/archive/pre-migration/inbox/JOB-001-crm-e2e-pipeline-activities.md
+
+      - id: "11.2"
+        title: Validate deal value and probability
+        status: passing
+        intent: >-
+          createDeal and updateDeal reject a negative value, a probability outside
+          0-100, or a non-integer probability, so the dashboard, pipeline and
+          expectedValue arithmetic cannot be poisoned. Closes G10.
+        effort: 2-3h
+        dependsOn: ["11.1"]
+        landedAs: "14ae280 feat(crm): validate deal value and probability (#96)"
+        jobFile: factory/archive/pre-migration/inbox/JOB-002-deal-number-validation.md
+
+      - id: "11.3"
+        title: Activity correct-and-complete
+        status: not_started
+        intent: >-
+          The sharpest dead end in the CRM: updateActivity and deleteActivity exist
+          and are tested in the query barrel (lib/crm/queries.ts:406,420) but no
+          action or UI reaches them, so a mistyped note is permanent. Edit + delete
+          on ActivityTimeline, a Date field on ActivityForm so Tuesday's call can be
+          logged on Wednesday, and a derived Last contacted on the contact detail and
+          table - derived with compareActivitiesNewestFirst
+          (lib/crm/queries-shared.ts:168), never a column that can drift. Closes G1,
+          G7, G8. Merges the old A2 + B4. Its Last contacted column ships as a
+          `display` column with no accessorFn, unsortable.
+        effort: 5-7h
+        dependsOn: ["11.1"]
+        gaps: [G1, G7, G8]
+        jobFile: factory/archive/pre-migration/inbox/JOB-007-activity-correct-and-complete.md
+
+      - id: "11.4"
+        title: Sort CRM table columns
+        status: passing
+        intent: >-
+          v9 TanStack sorting on all three CRM tables, header buttons cycling
+          aria-sort ascending -> descending -> none, client-side only on the rows the
+          server already returned. Closes G3.
+        effort: 2-3h
+        dependsOn: ["11.1"]
+        landedAs: "d8ede81 feat(crm): sort CRM table columns (#97)"
+        jobFile: factory/archive/pre-migration/inbox/JOB-003-table-column-sorting.md
+        caveat: >-
+          The card's AC1 names createSortedHeaderGestures(), which does not exist in
+          the installed @tanstack/react-table 9.2.4; the shipped code uses
+          column.getToggleSortingHandler(). The card's own Notes record this as a
+          fossil in the card, not in the code. Do not reintroduce that name.
+
+      - id: "11.5"
+        title: Edit from the detail pages
+        status: not_started
+        intent: >-
+          Closes G2. All three [id] pages are a read-only dl; the only edit UI is a
+          dialog on the list page, so correcting a close date means navigating back
+          and hunting the row. Reuse OrgForm/ContactForm/DealForm as dialogs exactly
+          as the list tables do - no new route, no Add affordance on a detail page.
+          The deal detail page must fetch the tenant's organizations and contacts so
+          the form's selects match the record.
+        effort: 3-4h
+        dependsOn: ["11.4"]
+        gaps: [G2]
+        jobFile: factory/archive/pre-migration/inbox/JOB-008-edit-from-detail-pages.md
+
+      - id: "11.6"
+        title: Contact email uniqueness and duplicate pre-check
+        status: not_started
+        intent: >-
+          Closes G9. Two contacts in one tenant cannot hold the same email in any
+          casing; a case-variant duplicate is refused with a link to the existing
+          contact. Tenant-composite uniqueIndex on lower(email), mirroring 8.1's
+          users_email_lower_idx - SQL NULLs are distinct in a unique index so
+          email-less contacts are unaffected, but an EMPTY string is not null and
+          would collide, so normalize "" to null before insert. Needs both layers: a
+          duplicate pre-check AND mapping 23505 to a typed code, because Postgres
+          cannot infer an expression index from a column-name conflict target.
+        effort: 4-6h
+        dependsOn: []
+        gaps: [G9]
+        jobFile: factory/archive/pre-migration/inbox/JOB-004-contact-email-uniqueness.md
+
+      - id: "11.7"
+        title: Preview what a delete will unlink
+        status: not_started
+        intent: >-
+          Closes G11. onDelete "set null" is the right referential choice but it is
+          silent: deleting an org nulls its contacts' and deals' organizationId, and
+          the confirm names one row. A tenant-scoped cascadePreview counts what a
+          delete will unlink and the confirm message names the counts when non-zero,
+          byte-identical to today's string when they are all zero. Keep the browser
+          confirm() the tables already use - no bespoke dialog, no "detach instead",
+          no soft deletes.
+        effort: 2-3h
+        dependsOn: []
+        gaps: [G11]
+        jobFile: factory/archive/pre-migration/inbox/JOB-005-delete-consequence-preview.md
+
+      - id: "11.8"
+        title: Deal filters
+        status: not_started
+        intent: >-
+          Closes G4. ListDealsOpts already carries organizationId and contactId and
+          the Drizzle module implements both - they are simply unreachable from the
+          UI. Extend that same opts object (never a parallel listXBySearch) with
+          stage, closeAfter and closeBefore, validate the params in a client-safe
+          parser so an unknown stage is ignored rather than 500ing, and surface them
+          in the existing GET form. Also fixes the empty-state lie - "No deals" for
+          both empty and filtered-empty - on all three list pages.
+        effort: 4-5h
+        dependsOn: []
+        gaps: [G4]
+        jobFile: factory/archive/pre-migration/inbox/JOB-006-deal-filters.md
+
+      - id: "11.9"
+        title: Follow-ups as a real section
+        status: not_started
+        intent: >-
+          Closes G6. dueDate plus done already makes an activity a task, but the only
+          surface listing them is two dashboard panels. New /crm/tasks as a sixth
+          subnav tab reusing SECTIONS in crm-subnav.tsx, grouped overdue / today /
+          next 7 days / later in a pure lib/crm/tasks.ts, with a ListActivitiesOpts
+          extension. The only intent in this phase that adds a route or a subnav
+          entry, so it touches the subnav test and the workroom link-walk in
+          e2e/workroom.spec.ts - verify the five-tab walk survives a sixth tab.
+          Recorded copy drift: the dashboard says "follow-ups", the new tab says
+          "Tasks"; do not rename the dashboard strings in this feature.
+        effort: 6-8h
+        dependsOn: ["11.3"]
+        gaps: [G6]
+        jobFile: factory/archive/pre-migration/inbox/JOB-009-follow-ups-section.md
+
+      - id: "11.10"
+        title: CRM QuickFind (Cmd/Ctrl-K)
+        status: not_started
+        intent: >-
+          Closes G16. Four separate q boxes, none searching activities. One
+          searchCrm(tenantId, q) returning buckets capped at 5 with total counts
+          carried separately, and a client palette copied from
+          components/space/quick-find.tsx - copy the interaction, not the module. The
+          palette mounts in the CRM layout only, never beside Space's own Cmd-K.
+          lib/client-boundary.test.ts forbids a client component value-importing
+          lib/crm/queries.ts, so the pure helper takes only types from
+          queries-shared - the trap lib/rolodex/circle-stats.ts exists to solve.
+        effort: 5-7h
+        dependsOn: ["11.9"]
+        gaps: [G16]
+        jobFile: factory/archive/pre-migration/inbox/JOB-010-crm-quickfind.md
+
+  # Phase 12 — deal history and closing analytics. Nothing here overlaps phase 11:
+  # 12.1 and 12.2 are the write-path and schema work no phase-11 intent touches,
+  # and 12.3 is the only new field. Rationale and vendor evidence:
+  # docs/crm-phase-12-evidence.md.
+  - id: phase-12
+    title: CRM deal history and closing analytics
+    status: draft
+    title_note: "renamed from 'and closing the CRM's remaining dead ends' — those seven intents are phase 11, not 12"
+    dependsOn: []
+    evidence: docs/crm-phase-12-evidence.md
+    intent: >-
+      Give the CRM the one thing every commercial CRM sells and this one cannot
+      record: when a deal entered its stage, and why it was won or lost. Make the
+      stage-change write path truthful first, then build time-and-reason analytics on
+      top of it. Nothing in this phase is blocked by phase 11, and nothing in phase
+      11 depends on it.
+    features:
+      - id: "12.1"
+        title: Make moveDeal atomic
+        status: not_started
+        intent: >-
+          moveDeal renumbers a column with N sequential awaited updateDeal calls
+          (lib/crm/move-deal.ts:51-67), so a mid-flight failure leaves boardOrder
+          disagreeing with the board - verified in the working tree, not assumed.
+          Collapse one move into a single db.batch (ADR-0002 forbids db.transaction on
+          this stack, and batch-transaction.ts:8-13 requires every statement fully
+          built, ids included, before any runs) so the deal update, every renumbered
+          sibling, and any stage-event insert commit or roll back together.
+          Prerequisite for 12.2: an event written outside that batch is a history that lies.
+        effort: 3-4h
+        dependsOn: []
+
+      - id: "12.2"
+        title: Deal stage history to time-in-stage, conversion, forecast accuracy
+        status: not_started
+        intent: >-
+          New dealStageEvents(id, tenantId, dealId, fromStage, toStage, movedAt), no
+          boardOrder, indexed per 7.3. Appended from BOTH stage-change write paths -
+          moveDeal and updateDeal's nextProbabilityOnStageChange branch
+          (lib/crm/queries-shared.ts:187) - inside 12.1's batch, or the feature is
+          wrong. Pure aggregation (timeInStage, stageConversion, forecastAccuracy) in
+          lib/crm/velocity.ts unit-tested with no database, mirroring how
+          lib/crm/dashboard.ts splits. New /crm/velocity section, not more dashboard
+          panels: 10.3 set one-golden-element-per-screen. Decide the backfill (synthetic
+          fromStage-null event vs. clock starts at ship) in the spec and say which in
+          the UI. This is what Pipedrive Insights measures by ("date of entering
+          stage") and what Salesforce's Pipeline/Best Case/Commit categories roll up from.
+        effort: 10-14h
+        dependsOn: ["12.1"]
+        gaps: [G12]
+
+      - id: "12.3"
+        title: Won/lost reasons
+        status: not_started
+        intent: >-
+          deals.wonLostReason, nullable text, MAX_SHORT_TEXT via assertText at the
+          barrel per 9.6. Accepted only when stage is Won or Lost; cleared when a
+          stage moves back to open. Makes the existing win/loss donut answer why
+          instead of only that deals are lost, and it is the input 12.2's
+          forecast-accuracy panel needs to explain itself. Rendered as text, never HTML.
+        effort: 4-6h
+        dependsOn: []
