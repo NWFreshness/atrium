@@ -82,18 +82,22 @@ export function ActivityTimeline({ activities }: { activities: Activity[] }) {
 
   return (
     <>
-      <ul>
+      <ul className={styles["crm-timeline"]}>
         {activities.map((activity) => {
           const label = truncateActivityLabel(activity.description);
           return (
-            <li key={activity.id}>
-              <TypeIcon type={activity.type} /> {activity.type}
-              <p>{activity.description}</p>
-              <p>
-                {formatDate(activity.occurredAt)}
-                {activity.dueDate
-                  ? ` · Due ${formatDate(activity.dueDate)}`
-                  : ""}
+            <li key={activity.id} className={styles["crm-timeline-item"]}>
+              <span className={styles["crm-timeline-type"]}>
+                <TypeIcon type={activity.type} /> {activity.type}
+              </span>
+              <p className={styles["crm-timeline-body"]}>
+                {activity.description}
+              </p>
+              <p className={styles["crm-timeline-meta"]}>
+                <span>{formatDate(activity.occurredAt)}</span>
+                {activity.dueDate ? (
+                  <span>Due {formatDate(activity.dueDate)}</span>
+                ) : null}
               </p>
               <div className={styles["crm-activity-actions"]}>
                 <button

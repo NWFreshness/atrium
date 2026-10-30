@@ -28,7 +28,7 @@ export default function SignUpPage() {
         {open ? (
           <>
             <p className={styles["auth-tag"]}>
-              Your own Atrium — empty CRM, Space, and Rolodex.
+              Your own Atrium, with an empty CRM, Space and Rolodex.
             </p>
             <SignUpForm />
           </>

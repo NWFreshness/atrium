@@ -1,44 +1,65 @@
 /* ============================================================
-   CRM tables, dialogs, and detail panels — PNW pass (10.3)
-   Basalt panels, lichen data, cedar for what is late. Density is
-   unchanged: 44px rows and the content sans at 13.5px — its narrower advance
-   buys the characters per column, so it is not spent on larger type.
-   Headers sit at `--text-label` in `--ink-faint`; hover is `--bg-2` /
-   `--line-strong`; golden is the primary action and the focus ring.
+   CRM tables, dialogs, and record pages — Coral
+   Tables are a ruled ledger straight on the paper: sentence-case
+   heads in the body face, horizontal hairlines only, 44px rows,
+   money in Geist Mono. A record is a cotton sheet; its activity
+   log a ruled list under it. Ink is the one filled control,
+   coral the focus ring and the link hover.
    ============================================================ */
 
 .crm-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--sp-sm);
   align-items: flex-end;
-  margin: 1rem 0;
+  margin: 0 0 var(--sp-lg);
 }
 
+/* toolbar controls are letterpress cards; the add control is the one ink */
 .crm-toolbar button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: var(--sp-xs);
+  min-height: 40px;
   font-family: var(--font-sans);
-  font-size: 12.5px;
-  font-weight: 550;
-  padding: 7px 12px;
-  border-radius: var(--r-sm);
-  border: 1px solid color-mix(in srgb, var(--brass) 40%, var(--line-strong));
-  background: var(--bg-1);
-  color: var(--brass);
+  font-size: var(--text-small);
+  font-weight: 500;
+  padding: 0 var(--sp-md);
+  border-radius: var(--r-lg);
+  border: 0;
+  background: var(--bg-2);
+  color: var(--ink);
+  text-shadow: var(--press-text);
+  box-shadow: var(--edge-stock), var(--cast-stock);
   cursor: pointer;
   transition:
-    color 0.2s,
-    border-color 0.2s,
-    background 0.2s;
+    transform var(--dur-micro) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
 }
 
 .crm-toolbar button:hover {
-  color: var(--ink);
-  border-color: var(--line-strong);
-  background: var(--bg-2);
+  transform: translateY(-1px);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
+}
+
+.crm-toolbar button:active {
+  transform: translateY(1px);
+  box-shadow: var(--edge-stock);
+}
+
+.crm-toolbar button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.crm-toolbar > button:last-of-type {
+  margin-left: auto;
+  background: var(--amber);
+  color: var(--on-amber);
+  text-shadow: none;
+  box-shadow: var(--cast-stock);
 }
 
 .crm-toolbar button:focus-visible {
@@ -49,41 +70,59 @@
 .crm-search {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--sp-xs);
   align-items: flex-end;
 }
 
 .crm-field {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--sp-2xs);
 }
 
 .crm-field label {
-  font-family: var(--font-mono);
   font-size: var(--text-label);
-  font-weight: 400;
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  font-weight: 500;
+  color: var(--ink-dim);
 }
 
-.crm-field input,
+/* a checkbox field reads as one line: the box, then its word */
+.crm-field label:has(input[type="checkbox"]) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  min-height: 40px;
+  font-size: var(--text-small);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.crm-field input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--amber);
+}
+
+.crm-field input:not([type="checkbox"]),
 .crm-field textarea,
 .crm-field select {
   font: inherit;
-  font-size: 14px;
+  font-size: var(--text-body);
+  min-height: 40px;
   color: var(--ink);
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-  border-bottom: 1px solid var(--line-strong);
-  border-radius: var(--r-sm) var(--r-sm) 0 0;
-  padding: 9px 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  padding: 0 var(--sp-sm);
   outline: none;
-  transition:
-    border-color 0.2s,
-    background 0.2s,
-    box-shadow 0.2s;
+  transition: border-color var(--dur-short) var(--ease-out);
+}
+
+.crm-field textarea {
+  min-height: 5rem;
+  padding: var(--sp-xs) var(--sp-sm);
+  resize: vertical;
 }
 
 .crm-field input::placeholder,
@@ -91,53 +130,62 @@
   color: var(--ink-faint);
 }
 
-.crm-field input:focus,
-.crm-field textarea:focus,
-.crm-field select:focus {
-  border-color: var(--line-strong);
-  background: var(--bg-3);
+.crm-field input:hover,
+.crm-field textarea:hover,
+.crm-field select:hover {
+  border-color: var(--ink-faint);
 }
 
 .crm-field input:focus-visible,
 .crm-field textarea:focus-visible,
 .crm-field select:focus-visible {
   outline: 2px solid var(--brass);
-  outline-offset: 2px;
-  border-color: var(--brass);
-  background: var(--bg-3);
+  outline-offset: -1px;
 }
 
+.crm-field input:disabled,
+.crm-field textarea:disabled,
+.crm-field select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* the ledger: on the paper, no outer box */
 .crm-table-wrap {
   overflow-x: auto;
-  background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel);
+  border-top: 1px solid var(--ink-faint);
 }
 
 .crm-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: var(--text-small);
 }
 
 .crm-table th,
 .crm-table td {
   text-align: left;
-  padding: 0 0.9rem;
+  padding: 0 var(--sp-sm);
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
 }
 
+.crm-table th:first-child,
+.crm-table td:first-child {
+  padding-left: 0;
+}
+
+/* the column that names the row never wraps; the ledger scrolls instead */
+.crm-table td:first-child {
+  white-space: nowrap;
+}
+
 .crm-table th {
-  font-family: var(--font-mono);
   font-size: var(--text-label);
-  font-weight: 400;
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
+  font-weight: 500;
   color: var(--ink-faint);
-  background: var(--bg-2);
-  height: 38px;
+  height: 40px;
+  white-space: nowrap;
 }
 
 /* Density: 44px rows. Numerals are tabular so a column of money lines up. */
@@ -146,23 +194,19 @@
   font-variant-numeric: tabular-nums;
 }
 
-.crm-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
 .crm-table tbody tr:hover td {
-  background: var(--bg-2);
+  background: var(--bg-1);
 }
 
 .crm-table-link {
   color: var(--ink);
   text-decoration: none;
-  font-weight: 520;
+  font-weight: 500;
 }
 
 .crm-table-link:hover {
   text-decoration: underline;
-  text-decoration-color: var(--line-strong);
+  text-decoration-color: var(--brass);
   text-underline-offset: 2px;
 }
 
@@ -174,12 +218,12 @@
 
 /* 11.4 sort affordance. The `<th>` keeps the label styling; the button is
    transparent and inherits it, so a header reads identically sorted or not
-   except for the caret. `text-transform` and the mono label size stay on the
-   `<th>`, so the button must not reset them. */
+   except for the caret. */
 .crm-sort-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--sp-2xs);
+  min-height: 32px;
   font: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
@@ -206,9 +250,9 @@
 .crm-sort-caret {
   display: inline-block;
   width: 0.7em;
-  font-size: 0.7em;
+  font-size: 0.8em;
   line-height: 1;
-  color: var(--brass);
+  color: var(--ink);
 }
 
 /* Row actions reveal on hover/focus with opacity — never `display`, which
@@ -216,9 +260,9 @@
    reachable by keyboard too. */
 .crm-row-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--sp-sm);
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--dur-short) var(--ease-out);
 }
 
 .crm-table tbody tr:hover .crm-row-actions,
@@ -229,19 +273,19 @@
 .crm-row-actions button {
   border: none;
   background: none;
-  font-family: var(--font-mono);
+  min-height: 32px;
+  font-family: var(--font-sans);
   font-size: var(--text-label);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  font-weight: 500;
+  color: var(--ink-dim);
   cursor: pointer;
   padding: 0;
-  transition: color 0.15s;
 }
 
 .crm-row-actions button:hover {
   color: var(--ink);
   text-decoration: underline;
+  text-decoration-color: var(--brass);
   text-underline-offset: 2px;
 }
 
@@ -251,22 +295,23 @@
   border-radius: var(--r-sm);
 }
 
+.crm-row-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .crm-empty {
-  margin: 1.5rem 0;
-  font-family: var(--font-mono);
-  font-size: var(--text-data);
-  letter-spacing: 0.02em;
+  margin: var(--sp-lg) 0;
+  font-size: var(--text-small);
   color: var(--ink-faint);
 }
 
-/* 11.8 filter summary. The mono label voice of `.crm-empty`, seated in the
-   toolbar between the search form and the Add control. */
+/* 11.8 filter summary, seated in the toolbar between the search form and
+   the Add control. */
 .crm-filter-summary {
   margin: 0;
   align-self: center;
-  font-family: var(--font-mono);
-  font-size: var(--text-data);
-  letter-spacing: 0.02em;
+  font-size: var(--text-small);
   color: var(--ink-faint);
 }
 
@@ -276,23 +321,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--bg-0) 72%, transparent);
-  backdrop-filter: blur(4px);
+  padding: var(--sp-md);
+  background: color-mix(in srgb, var(--ink) 30%, transparent);
   z-index: 20;
 }
 
 .crm-dialog {
-  background: var(--bg-1);
+  background: var(--bg-2);
   color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel), var(--glow-brass);
-  padding: 1.5rem 1.6rem;
-  width: min(28rem, calc(100vw - 2rem));
+  border-radius: var(--r-lg);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
+  padding: var(--sp-lg);
+  width: 100%;
+  max-width: 30rem;
+  max-height: calc(100dvh - 2 * var(--sp-md));
+  overflow-y: auto;
 }
 
 .crm-dialog h2 {
-  margin: 0 0 0.9rem;
+  margin: 0 0 var(--sp-md);
   font-family: var(--font-display);
   font-size: var(--text-h2);
   font-weight: var(--text-h2-weight);
@@ -300,36 +347,55 @@
   line-height: var(--text-h2-leading);
 }
 
+.crm-dialog form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
 .crm-form-actions {
   display: flex;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
   justify-content: flex-end;
-  margin-top: 1.1rem;
+  margin-top: var(--sp-xs);
 }
 
 .crm-form-actions button {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--sp-xs);
+  min-height: 40px;
   font-family: var(--font-sans);
-  font-size: 12.5px;
-  font-weight: 550;
-  padding: 7px 13px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--line-strong);
+  font-size: var(--text-small);
+  font-weight: 500;
+  padding: 0 var(--sp-md);
+  border-radius: var(--r-lg);
+  border: 0;
   background: var(--bg-2);
-  color: var(--ink-dim);
+  color: var(--ink);
+  text-shadow: var(--press-text);
+  box-shadow: var(--edge-stock), var(--cast-stock);
   cursor: pointer;
   transition:
-    color 0.2s,
-    border-color 0.2s,
-    background 0.2s;
+    transform var(--dur-micro) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
 }
 
 .crm-form-actions button:hover {
-  color: var(--ink);
-  border-color: var(--line-strong);
-  background: var(--bg-3);
+  transform: translateY(-1px);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
+}
+
+.crm-form-actions button:active {
+  transform: translateY(1px);
+  box-shadow: var(--edge-stock);
+}
+
+.crm-form-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .crm-form-actions button:focus-visible {
@@ -337,67 +403,192 @@
   outline-offset: 2px;
 }
 
-/* The one primary: golden fill, basalt text (charcoal on golden = 6.95:1
-   dark; mist on the light golden = 4.76:1). */
+/* The one primary: board ink with its paired paper text. */
 .crm-form-actions button[type="submit"] {
-  border: none;
-  background: var(--brass);
-  color: var(--bg-0);
-  font-weight: 600;
-  box-shadow: inset 0 1px 0 var(--line-strong);
+  background: var(--amber);
+  color: var(--on-amber);
+  text-shadow: none;
+  box-shadow: var(--cast-stock);
 }
 
+/* ---------- Record pages ---------- */
+.crm-record {
+  max-width: 64rem;
+}
+
+.crm-record > h2 {
+  margin: var(--sp-2xl) 0 var(--sp-md);
+}
+
+.crm-record > ul:not(.crm-timeline) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.crm-record > ul:not(.crm-timeline) > li {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* the record itself: one cotton sheet, field names in the body face */
 .crm-detail {
   display: grid;
-  grid-template-columns: 8rem 1fr;
-  gap: 0.5rem 1rem;
-  margin: 1.2rem 0 0;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: 0;
+  margin: 0;
+  padding: var(--sp-sm) var(--sp-lg);
+  background: var(--bg-2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--edge-stock), var(--cast-stock);
+}
+
+.crm-detail dt,
+.crm-detail dd {
+  padding: var(--sp-sm) 0;
+  border-top: 1px solid var(--line);
+}
+
+.crm-detail dt:first-of-type,
+.crm-detail dt:first-of-type + dd {
+  border-top: 0;
 }
 
 .crm-detail dt {
-  font-family: var(--font-mono);
-  font-size: var(--text-label);
-  font-weight: 400;
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
+  padding-right: var(--sp-lg);
+  font-size: var(--text-small);
+  font-weight: 500;
   color: var(--ink-faint);
-  align-self: center;
 }
 
 .crm-detail dd {
   margin: 0;
+  min-height: 1lh;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
+/* the inline activity form: one row of short fields, the note full width */
+.crm-activity-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: var(--sp-md);
+}
+
+.crm-activity-form > .crm-field:has(textarea) {
+  grid-column: 1 / -1;
+  order: -1;
+}
+
+.crm-activity-form > [role="alert"] {
+  grid-column: 1 / -1;
+  order: -2;
+  color: var(--clay-ink);
+  font-size: var(--text-small);
+}
+
+.crm-activity-form > .crm-form-actions {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.crm-dialog .crm-activity-form {
+  display: flex;
+}
+
+.crm-dialog .crm-activity-form > * {
+  order: 0;
+}
+
+/* the activity log: a ruled list under the form, newest first */
+.crm-timeline {
+  list-style: none;
+  margin: var(--sp-xl) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--ink-faint);
+}
+
+.crm-timeline-item {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr) auto;
+  gap: var(--sp-2xs) var(--sp-lg);
+  align-items: baseline;
+  padding: var(--sp-md) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.crm-timeline-type {
+  grid-column: 1;
+  grid-row: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--ink-dim);
+}
+
+.crm-timeline-type svg {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.crm-timeline-body {
+  grid-column: 2;
+  grid-row: 1;
+  max-width: 60ch;
+}
+
+.crm-timeline-meta {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-md);
+  font-size: var(--text-label);
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Per-row Edit / Delete / Done group on the activity timeline. The buttons
-   sit inline and stay visible at rest — no hover-only affordance. The focus
-   ring matches the form's golden focus, and no rule in this stylesheet
-   hides a control, so AC8's no-hover assertion can target the buttons
-   directly. */
+   sit inline and stay visible at rest — no hover-only affordance, so AC8's
+   no-hover assertion can target the buttons directly. */
 .crm-activity-actions {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: start;
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-top: 0.4rem;
+  gap: var(--sp-sm);
 }
 
 .crm-activity-actions button {
+  min-height: 32px;
   font-family: var(--font-sans);
-  font-size: 12.5px;
-  font-weight: 550;
-  padding: 5px 10px;
-  border-radius: var(--r-sm);
-  border: 1px solid color-mix(in srgb, var(--brass) 40%, var(--line-strong));
-  background: var(--bg-1);
-  color: var(--brass);
+  font-size: var(--text-label);
+  font-weight: 500;
+  padding: 0 var(--sp-sm);
+  border-radius: var(--r-md);
+  border: 0;
+  background: var(--bg-2);
+  color: var(--ink);
+  box-shadow: var(--edge-stock);
   cursor: pointer;
+  transition: transform var(--dur-micro) var(--ease-out);
 }
 
 .crm-activity-actions button:hover {
-  color: var(--ink);
-  background: var(--bg-2);
+  transform: translateY(-1px);
+  box-shadow: var(--edge-stock), var(--cast-stock);
+}
+
+.crm-activity-actions button:active {
+  transform: translateY(1px);
 }
 
 .crm-activity-actions button:focus-visible {
@@ -408,12 +599,33 @@
 .crm-activity-actions button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
 }
 
-/* Stale "Last contacted" cell. Cedar-ink text to match the dashboard late
-   pattern (10.3): --clay-ink is the contrast-gated text tone (--cedar was
-   never a token, so this fell back to inherited ink). Applied only when
-   isStaleContacted returns true. */
+.crm-activity-actions label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2xs);
+  min-height: 32px;
+  font-size: var(--text-label);
+  color: var(--ink-dim);
+  cursor: pointer;
+}
+
+.crm-activity-actions input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--amber);
+}
+
+.crm-activity-actions input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
+
+/* Stale "Last contacted" cell: the contrast-gated late tone, applied only
+   when isStaleContacted returns true; the "days ago" words say it. */
 .crm-stale {
   color: var(--clay-ink);
   font-variant-numeric: tabular-nums;
@@ -425,36 +637,83 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--sp-md);
 }
 
 /* Detail Edit trigger. Visible at rest — this control never stages through
-   a hidden state, so it carries no opacity rule; keyboard focus takes the
-   golden ring the rest of the CRM surface uses. */
+   a hidden state, so it carries no opacity rule. */
 .crm-detail-action {
   flex-shrink: 0;
-  margin-top: 0.2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: var(--sp-xs);
+  min-height: 40px;
   font-family: var(--font-sans);
-  font-size: 12.5px;
-  font-weight: 550;
-  padding: 7px 12px;
-  border-radius: var(--r-sm);
-  border: 1px solid color-mix(in srgb, var(--brass) 40%, var(--line-strong));
-  background: var(--bg-1);
-  color: var(--brass);
+  font-size: var(--text-small);
+  font-weight: 500;
+  padding: 0 var(--sp-md);
+  border-radius: var(--r-lg);
+  border: 0;
+  background: var(--bg-2);
+  color: var(--ink);
+  text-shadow: var(--press-text);
+  box-shadow: var(--edge-stock), var(--cast-stock);
   cursor: pointer;
+  transition:
+    transform var(--dur-micro) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
 }
 
 .crm-detail-action:hover {
-  color: var(--ink);
-  background: var(--bg-2);
+  transform: translateY(-1px);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
+}
+
+.crm-detail-action:active {
+  transform: translateY(1px);
 }
 
 .crm-detail-action:focus-visible {
   outline: 2px solid var(--brass);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crm-toolbar button,
+  .crm-form-actions button,
+  .crm-activity-actions button,
+  .crm-detail-action,
+  .crm-row-actions {
+    transition: none;
+    transform: none;
+  }
+}
+
+@media (max-width: 48rem) {
+  .crm-activity-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .crm-timeline-item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .crm-timeline-type,
+  .crm-timeline-body,
+  .crm-timeline-meta,
+  .crm-activity-actions {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .crm-detail {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--sp-xs) var(--sp-md);
+  }
+  .crm-detail dd {
+    border-top: 0;
+    padding-top: 0;
+  }
+  /* no hover on touch: row actions stay in view */
+  .crm-row-actions {
+    opacity: 1;
+  }
 }

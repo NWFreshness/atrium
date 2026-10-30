@@ -66,28 +66,23 @@ export default async function CrmPage() {
                 <li key={activity.id} className={styles.feedItem}>
                   <span>{activity.description}</span>
                   <span className={styles.feedMeta}>
-                    {formatDate(activity.occurredAt)} · {activity.type}
+                    <span>{formatDate(activity.occurredAt)}</span>
+                    <span>{activity.type}</span>
                     {activity.contactId ? (
-                      <>
-                        {" · "}
-                        <Link
-                          className={styles.feedLink}
-                          href={`/crm/contacts/${activity.contactId}`}
-                        >
-                          Contact
-                        </Link>
-                      </>
+                      <Link
+                        className={styles.feedLink}
+                        href={`/crm/contacts/${activity.contactId}`}
+                      >
+                        Contact
+                      </Link>
                     ) : null}
                     {activity.dealId ? (
-                      <>
-                        {" · "}
-                        <Link
-                          className={styles.feedLink}
-                          href={`/crm/deals/${activity.dealId}`}
-                        >
-                          Deal
-                        </Link>
-                      </>
+                      <Link
+                        className={styles.feedLink}
+                        href={`/crm/deals/${activity.dealId}`}
+                      >
+                        Deal
+                      </Link>
                     ) : null}
                   </span>
                 </li>

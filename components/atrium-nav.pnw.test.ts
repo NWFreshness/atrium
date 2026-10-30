@@ -26,7 +26,7 @@ const ESPRESSO = [
   "#fdf8ec",
 ];
 
-describe("rack nav chrome", () => {
+describe("coral nav chrome", () => {
   it("keeps the accessible nav contract Playwright walks", () => {
     expect(navTsx).toContain('aria-label="Atrium"');
     expect(navTsx).toContain('aria-label="Toggle theme"');
@@ -35,34 +35,32 @@ describe("rack nav chrome", () => {
     }
   });
 
-  it("sets the wordmark as a wide-tracked uppercase mono plate", () => {
-    expect(navCss).toContain("font-family: var(--font-display)");
-    expect(navCss).toContain("font-weight: 700");
-    expect(navCss).toContain("letter-spacing: 0.2em");
-    expect(navCss).toContain("text-transform: uppercase");
+  it("sets the wordmark in the display face, sentence case, tracked tight", () => {
+    expect(navCss).toMatch(
+      /\.atrium-nav-brand\s*\{[^}]*font-family:\s*var\(--font-display\)[^}]*font-weight:\s*600[^}]*letter-spacing:\s*-0\.02em/,
+    );
+    expect(navCss).not.toContain("text-transform: uppercase");
   });
 
-  it("reserves the amber block for the active nav item, not hover", () => {
+  it("raises the active nav item as a cotton card, never on hover", () => {
     expect(navCss).toContain(".atrium-nav-link-current");
     expect(navCss).toMatch(
-      /\.atrium-nav-link-current[^{]*\{[^}]*background:\s*var\(--amber\)/,
+      /\.atrium-nav-link-current[^{]*\{[^}]*background:\s*var\(--bg-2\)[^}]*box-shadow:\s*var\(--edge-stock\)/,
     );
     expect(navCss).toMatch(
-      /\.atrium-nav-link-current[^{]*\{[^}]*color:\s*var\(--on-amber\)/,
+      /\.atrium-nav-link-current[^{]*\{[^}]*color:\s*var\(--ink\)/,
     );
     expect(navCss).not.toMatch(
-      /\.atrium-nav-link:hover\s*\{[^}]*var\(--amber\)/,
+      /\.atrium-nav-link:hover\s*\{[^}]*(background|box-shadow)/,
     );
     expect(navCss).toMatch(
       /\.atrium-nav-link:hover\s*\{[^}]*color:\s*var\(--ink\)/,
     );
   });
 
-  it("makes the brand mark a 7px amber power LED", () => {
-    expect(navCss).toContain("width: 7px");
-    expect(navCss).toContain("height: 7px");
+  it("makes the brand mark a 10px board-ink seal", () => {
     expect(navCss).toMatch(
-      /\.atrium-nav-brand-mark\s*\{[^}]*border-radius:\s*50%[^}]*background:\s*var\(--amber\)/,
+      /\.atrium-nav-brand-mark\s*\{[^}]*width:\s*10px[^}]*height:\s*10px[^}]*border-radius:\s*2px[^}]*background:\s*var\(--amber\)/,
     );
     expect(navTsx).toContain('aria-hidden="true"');
   });
@@ -114,19 +112,19 @@ describe("shared atrium- layer", () => {
   });
 });
 
-describe("launcher rack units", () => {
-  it("renders four numbered units with status LEDs and live readouts", () => {
+describe("launcher index cards", () => {
+  it("renders four app cards with a status word and live readouts", () => {
     expect(launcher).toContain('label: "CRM"');
     expect(launcher).toContain('label: "Space"');
     expect(launcher).toContain('label: "Rolodex"');
     expect(launcher).toContain('label: "Groove"');
-    for (const unit of ["U1 · CR", "U2 · SP", "U3 · RX", "U4 · GR"]) {
-      expect(launcher).toContain(`unit: "${unit}"`);
-    }
+    // Rack unit codes are retired decoration.
+    expect(launcher).not.toContain("unit: \"U1");
     expect(launcher).toContain("launcherReadouts(");
-    expect(launcher).toContain("atrium-led");
-    // An LED never speaks by colour alone: each status carries a word.
-    expect(launcher).toContain("aria-label={LED_WORD[unit.status]}");
+    // Status never speaks by colour alone: the word is visible text.
+    expect(launcher).toContain("atrium-appcard-status");
+    expect(launcher).toContain("data-tone={unit.status}");
+    expect(launcher).toContain("{STATUS_WORD[unit.status]}");
     expect(launcher).toContain("atrium-appcard-readouts");
     expect(launcher).toContain("reveal");
     expect(launcher).toContain("<h1>Atrium</h1>");

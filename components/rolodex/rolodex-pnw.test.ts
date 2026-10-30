@@ -239,8 +239,9 @@ describe("initials avatar is measured cedar, not a guess (10.5 §3)", () => {
   };
   const token = (block: string, name: string) =>
     block.match(new RegExp(`${name}:\\s*(#[0-9a-fA-F]{6})`))![1].toLowerCase();
-  const dark = globals.slice(0, globals.indexOf('[data-theme="light"]'));
-  const light = globals.slice(globals.indexOf('[data-theme="light"]'));
+  // Coral: the paper is the :root default, the felt board the dark override.
+  const light = globals.slice(0, globals.indexOf('[data-theme="dark"]'));
+  const dark = globals.slice(globals.indexOf('[data-theme="dark"]'));
 
   it("fills with the cedar that can carry text, not raw clay", () => {
     const avatar = rule(peopleCss, "rolodex-initials");

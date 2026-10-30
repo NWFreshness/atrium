@@ -113,8 +113,8 @@ export function PipelineBoard({ deals: initialDeals }: { deals: Deal[] }) {
                 <header className={styles.columnHeader}>
                   <h2 className={styles.columnName}>{stage}</h2>
                   <p className={styles.columnTotals}>
-                    {formatMoney(totals.sumValue)} ·{" "}
-                    {formatMoney(totals.sumExpected)} expected
+                    <span>{formatMoney(totals.sumValue)}</span>
+                    <span>{formatMoney(totals.sumExpected)} expected</span>
                   </p>
                 </header>
                 <Droppable droppableId={stage}>
@@ -143,10 +143,22 @@ export function PipelineBoard({ deals: initialDeals }: { deals: Deal[] }) {
                               >
                                 {deal.name}
                               </Link>
+                              <p className={styles.cardValue}>
+                                {formatMoney(deal.value)}
+                                {stage === "Won" ? (
+                                  <span
+                                    className={styles.stamp}
+                                    aria-hidden="true"
+                                  >
+                                    Won
+                                  </span>
+                                ) : null}
+                              </p>
                               <p className={styles.cardMeta}>
-                                {formatMoney(deal.value)} ·{" "}
-                                {formatMoney(expectedValue(deal))} expected ·{" "}
-                                {deal.probability}%
+                                <span>
+                                  {formatMoney(expectedValue(deal))} expected
+                                </span>
+                                <span>{deal.probability}%</span>
                               </p>
                             </article>
                           )}

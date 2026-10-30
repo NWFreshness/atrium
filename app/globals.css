@@ -1,124 +1,161 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Coral (deal 1/3, seed 1349eadd·2026-10-30·r0) · redesign: full
+ * nav: kept (top strip, app subnav) · signature: a won deal pressed into its card in coral · states: full, empty, error (the ones the screens have)
+ * axes: light/grotesk-sans/warm · posture: restrained · modes: light+dark · contrast: pass · v2.0.0 */
+/* Hallmark · dismissed 11 · the 1px lift on toolbar, form, row and edit controls is Coral's one letterpress-card control spec, a single signal per control */
+/* Hallmark · dismissed 41 · cotton stock in the dark board block is a lighter surface; every rule inherits --ink, which the dark block swaps */
+/* Hallmark · dismissed 25 · the launcher card blurb is one sentence, a caption at 40ch */
+/* Hallmark · answered F3 · every h1 to h3 takes text-wrap: balance from the base rule here, the dialog head included */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: E, five token-only app modules (Space, Rolodex, Groove) keep their own label rules; they inherit the paper and ink but not the label voice */
+
 /* ============================================================
-   Rack — Atrium design system (Phase 14)
-   Hardware chassis: basalt dark (default) / cream light.
-   JetBrains Mono for chrome, labels and numbers; IBM Plex Sans
-   for anything a person reads or writes. Groove keeps its own
-   --inst-* scope. Token names are unchanged from Phase 10 so the
-   per-app CSS modules did not have to move.
+   Coral — Atrium design system (replaces Rack, Phase 14)
+   Warm grey paper and cotton stock lit from the left. General
+   Sans for everything a person reads, Geist Mono only for
+   figures that compare. Token names are unchanged from Phase 10
+   so the per-app CSS modules did not have to move; their values
+   are Coral's. Groove keeps its own --inst-* scope.
    ============================================================ */
 
 /* ---------- Tokens ---------- */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   /*
     Usage rules (do not "helpfully" break these in a later pass):
-    1. One highlight per screen. Amber marks the single most
-       important thing on a view — active nav, the primary button,
-       the key figure. --brass is amber as ink; --amber is amber as
-       a fill and always carries --on-amber text.
-    2. LEDs carry status: --led ok/saved, --warn due, --bad overdue,
-       --led-off idle. Never colour alone — pair with a word.
-    3. Mono is chrome. Anything a person reads or writes is
-       --font-sans on a flat panel, never on the grid.
+    1. Ink is the highlight. The one filled control on a screen and
+       the current nav item are --amber (board ink) with --on-amber
+       text. Coral (--brass) is spent only on the settled state (a
+       won deal), link hover underlines and the focus ring.
+    2. Status is a word, never a colour alone: --warn due, --bad
+       overdue, --good done, always beside the word that says it.
+    3. Figures that compare are --font-mono (Geist Mono); every
+       label, head and line of copy is --font-sans, sentence case,
+       untracked.
     4. Charts take the signal tokens directly (fill="var(--moss)"),
        so they follow the theme.
   */
 
-  /* surfaces (dark = basalt chassis, raised panels lighter) */
-  --bg-0: #14171a;
-  --bg-1: #191d21;
-  --bg-2: #1f2428;
-  --bg-3: #272d32;
-  --line: #2c3236;
-  --line-strong: #3d454a;
-  --grid: #1a1e22;
+  /* surfaces: paper page, cotton stock raised above it */
+  --bg-0: #f4efec;
+  --bg-1: #faf5f3;
+  --bg-2: #fdfbf8;
+  --bg-3: #fefdfb;
+  --line: #d9d3cf;
+  --line-strong: #c0b9b4;
+  --grid: #f0ebe7;
 
   /* ink */
-  --ink: #dfe5e3;
-  --ink-dim: #a4afac;
-  --ink-faint: #8f9b98;
+  --ink: #1d1614;
+  --ink-dim: #3c3330;
+  --ink-faint: #615955;
 
-  /* amber — the single highlight. --brass* are ink-safe on every surface. */
-  --brass: #ffb000;
-  --brass-bright: #ffc640;
-  --brass-deep: #a06a00;
-  --brass-soft: rgba(255, 176, 0, 0.12);
-  --brass-glow: rgba(255, 176, 0, 0.45);
-  --amber: #ffb000;
-  --on-amber: #14171a;
+  /* coral: the pressed ink of the settled state, the focus ring, link hover */
+  --brass: #b63328;
+  --brass-bright: #ef8b7b;
+  --brass-deep: #94231a;
+  --brass-soft: rgba(182, 51, 40, 0.14);
+  --brass-glow: rgba(182, 51, 40, 0.3);
 
-  /* signals and data series: led green / red / blue / neutral */
-  --moss: #58e08c;
-  --clay: #c7513d;
-  --clay-ink: #ff7a66;
-  --slate: #7fb2ff;
-  --timber: #c2b8a3;
+  /* the board: the one filled control and the current place */
+  --amber: #1f1917;
+  --on-amber: #f6f3ef;
+
+  /* signals and data series: warm, never blue */
+  --moss: #236436;
+  --clay: #c86556;
+  --clay-ink: #8e3c00;
+  --slate: #5c493a;
+  --timber: #795d3c;
+  --ochre: #815c0a;
   --good: var(--moss);
-  --warn: var(--brass);
+  --warn: var(--ochre);
   --bad: var(--clay-ink);
   --led: var(--moss);
-  --led-off: #3a4246;
-  --led-glow: 0 0 8px;
+  --led-off: #c4bcb7;
+  --led-glow: 0 0 0;
 
-  /* type — JetBrains Mono chrome, IBM Plex Sans content */
-  --font-display:
-    var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
-  --font-sans: var(--font-plex-sans), "Helvetica Neue", sans-serif;
-  --font-mono:
-    var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  /* type: General Sans for words, Geist Mono for figures */
+  --font-display: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
-  --text-display: clamp(1.7rem, 3.4vw, 2.4rem);
-  --text-display-weight: 700;
-  --text-display-tracking: 0.04em;
-  --text-display-leading: 1.08;
+  /* a fixed 1.2 scale from a 16px body; app screens take no fluid heads */
+  --text-display: 2.5rem;
+  --text-display-weight: 600;
+  --text-display-tracking: -0.03em;
+  --text-display-leading: 1.05;
 
-  --text-h1: clamp(1.4rem, 2.3vw, 1.8rem);
-  --text-h1-weight: 700;
-  --text-h1-tracking: 0;
-  --text-h1-leading: 1.15;
+  --text-h1: 1.875rem;
+  --text-h1-weight: 600;
+  --text-h1-tracking: -0.025em;
+  --text-h1-leading: 1.1;
 
-  --text-h2: clamp(1.1rem, 1.7vw, 1.3rem);
-  --text-h2-weight: 700;
-  --text-h2-tracking: 0;
+  --text-h2: 1.375rem;
+  --text-h2-weight: 600;
+  --text-h2-tracking: -0.015em;
   --text-h2-leading: 1.2;
 
-  --text-h3: 0.95rem;
-  --text-h3-weight: 700;
-  --text-h3-tracking: 0.02em;
+  --text-h3: 1.125rem;
+  --text-h3-weight: 600;
+  --text-h3-tracking: -0.01em;
   --text-h3-leading: 1.3;
 
-  --text-body: 0.9375rem;
+  --text-body: 1rem;
   --text-body-weight: 400;
-  --text-body-leading: 1.6;
+  --text-body-leading: 1.55;
 
-  --text-small: 0.84rem;
+  --text-small: 0.875rem;
   --text-small-weight: 400;
-  --text-small-leading: 1.55;
+  --text-small-leading: 1.5;
 
-  --text-label: 0.64rem;
-  --text-label-tracking: 0.14em;
-  /* mono, +0.14em, uppercase — consumers set font-family + text-transform */
+  --text-label: 0.8125rem;
+  --text-label-tracking: 0;
+  /* body face, weight 500, sentence case: consumers set font-weight */
 
-  --text-data: 0.8rem;
+  --text-data: 0.875rem;
   /* mono, font-variant-numeric: tabular-nums */
 
-  --text-kpi: 1.5rem;
-  --text-kpi-weight: 500;
-  --text-kpi-tracking: -0.01em;
+  --text-kpi: 1.75rem;
+  --text-kpi-weight: 400;
+  --text-kpi-tracking: -0.02em;
 
   --measure: 68ch;
   --measure-lede: 60ch;
 
-  /* geometry — machined: tight radii, hairlines, no soft shadows */
-  --r-sm: 2px;
-  --r-md: 3px;
-  --r-lg: 4px;
-  --shadow-panel: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  --glow-brass: 0 0 14px -2px var(--brass-glow);
+  /* spacing, a 4px scale */
+  --sp-3xs: 2px;
+  --sp-2xs: 4px;
+  --sp-xs: 8px;
+  --sp-sm: 12px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+  --sp-xl: 40px;
+  --sp-2xl: 64px;
 
-  /* shared focus language — one visible ring for every atrium- control.
-     Routed through --brass so it stays contrast-gated in both themes. */
+  /* motion: state only */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+
+  /* geometry: stationery, one light from the left, every cast falls right */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 8px;
+  --shadow-panel: 0 1px 2px rgba(64, 46, 37, 0.06);
+  --edge-stock:
+    inset 0 1px 0 rgba(255, 255, 251, 0.9),
+    inset 0 -1px 0 rgba(64, 46, 37, 0.07),
+    0 0 0 0.5px rgba(64, 46, 37, 0.22),
+    0 1px 0 rgba(64, 46, 37, 0.12);
+  --cast-stock: 6px 5px 10px -6px rgba(64, 46, 37, 0.3);
+  --cast-stock-lift: 12px 10px 18px -8px rgba(64, 46, 37, 0.3);
+  --press-text: 0 1px 0 rgba(255, 255, 251, 0.7);
+  --glow-brass: var(--cast-stock-lift);
+  /* felt grain for the desk surfaces (login, launcher) */
+  --tex-felt: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.25 0 0 0 0 0.18 0 0 0 0 0.14 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* shared focus language: one visible ring for every atrium- control */
   --focus-ring: 2px solid var(--brass);
 
   /* backward-compat aliases referenced by existing per-app CSS modules */
@@ -126,43 +163,46 @@
   --foreground: var(--ink);
 }
 
-[data-theme="light"] {
-  /* cream chassis: warm off-white hardware, raised panels lighter */
-  --bg-0: #e4dfd0;
-  --bg-1: #ece8db;
-  --bg-2: #f3f0e6;
-  --bg-3: #faf8f1;
-  --line: #c9c2ae;
-  --line-strong: #a39b85;
-  --grid: #dbd5c5;
+[data-theme="dark"] {
+  /* the felt board: derived from the paper, never inverted. Elevation
+     is lightness, shadows give way to hairlines. */
+  --bg-0: #130e0c;
+  --bg-1: #1a1512;
+  --bg-2: #221b18;
+  --bg-3: #29221f;
+  --line: #362f2b;
+  --line-strong: #4e4642;
+  --grid: #17110f;
 
-  --ink: #1d1c1a;
-  --ink-dim: #46453e;
-  --ink-faint: #585750;
+  --ink: #efeae5;
+  --ink-dim: #ccc6c1;
+  --ink-faint: #aba39e;
 
-  /* amber cannot be ink on cream: --brass drops to a deep amber, the
-     bright fill stays on --amber. */
-  --brass: #754b00;
-  --brass-bright: #f0a400;
-  --brass-deep: #5e3c00;
-  --brass-soft: rgba(240, 164, 0, 0.16);
-  --brass-glow: rgba(240, 164, 0, 0.4);
-  --amber: #f0a400;
-  --on-amber: #1d1c1a;
+  --brass: #ec8d7a;
+  --brass-bright: #f7a695;
+  --brass-deep: #bb584a;
+  --brass-soft: rgba(236, 141, 122, 0.16);
+  --brass-glow: rgba(236, 141, 122, 0.3);
+  --amber: #efeae5;
+  --on-amber: #1b1412;
 
-  --moss: #17613a;
-  --clay: #9c2c18;
-  --clay-ink: #9c2c18;
-  --slate: #234f99;
-  --timber: #57503f;
-  --led-off: #b9b2a0;
-  --led-glow: 0 0 0;
+  --moss: #82c38f;
+  --clay: #c86556;
+  --clay-ink: #e79e6b;
+  --slate: #aeaaa7;
+  --timber: #cbb394;
+  --ochre: #dbb970;
+  --led-off: #4e4642;
 
-  --shadow-panel: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  --shadow-panel: inset 0 0 0 1px rgba(255, 245, 235, 0.02);
+  --edge-stock: inset 0 1px 0 rgba(255, 245, 235, 0.05), 0 0 0 1px #362f2b;
+  --cast-stock: 0 0 0 0 transparent;
+  --cast-stock-lift: 0 0 0 1px #4e4642;
+  --press-text: none;
 
   --background: var(--bg-0);
   --foreground: var(--ink);
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 /* ---------- Base ---------- */
@@ -174,96 +214,98 @@
 
 html,
 body {
-  max-width: 100vw;
   min-height: 100%;
+  overflow-x: clip;
 }
 
-/* Grid paper is the chassis face. It is the body's own background, not an
-   overlay: a positioned layer would paint over unpositioned chrome such as
-   the Space sidebar. Panels are opaque, so body text never sits on it; only
-   short chrome titles do. */
 body {
   margin: 0;
   background: var(--bg-0);
-  background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 20px 20px;
-  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--text-body);
   font-weight: var(--text-body-weight);
   line-height: var(--text-body-leading);
+  font-synthesis: none;
+  caret-color: var(--brass);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-[data-theme="dark"] body {
-  color-scheme: dark;
-}
-
-/* powder-coat grain — above the page colour, below nothing interactive */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  opacity: 0.05;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* the cream chassis carries a quieter grain */
-[data-theme="light"] body::before {
-  opacity: 0.035;
-}
-
 ::selection {
   background: var(--brass-soft);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
 }
 
 main {
-  padding: 2rem;
+  padding: var(--sp-xl) var(--sp-xl) var(--sp-2xl);
   position: relative;
   z-index: 1;
 }
 
-h1 {
+h1,
+h2,
+h3 {
   font-family: var(--font-display);
+  overflow-wrap: break-word;
+  min-width: 0;
+  text-wrap: balance;
+}
+
+h1 {
   font-size: var(--text-h1);
   font-weight: var(--text-h1-weight);
   letter-spacing: var(--text-h1-tracking);
   line-height: var(--text-h1-leading);
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--sp-xs);
+}
+
+h2 {
+  font-size: var(--text-h2);
+  font-weight: var(--text-h2-weight);
+  letter-spacing: var(--text-h2-tracking);
+  line-height: var(--text-h2-leading);
 }
 
 p {
   margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
 }
 
 /* ---------- Motion ---------- */
 .reveal {
-  opacity: 0;
-  transform: translateY(12px);
-  animation: reveal 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
-  animation-delay: calc(var(--i, 0) * 70ms);
+  animation: reveal 0.5s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
 }
 
 @keyframes reveal {
-  to {
-    opacity: 1;
-    transform: none;
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     animation: none;
-    opacity: 1;
-    transform: none;
   }
   * {
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 40rem) {
+  main {
+    padding: var(--sp-lg) var(--sp-md) var(--sp-xl);
   }
 }

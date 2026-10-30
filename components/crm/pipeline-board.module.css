@@ -1,38 +1,37 @@
 /* ============================================================
-   CRM pipeline board — PNW pass (10.3)
-   Basalt columns on `--bg-1` with a 3px stage accent, mono numerals,
-   and the same six-accent family as the rest of CRM: neutral slate,
-   open moss, warming timber/clay, a golden win, a cedar-ink loss.
-   Drag behaviour is untouched — presentation only.
+   CRM pipeline board — Coral
+   Six stage wells on the paper, each deal a cotton index card
+   lit from the left. The value is the card's figure in Geist
+   Mono; a won deal has "Won" pressed into its stock in coral,
+   the one settled state. Drag behaviour is untouched.
    ============================================================ */
 
 .header {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
-  margin: 0 0 1rem;
+  gap: var(--sp-xl);
+  margin: 0 0 var(--sp-lg);
 }
 
 .headerStat {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: var(--sp-2xs);
+  padding-top: var(--sp-sm);
+  border-top: 2px solid var(--line-strong);
 }
 
 .headerLabel {
-  font-family: var(--font-mono);
   font-size: var(--text-label);
-  font-weight: 400;
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
+  font-weight: 500;
   color: var(--ink-faint);
 }
 
 .headerValue {
-  font-family: var(--font-display);
-  font-size: var(--text-h2);
-  font-weight: var(--text-h2-weight);
-  letter-spacing: var(--text-h2-tracking);
+  font-family: var(--font-mono);
+  font-size: var(--text-kpi);
+  letter-spacing: var(--text-kpi-tracking);
+  line-height: 1.1;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
@@ -40,28 +39,25 @@
 .board {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0.8rem;
+  gap: var(--sp-sm);
   width: 100%;
   min-width: 0;
   overflow-x: hidden;
 }
 
+/* a tinted well: no border, the stage named by a rule along its top */
 .column {
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-top-width: 3px;
-  border-top-color: var(--stage-c, var(--line-strong));
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel);
+  background: var(--grid);
+  border-top: 2px solid var(--stage-c, var(--line-strong));
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
 }
 
 .columnHeader {
-  padding: 0.65rem 0.75rem 0.55rem;
-  border-bottom: 1px solid var(--line);
+  padding: var(--sp-sm) var(--sp-sm) var(--sp-xs);
 }
 
 .columnName {
@@ -74,10 +70,11 @@
 }
 
 .columnTotals {
-  margin: 0.2rem 0 0;
-  font-family: var(--font-mono);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-xs);
+  margin: var(--sp-2xs) 0 0;
   font-size: var(--text-label);
-  letter-spacing: 0.04em;
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
@@ -85,50 +82,49 @@
 .list {
   flex: 1;
   min-height: 8rem;
-  max-height: calc(100vh - 14rem);
+  max-height: calc(100dvh - 16rem);
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0.5rem;
+  padding: var(--sp-2xs) var(--sp-xs) var(--sp-sm);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--sp-xs);
 }
 
 .card {
-  background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: 0.6rem 0.65rem;
-  box-shadow: inset 0 1px 0 var(--line);
-  transition:
-    border-color 0.18s,
-    background 0.18s;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-2);
+  border-radius: var(--r-md);
+  padding: var(--sp-sm);
+  box-shadow: var(--edge-stock), var(--cast-stock);
+  transition: box-shadow var(--dur-short) var(--ease-out);
 }
 
 /* dragHandleProps makes the card keyboard-focusable, so it takes the shared
-   brass ring too (the gate asserts a ring on every focusable interactive). */
+   ring too (the gate asserts a ring on every focusable interactive). */
 .card:focus-visible {
   outline: 2px solid var(--brass);
   outline-offset: 2px;
 }
 
 .card:hover {
-  border-color: var(--line-strong);
-  background: var(--bg-2);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
 }
 
 .cardName {
   display: block;
   color: var(--ink);
-  font-weight: 600;
-  font-size: 13px;
+  font-weight: 500;
+  font-size: var(--text-small);
+  line-height: 1.35;
   text-decoration: none;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .cardName:hover {
   text-decoration: underline;
-  text-decoration-color: var(--line-strong);
+  text-decoration-color: var(--brass);
   text-underline-offset: 2px;
 }
 
@@ -138,34 +134,71 @@
   border-radius: var(--r-sm);
 }
 
-.cardMeta {
-  margin: 0.3rem 0 0;
+.cardValue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-xs);
+  margin: var(--sp-xs) 0 0;
   font-family: var(--font-mono);
-  font-size: var(--text-data);
+  font-size: var(--text-body);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 var(--sp-xs);
+  margin: var(--sp-3xs) 0 0;
+  font-size: var(--text-label);
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
 
-/* Stage accents — one PNW family that advances from neutral to golden.
-   Semantic, not decorative: open = moss, won = brass (golden),
-   lost = cedar-ink. `--clay` is a rule-only tone, never ink. */
+/* The signature: the settled state pressed into the stock. A lit wall
+   below the letterforms and a shade wall above sink the ink into the
+   card, tilted the few degrees a hand stamp lands at. */
+.stamp {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--brass);
+  opacity: 0.85;
+  transform: rotate(-8deg);
+  text-shadow:
+    0 1px 0 var(--bg-3),
+    0 -1px 0 var(--brass-glow);
+  pointer-events: none;
+}
+
+/* Stage rules: a warm family that advances from neutral to the coral win. */
 .stageNew {
-  --stage-c: var(--slate);
+  --stage-c: var(--line-strong);
 }
 .stageQualified {
-  --stage-c: var(--moss);
+  --stage-c: var(--slate);
 }
 .stageProposal {
   --stage-c: var(--timber);
 }
 .stageNegotiation {
-  --stage-c: var(--clay);
+  --stage-c: var(--ochre);
 }
 .stageWon {
   --stage-c: var(--brass);
 }
 .stageLost {
   --stage-c: var(--clay-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
 }
 
 /* Narrow-viewport stack (13.4): six across is illegible below tablet

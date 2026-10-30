@@ -26,24 +26,33 @@ import type {
 import styles from "./dashboard.module.css";
 
 /*
- * Rack data palette (Phase 14). The series are the signal tokens themselves:
- * a `var(--token)` in an SVG presentation attribute resolves like any CSS
- * value, so the charts follow the theme instead of pinning dark literals.
+ * Coral data palette. The series are the signal tokens themselves: a
+ * `var(--token)` in an SVG presentation attribute resolves like any CSS
+ * value, so the charts follow the theme instead of pinning literals.
  *
- *   WON      led green  → `--moss`
- *   FORECAST neutral    → `--timber`
- *   OPEN     blue       → `--slate`
- *   LATE     red        → `--clay-ink`
- *   BRASS    amber      → the screen's one highlight (the deal-count line)
+ *   WON      green  → `--moss`
+ *   FORECAST brown  → `--timber`
+ *   OPEN     umber  → `--slate`
+ *   WARM     ochre  → `--ochre`
+ *   LATE     rust   → `--clay-ink`
+ *   BRASS    coral  → the settled state (the Won stage, the deal-count line)
  *
  * Colour is never the only channel: every series carries a name and every
- * chart a legend.
+ * chart a legend; a bar coloured per category is named by its axis.
  */
 const WON = "var(--moss)";
 const FORECAST = "var(--timber)";
 const OPEN = "var(--slate)";
+const WARM = "var(--ochre)";
 const LATE = "var(--clay-ink)";
 const BRASS = "var(--brass)";
+
+/* One colour per funnel stage, Won in coral. Neighbours never share a hue
+   family, so the two browns (OPEN, FORECAST) are kept apart. */
+const STAGE_FILLS = [OPEN, WARM, FORECAST, WON, BRASS];
+
+/* Organizations have no stage, so coral (the settled state) is left out. */
+const ORG_FILLS = [OPEN, WARM, WON, FORECAST, LATE];
 
 /*
  * 13.2 funnel readability: stage labels sit on a fixed-width category axis
@@ -170,7 +179,8 @@ export function DashboardCharts({
                 tick={<FunnelStageTick />}
               />
               <Tooltip />
-              <Legend />
+              {/* No swatch: each bar has its own colour, named on the axis. */}
+              <Legend iconSize={0} />
               <Bar
                 dataKey="value"
                 /* Not "Pipeline value": that string is the KPI tile's label on
@@ -182,6 +192,12 @@ export function DashboardCharts({
                 isAnimationActive={false}
                 radius={[0, 4, 4, 0]}
               >
+                {funnel.map((stage, index) => (
+                  <Cell
+                    key={stage.label}
+                    fill={STAGE_FILLS[Math.min(index, STAGE_FILLS.length - 1)]}
+                  />
+                ))}
                 <LabelList
                   dataKey="value"
                   position="right"
@@ -232,13 +248,21 @@ export function DashboardCharts({
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Legend />
+                {/* No swatch: each bar has its own colour, named on the axis. */}
+                <Legend iconSize={0} />
                 <Bar
                   dataKey="value"
                   name="Value by organization"
                   fill={OPEN}
                   isAnimationActive={false}
-                />
+                >
+                  {topOrganizations.map((organization, index) => (
+                    <Cell
+                      key={`${index}-${organization.name}`}
+                      fill={ORG_FILLS[index % ORG_FILLS.length]}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>

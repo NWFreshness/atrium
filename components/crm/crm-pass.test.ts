@@ -53,7 +53,7 @@ describe("CRM dashboard", () => {
     expect(page).toContain("index={5}");
     expect(dashboardCss).toContain("--tile-c");
     expect(dashboardCss).toContain("var(--font-display)");
-    expect(dashboardCss).toContain("var(--bg-1)");
+    expect(dashboardCss).toContain("var(--bg-2)");
     expect(dashboardCss).toContain("var(--text-kpi)");
     expect(dashboardCss).toContain("var(--font-mono)");
     expect(dashboardCss).not.toContain("--violet");
@@ -62,18 +62,20 @@ describe("CRM dashboard", () => {
 
 describe("CRM tables / dialogs / board use Workroom tokens", () => {
   it("org.module.css uses the token palette, not flat hex surfaces", () => {
-    expect(orgCss).toContain("var(--bg-1)");
+    expect(orgCss).toContain("var(--bg-2)");
     expect(orgCss).toContain("var(--ink)");
     expect(orgCss).toContain("var(--brass)");
     expect(orgCss).toContain("var(--r-md)");
-    expect(orgCss).toContain("backdrop-filter");
+    // Coral: the dialog sits over an ink veil, no blur; the sheet casts right.
+    expect(orgCss).not.toContain("backdrop-filter");
+    expect(orgCss).toMatch(/\.crm-dialog\s*\{[^}]*var\(--cast-stock-lift\)/);
     expect(orgCss).toContain('button[type="submit"]');
   });
 
   it("pipeline-board module maps stages to the warm palette", () => {
     expect(pipelineCss).toContain("--stage-c");
-    expect(pipelineCss).toContain("var(--moss)");
-    expect(pipelineCss).toContain("var(--clay)");
+    expect(pipelineCss).toContain("var(--ochre)");
+    expect(pipelineCss).toContain("var(--brass)");
     expect(pipelineCss).toContain("var(--slate)");
     expect(pipelineCss).toContain("var(--timber)");
     expect(pipelineCss).toContain("var(--clay-ink)");

@@ -40,7 +40,7 @@ export default async function DealDetailPage({
     : null;
 
   return (
-    <main>
+    <main className={styles["crm-record"]}>
       <div className={styles["crm-detail-title"]}>
         <div className="atrium-pagetitle">
           <h1>{deal.name}</h1>

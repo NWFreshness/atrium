@@ -1,18 +1,26 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 import "./workroom.css";
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
+// General Sans is self-hosted under the ITF Free Font License (app/fonts/).
+const generalSans = localFont({
+  variable: "--font-general-sans",
+  display: "swap",
+  src: [
+    { path: "./fonts/GeneralSans-Regular.woff2", weight: "400" },
+    { path: "./fonts/GeneralSans-Medium.woff2", weight: "500" },
+    { path: "./fonts/GeneralSans-Semibold.woff2", weight: "600" },
+  ],
 });
 
-const plexSans = IBM_Plex_Sans({
-  variable: "--font-plex-sans",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -24,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${jetbrainsMono.variable} ${plexSans.variable}`}
+      className={`${generalSans.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
       <head>

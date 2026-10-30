@@ -17,7 +17,6 @@ export default function LoginPage() {
         A
       </span>
       <div className={`${styles["auth-card"]} reveal atrium-fit`}>
-        <p className={styles["auth-plate"]}>Model AT-4 · four units</p>
         <div className={styles["auth-brandrow"]}>
           <span className="atrium-brand">
             <span className="atrium-brand-mark" aria-hidden="true" />
@@ -33,10 +32,6 @@ export default function LoginPage() {
           ) : (
             <span>Signups closed</span>
           )}
-          <span className={styles["auth-standby"]}>
-            <span className="atrium-led atrium-led-off" aria-hidden="true" />
-            Standby
-          </span>
         </div>
       </div>
     </main>

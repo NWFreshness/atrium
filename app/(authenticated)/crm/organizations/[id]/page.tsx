@@ -24,7 +24,7 @@ export default async function OrganizationDetailPage({
   ]);
 
   return (
-    <main>
+    <main className={styles["crm-record"]}>
       <div className={styles["crm-detail-title"]}>
         <div className="atrium-pagetitle">
           <h1>{organization.name}</h1>

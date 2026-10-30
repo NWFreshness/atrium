@@ -1,32 +1,32 @@
 /* ============================================================
-   Rack — shared `atrium-` presentational classes (Phase 14)
+   Coral — shared `atrium-` presentational classes
    Consumed by the nav, launcher, login, and every per-app
-   stylesheet. `atrium-` prefixed so any app can use
-   them without colliding with its own namespace. File path
+   stylesheet. `atrium-` prefixed so any app can use them
+   without colliding with its own namespace. File path
    unchanged — 5.7's namespace gate resolves imports by path.
+   Controls are letterpress cards: cotton stock lit from the
+   left, the label pressed in; the one primary is board ink.
    ============================================================ */
 
 /* ---------- Brand ---------- */
 .atrium-brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--sp-xs);
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--text-h3);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  letter-spacing: -0.02em;
   color: var(--ink);
   white-space: nowrap;
 }
 
-/* the power LED */
+/* the wordmark's seal: a small ink square pressed into the stock */
 .atrium-brand-mark {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
   background: var(--amber);
-  box-shadow: var(--led-glow) var(--amber);
 }
 
 /* ---------- Buttons ---------- */
@@ -34,64 +34,66 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 8px 12px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--line-strong);
+  gap: var(--sp-xs);
+  min-height: 36px;
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  font-weight: 500;
+  padding: 0 var(--sp-sm);
+  border-radius: var(--r-lg);
+  border: 0;
   background: var(--bg-2);
-  color: var(--ink-dim);
-  /* a keycap: the bottom edge is the travel */
-  box-shadow: inset 0 -2px 0 var(--bg-3);
+  color: var(--ink);
+  text-shadow: var(--press-text);
+  box-shadow: var(--edge-stock), var(--cast-stock);
   cursor: pointer;
   transition:
-    color 0.2s,
-    border-color 0.2s,
-    background 0.2s,
-    transform 0.15s;
+    transform var(--dur-micro) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
 }
 
 .atrium-btn svg {
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
   stroke: currentColor;
   fill: none;
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+  flex-shrink: 0;
 }
 
 .atrium-btn:hover {
-  color: var(--ink);
-  border-color: var(--ink-faint);
-  background: var(--bg-3);
+  transform: translateY(-1px);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
 }
 
 .atrium-btn:active {
   transform: translateY(1px);
-  box-shadow: none;
+  box-shadow: var(--edge-stock);
+}
+
+.atrium-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .atrium-btn-primary {
-  border-color: var(--amber);
   background: var(--amber);
   color: var(--on-amber);
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.22);
+  text-shadow: none;
+  box-shadow: var(--cast-stock);
 }
 
 .atrium-btn-primary:hover {
-  filter: brightness(1.08);
-  border-color: var(--amber);
   background: var(--amber);
   color: var(--on-amber);
+  box-shadow: var(--cast-stock-lift);
 }
 
-/* Visible keyboard focus for every shared button (13.1). Inputs already
-   carry their own :focus-visible rule below; nav tabs and app cards follow. */
+/* Visible keyboard focus for every shared button (13.1). Inputs carry their
+   own :focus-visible rule below; nav tabs and app cards follow. */
 .atrium-btn:focus-visible {
   outline: var(--focus-ring);
   outline-offset: 2px;
@@ -100,59 +102,55 @@
 /* ---------- Fields ---------- */
 .atrium-field {
   display: block;
-  margin-bottom: 0.9rem;
+  margin-bottom: var(--sp-md);
 }
 
 .atrium-field > span {
   display: block;
-  font-family: var(--font-mono);
   font-size: var(--text-label);
-  font-weight: 400;
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: var(--ink-dim);
+  margin-bottom: var(--sp-2xs);
 }
 
 .atrium-field input {
   width: 100%;
+  min-height: 44px;
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink);
-  /* recessed into the faceplate */
-  background: var(--bg-0);
+  background: var(--bg-3);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-md);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22);
-  padding: 9px 11px;
+  padding: 0 var(--sp-sm);
   outline: none;
-  transition:
-    border-color 0.2s,
-    background 0.2s,
-    box-shadow 0.2s;
+  transition: border-color var(--dur-short) var(--ease-out);
 }
 
 .atrium-field input::placeholder {
   color: var(--ink-faint);
 }
 
-.atrium-field input:focus {
+.atrium-field input:hover {
   border-color: var(--ink-faint);
 }
 
 .atrium-field input:focus-visible {
   outline: 2px solid var(--brass);
-  outline-offset: 2px;
-  border-color: var(--brass);
+  outline-offset: -1px;
+}
+
+.atrium-field input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* ---------- Panels & labels ---------- */
 .atrium-panel {
-  background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel);
-  padding: 1.25rem;
+  background: var(--bg-2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--edge-stock), var(--cast-stock);
+  padding: var(--sp-lg);
 }
 
 /* A readable measure for a single-column form, inside the full-width <main>. */
@@ -162,55 +160,42 @@
 
 /* ---------- Alerts ---------- */
 .atrium-alert {
-  margin-top: 1rem;
-  padding: 9px 12px;
-  border-left: 3px solid var(--clay-ink);
-  border-radius: var(--r-sm);
-  background: var(--bg-2);
-  font-size: 12.5px;
+  margin-top: var(--sp-md);
+  padding: var(--sp-xs) var(--sp-sm);
+  border: 1px solid var(--clay-ink);
+  border-radius: var(--r-md);
+  font-size: var(--text-small);
   color: var(--clay-ink);
 }
 
 .atrium-alert-ok {
-  border-left-color: var(--good);
+  border-color: var(--good);
+  color: var(--good);
 }
 
 .atrium-label {
-  font-family: var(--font-mono);
   font-size: var(--text-label);
-  font-weight: 400;
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
+  font-weight: 500;
   color: var(--ink-faint);
 }
 
 /* ---------- Chips & avatars ---------- */
+/* status is an ink outline and a word, never a tinted fill */
 .atrium-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 2px 7px;
+  gap: var(--sp-2xs);
+  font-size: var(--text-label);
+  font-weight: 500;
+  padding: var(--sp-3xs) var(--sp-xs);
   border-radius: var(--r-sm);
-  border: 1px solid
-    color-mix(in srgb, var(--chip-c, var(--ink-faint)) 45%, transparent);
-  background: color-mix(
-    in srgb,
-    var(--chip-c, var(--ink-faint)) 12%,
-    transparent
-  );
+  border: 1px solid var(--chip-c, var(--line-strong));
   color: var(--chip-c, var(--ink-dim));
   white-space: nowrap;
 }
 
 .atrium-chip .dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--chip-c, var(--ink-faint));
+  display: none;
 }
 
 .atrium-avatar {
@@ -219,42 +204,22 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--av, var(--slate));
-  background: color-mix(in srgb, var(--av, var(--slate)) 14%, var(--bg-1));
-  border: 1px solid color-mix(in srgb, var(--av, var(--slate)) 55%, transparent);
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--bg-2);
+  box-shadow: var(--edge-stock);
   flex: none;
 }
 
-/* ---------- KPI cards ---------- */
+/* ---------- KPI figures ---------- */
 .atrium-kpi {
-  position: relative;
-  overflow: hidden;
-  padding: 15px 17px 13px;
-  background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel);
-}
-
-/* the readout's indicator lamp, tinted by the tile's tone */
-.atrium-kpi::before {
-  content: "";
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--kpi-c, var(--brass));
-  box-shadow: var(--led-glow) var(--kpi-c, var(--brass));
+  padding: var(--sp-md) 0;
+  border-top: 1px solid var(--line-strong);
 }
 
 .atrium-kpi .atrium-label {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--sp-2xs);
 }
 
 .atrium-kpi .atrium-kpi-value {
@@ -268,12 +233,12 @@
 }
 
 .atrium-kpi .atrium-kpi-value.accent {
-  color: var(--kpi-c, var(--brass));
+  color: var(--kpi-c, var(--ink));
 }
 
 .atrium-kpi .atrium-kpi-sub {
-  margin-top: 0.35rem;
-  font-size: 12px;
+  margin-top: var(--sp-2xs);
+  font-size: var(--text-small);
   color: var(--ink-faint);
 }
 
@@ -281,41 +246,40 @@
 .atrium-subnav {
   display: flex;
   flex-wrap: wrap;
-  row-gap: 0.35rem;
-  gap: 0.4rem;
-  margin: 1.1rem 0 0;
+  gap: var(--sp-2xs);
+  margin: 0;
   border-bottom: 1px solid var(--line);
-  /* a second faceplate strip under the nav: opaque, off the grid */
   background: var(--bg-0);
+  /* a tab row scrolls sideways rather than wrapping on a phone */
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .atrium-subtab {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 11px;
+  gap: var(--sp-xs);
+  min-height: 44px;
+  padding: 0 var(--sp-sm);
   margin-bottom: -1px;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--text-small);
   font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--ink-faint);
   text-decoration: none;
+  white-space: nowrap;
   border-bottom: 2px solid transparent;
-  transition:
-    color 0.2s,
-    border-color 0.2s;
+  transition: color var(--dur-short) var(--ease-out);
 }
 
 .atrium-subtab svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   stroke: currentColor;
   fill: none;
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+  flex-shrink: 0;
 }
 
 .atrium-subtab:hover {
@@ -324,7 +288,7 @@
 
 .atrium-subtab:focus-visible {
   outline: var(--focus-ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
   color: var(--ink);
 }
 
@@ -335,38 +299,37 @@
 
 /* ---------- Page title ---------- */
 .atrium-pagetitle {
-  margin: 0.4rem 0 0.2rem;
+  margin: 0 0 var(--sp-lg);
 }
 
 .atrium-pagetitle h1 {
   font-size: var(--text-h1);
-  font-weight: 700;
+  font-weight: var(--text-h1-weight);
   letter-spacing: var(--text-h1-tracking);
   line-height: var(--text-h1-leading);
+  margin: 0;
 }
 
 .atrium-sub {
-  margin-top: 0.35rem;
-  font-family: var(--font-mono);
-  font-size: 11px;
+  margin-top: var(--sp-2xs);
+  font-size: var(--text-small);
   color: var(--ink-faint);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
-/* ---------- Status LED ---------- */
+/* ---------- Status ---------- */
+/* Kept for Space and Rolodex, which still mount it: a small ink square,
+   always next to the word that says what it means. */
 .atrium-led {
   display: inline-block;
   flex: none;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
   background: var(--led-c, var(--led));
-  box-shadow: var(--led-glow) var(--led-c, var(--led));
 }
 
 .atrium-led-warn {
-  --led-c: var(--amber);
+  --led-c: var(--warn);
 }
 
 .atrium-led-bad {
@@ -375,14 +338,13 @@
 
 .atrium-led-off {
   background: var(--led-off);
-  box-shadow: none;
 }
 
-/* ---------- Launcher: the rack ---------- */
+/* ---------- Launcher: four index cards on the desk ---------- */
 .atrium-launcher {
-  max-width: 1080px;
+  max-width: 72rem;
   margin: 0 auto;
-  padding: 2rem 2rem 3rem;
+  padding: var(--sp-2xl) var(--sp-xl);
 }
 
 .atrium-launcher h1 {
@@ -390,120 +352,128 @@
   font-weight: var(--text-display-weight);
   letter-spacing: var(--text-display-tracking);
   line-height: var(--text-display-leading);
-  text-transform: uppercase;
+  margin: 0;
 }
 
-/* one unit per row, like gear bolted into a rack */
+.atrium-launcher > .atrium-sub {
+  font-size: var(--text-body);
+  margin-top: var(--sp-xs);
+}
+
 .atrium-graph {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.5rem;
-  margin-top: 1.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-lg);
+  margin-top: var(--sp-xl);
 }
 
 .atrium-appcard {
-  position: relative;
   display: grid;
-  grid-template-columns: 5.5rem minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0.95rem 1.75rem;
-  background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel);
+  grid-template-rows: auto 1fr auto;
+  gap: var(--sp-md);
+  min-height: 15rem;
+  padding: var(--sp-lg);
+  background: var(--bg-2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--edge-stock), var(--cast-stock);
   text-decoration: none;
   color: inherit;
   transition:
-    border-color 0.2s,
-    background 0.2s;
-}
-
-/* rack screws, left and right */
-.atrium-appcard::before,
-.atrium-appcard::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  margin-top: -3px;
-  border-radius: 50%;
-  border: 1px solid var(--line-strong);
-}
-
-.atrium-appcard::before {
-  left: 0.55rem;
-}
-
-.atrium-appcard::after {
-  right: 0.55rem;
+    transform var(--dur-short) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
 }
 
 .atrium-appcard:hover {
-  border-color: var(--amber);
-  background: var(--bg-2);
+  transform: translateY(-2px);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
 }
 
-.atrium-appcard-id {
-  display: grid;
-  gap: 0.4rem;
-  justify-items: start;
-  font-family: var(--font-mono);
-  font-size: var(--text-label);
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
-  color: var(--brass);
+.atrium-appcard:active {
+  transform: translateY(0);
+}
+
+.atrium-appcard-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-md);
 }
 
 .atrium-appcard h3 {
-  font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  line-height: var(--text-h3-leading);
+  font-size: var(--text-h2);
+  font-weight: 600;
+  letter-spacing: var(--text-h2-tracking);
+  line-height: var(--text-h2-leading);
   color: var(--ink);
   margin: 0;
 }
 
 .atrium-appcard p {
-  font-size: 13px;
+  font-size: var(--text-small);
   line-height: 1.5;
   color: var(--ink-dim);
+  max-width: 40ch;
+  margin-top: var(--sp-2xs);
+}
+
+/* the unit's state, set as a word: an ink outline, never a lamp */
+.atrium-appcard-status {
+  flex-shrink: 0;
+  font-size: var(--text-label);
+  font-weight: 500;
+  padding: var(--sp-3xs) var(--sp-xs);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.atrium-appcard-status[data-tone="ok"] {
+  color: var(--good);
+  border-color: var(--good);
+}
+
+.atrium-appcard-status[data-tone="warn"] {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.atrium-appcard-status[data-tone="bad"] {
+  color: var(--bad);
+  border-color: var(--bad);
+}
+
+.atrium-appcard-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  padding-top: var(--sp-md);
+  border-top: 1px solid var(--line);
 }
 
 .atrium-appcard-readouts {
   display: flex;
-  gap: 1.4rem;
+  flex-wrap: wrap;
+  gap: var(--sp-lg);
   margin: 0;
 }
 
-/* fixed-width cells so figures line up down the rack */
-.atrium-appcard-readouts div {
-  min-width: 5.25rem;
-  text-align: right;
-}
-
 .atrium-appcard-readouts dt {
-  font-family: var(--font-mono);
   font-size: var(--text-label);
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-faint);
 }
 
 .atrium-appcard-readouts dd {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 1.05rem;
-  font-weight: 500;
+  font-size: var(--text-h2);
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
 
 .atrium-appcard-readouts dd[data-tone="warn"] {
-  color: var(--brass);
+  color: var(--warn);
 }
 
 .atrium-appcard-readouts dd[data-tone="bad"] {
@@ -511,25 +481,17 @@
 }
 
 .atrium-appcard .atrium-appcard-open {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 8px 12px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--line-strong);
-  background: var(--bg-2);
-  color: var(--ink-dim);
-  box-shadow: inset 0 -2px 0 var(--bg-3);
-  transition:
-    color 0.2s,
-    border-color 0.2s;
+  flex-shrink: 0;
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 0.2em;
 }
 
 .atrium-appcard:hover .atrium-appcard-open {
-  color: var(--ink);
-  border-color: var(--ink-faint);
+  text-decoration-color: var(--brass);
 }
 
 .atrium-appcard:focus-visible {
@@ -545,6 +507,7 @@
   }
   .atrium-btn,
   .atrium-btn:hover,
+  .atrium-btn:active,
   .atrium-btn-primary:hover,
   .atrium-subtab,
   .atrium-subtab:hover {
@@ -554,31 +517,17 @@
 }
 
 /* ---------- Responsive ----------
-   A rack unit is one row at every width; under 48rem its four cells stack
-   so no width in the 375 / 768 / 1024 / 1440 pass scrolls sideways. */
+   Under 48rem the four cards stack to one column so no width in the
+   375 / 768 / 1024 / 1440 pass scrolls sideways. */
 @media (max-width: 48rem) {
   .atrium-graph {
     grid-template-columns: minmax(0, 1fr);
   }
   .atrium-launcher {
-    padding: 1.5rem 1rem 2.5rem;
+    padding: var(--sp-xl) var(--sp-md);
   }
   .atrium-appcard {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.6rem 1rem;
-  }
-  .atrium-appcard-id {
-    grid-auto-flow: column;
-    align-items: center;
-    justify-content: start;
-    gap: 0.6rem;
-  }
-  .atrium-appcard-readouts {
-    grid-column: 1 / -1;
-    flex-wrap: wrap;
-  }
-  .atrium-appcard-readouts div {
-    text-align: left;
+    min-height: 0;
   }
 }
 
@@ -598,14 +547,14 @@
 @media (max-width: 56rem) {
   .atrium-nav-stack {
     flex-wrap: wrap;
-    row-gap: 0.5rem;
-    padding-top: 0.6rem;
-    padding-bottom: 0.6rem;
+    row-gap: var(--sp-xs);
+    padding-top: var(--sp-xs);
+    padding-bottom: var(--sp-xs);
     min-height: 0;
   }
   .atrium-nav-endwrap {
     flex-wrap: wrap;
-    row-gap: 0.5rem;
+    row-gap: var(--sp-xs);
     max-width: 100%;
   }
 }

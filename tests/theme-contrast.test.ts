@@ -2,7 +2,8 @@
  * Phase 10.7, re-based on the Phase 14 rack palette — computed WCAG contrast
  * from the shipped CSS. The 4.5 / 3.0 floors are unchanged.
  *
- * Reads `app/globals.css` (`:root` and `[data-theme="light"]`) and the
+ * Reads `app/globals.css` (`:root`, the Coral paper default, and
+ * `[data-theme="dark"]`, the felt board) and the
  * instrument block in `components/groove/groove-shell.module.css`. A renamed
  * token fails with "token missing" rather than skipping the pair. Thresholds
  * are per role; fill-only downgrades live in FILL_EXCEPTIONS so relaxing one
@@ -34,6 +35,7 @@ const TEXT_ROLES = [
   "--slate",
   "--timber",
   "--moss",
+  "--ochre",
 ] as const;
 
 const SURFACES = ["--bg-0", "--bg-1", "--bg-2", "--bg-3"] as const;
@@ -93,8 +95,9 @@ function cssBlock(source: string, openAt: string): string {
   throw new Error(`token missing: unclosed block ${openAt}`);
 }
 
-const dark = cssBlock(globals, ":root");
-const light = cssBlock(globals, '[data-theme="light"]');
+// Coral: the paper is the :root default, the felt board overrides it.
+const light = cssBlock(globals, ":root");
+const dark = cssBlock(globals, '[data-theme="dark"]');
 const instrument = cssBlock(grooveShell, ".groove-chassis");
 
 type Rgb = { r: number; g: number; b: number; a: number };
@@ -203,8 +206,8 @@ describe("declared text pairs (both themes)", () => {
   });
 });
 
-describe("cream chassis warmth (Phase 14, replaces the 13.2 near-gray rule)", () => {
-  // The light theme is a cream chassis on purpose, so its surface, text and
+describe("paper warmth (Coral, replaces the Phase 14 cream rule)", () => {
+  // The light theme is warm grey paper on purpose, so its surface, text and
   // border tokens are warm: red >= green >= blue. That still rules out the
   // green cast 13.2 guarded against. The spread is capped so "warm" cannot
   // drift into a coloured surface. Accent and data roles keep their hues and
@@ -276,7 +279,7 @@ describe("instrument scope", () => {
 
 describe("shared focus ring (13.1 refresh)", () => {
   it("declares a single --focus-ring token in :root routed through --brass", () => {
-    expect(dark).toMatch(/--focus-ring:\s*2px solid var\(--brass\)/);
+    expect(light).toMatch(/--focus-ring:\s*2px solid var\(--brass\)/);
   });
 
   it("keeps the routing target contrast-gated in both themes", () => {
@@ -285,13 +288,12 @@ describe("shared focus ring (13.1 refresh)", () => {
   });
 });
 
-describe("primary action pair (13.4 polish, Phase 14 tokens)", () => {
-  // The amber fill and the ink it carries: the shared primary button and the
-  // active nav block. Token facts, locked so a palette retune that drops the
+describe("primary action pair (13.4 polish, Coral tokens)", () => {
+  // The board-ink fill and the paper it carries: the shared primary button. Token facts, locked so a palette retune that drops the
   // primary below the text floor fails.
   it.each([
-    { theme: "dark", fg: "--on-amber", bg: "--amber", lock: 9.82 },
-    { theme: "light", fg: "--on-amber", bg: "--amber", lock: 8.12 },
+    { theme: "dark", fg: "--on-amber", bg: "--amber", lock: 15.21 },
+    { theme: "light", fg: "--on-amber", bg: "--amber", lock: 15.69 },
   ])("$theme $fg text on $bg fill", ({ theme, fg, bg, lock }) => {
     const block = themeBlock(theme as "dark" | "light");
     const ratio = contrastRatio(tokenColor(block, fg), tokenColor(block, bg));

@@ -134,7 +134,7 @@ export function ActivityForm({
     isEditing ? `activity-edit-${suffix}` : `activity-${suffix}`;
 
   const body = (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSubmit} className={styles["crm-activity-form"]}>
       {saveFailed ? (
         <p role="alert">
           Could not save that activity. Check it and try again.

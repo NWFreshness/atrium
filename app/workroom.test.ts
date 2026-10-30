@@ -31,7 +31,7 @@ describe("Workroom shared chrome classes (app/workroom.css)", () => {
   });
 
   it("uses the Workroom tokens rather than re-declaring colors", () => {
-    expect(chrome).toContain("var(--bg-1)");
+    expect(chrome).toContain("var(--bg-2)");
     expect(chrome).toContain("var(--brass)");
     expect(chrome).toContain("var(--ink-dim)");
     expect(chrome).toContain("var(--font-display)");

@@ -4,89 +4,73 @@
    share one stage, card, and footer instead of a second copy.
    Class names are hashed by the module — import it bound
    (`styles["auth-stage"]`), never for side effects.
+   Coral: one cotton sheet on a felt desk, lit from the left.
    ============================================================ */
 
 .auth-stage {
   position: relative;
   z-index: 1;
-  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 2rem;
+  padding: var(--sp-xl) var(--sp-lg);
+  background-color: var(--bg-0);
+  background-image:
+    radial-gradient(90% 120% at 0% 30%, var(--bg-2), transparent 62%),
+    var(--tex-felt);
 }
 
-/* The Phase 10 watermark letter. The rack stage is bare grid paper. */
+/* The Phase 10 watermark letter, retired. */
 .auth-mark {
   display: none;
 }
 
-/* A powered-down unit: a faceplate bolted to the grid at four corners. */
+/* the sheet */
 .auth-card {
-  --screw: radial-gradient(
-    circle,
-    var(--bg-0) 0 1.5px,
-    var(--line-strong) 1.5px 3px,
-    transparent 3.5px
-  );
   position: relative;
-  width: min(380px, 92vw);
-  padding: 2.2rem 2.2rem 1.6rem;
-  background:
-    var(--screw) 8px 8px / 8px 8px no-repeat,
-    var(--screw) calc(100% - 8px) 8px / 8px 8px no-repeat,
-    var(--screw) 8px calc(100% - 8px) / 8px 8px no-repeat,
-    var(--screw) calc(100% - 8px) calc(100% - 8px) / 8px 8px no-repeat,
-    var(--bg-1);
-  border: 1px solid var(--line-strong);
+  width: min(400px, 92vw);
+  padding: var(--sp-xl) var(--sp-xl) var(--sp-lg);
+  background-color: var(--bg-2);
+  background-image: linear-gradient(100deg, var(--bg-3), transparent 45%);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-panel);
-}
-
-.auth-plate {
-  margin-bottom: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: var(--text-label);
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
-  color: var(--brass);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
 }
 
 .auth-brandrow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-sm);
 }
 
 .auth-card h1 {
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: var(--text-h1);
   font-weight: var(--text-display-weight);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--text-display-tracking);
   line-height: var(--text-display-leading);
-  text-transform: uppercase;
   margin: 0;
 }
 
 .auth-tag {
-  margin-top: 0.5rem;
-  font-size: 13.5px;
+  margin-top: var(--sp-xs);
+  font-size: var(--text-body);
   color: var(--ink-dim);
 }
 
 .auth-note {
-  margin-top: 1.4rem;
-  font-size: 13px;
+  margin-top: var(--sp-lg);
+  font-size: var(--text-small);
   color: var(--ink-dim);
 }
 
 .auth-card form {
-  margin-top: 1.5rem;
+  margin-top: var(--sp-lg);
 }
 
 .auth-submit {
   width: 100%;
-  margin-top: 0.4rem;
-  padding: 11px 16px;
+  min-height: 44px;
+  margin-top: var(--sp-2xs);
 }
 
 .auth-card form.auth-demo {
@@ -96,12 +80,9 @@
 .auth-or {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin: 0.8rem 0 0.4rem;
-  font-family: var(--font-mono);
+  gap: var(--sp-sm);
+  margin: var(--sp-md) 0 var(--sp-sm);
   font-size: var(--text-label);
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-faint);
 }
 
@@ -109,45 +90,40 @@
 .auth-or::after {
   content: "";
   flex: 1;
-  border-top: 1px dashed var(--line-strong);
-}
-
-.auth-standby {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
+  border-top: 1px solid var(--line);
 }
 
 .auth-alert {
-  margin-top: 1rem;
-  padding: 9px 12px;
-  border-left: 3px solid var(--clay-ink);
-  border-radius: var(--r-sm);
-  background: var(--bg-2);
-  font-size: 12.5px;
+  margin-top: var(--sp-md);
+  padding: var(--sp-xs) var(--sp-sm);
+  border: 1px solid var(--clay-ink);
+  border-radius: var(--r-md);
+  font-size: var(--text-small);
   color: var(--clay-ink);
 }
 
 .auth-foot {
-  margin-top: 1.6rem;
-  padding-top: 1.2rem;
+  margin-top: var(--sp-lg);
+  padding-top: var(--sp-md);
   border-top: 1px solid var(--line);
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: var(--text-small);
   color: var(--ink-faint);
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--sp-md);
 }
 
 .auth-foot a {
-  color: var(--ink-dim);
-  text-decoration: none;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
 }
 
 .auth-foot a:hover {
-  color: var(--ink);
-  text-decoration: underline;
+  text-decoration-color: var(--brass);
+}
+
+.auth-foot a:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
 }

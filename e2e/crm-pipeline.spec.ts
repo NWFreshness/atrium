@@ -323,7 +323,7 @@ test("a mouse drag moves a deal New → Qualified and survives a reload", async 
     column(page, "New").getByText(name, { exact: true }),
   ).toHaveCount(0, NAV_TIMEOUT);
   // Deliberate substring match — the card's meta line is
-  // `${value} · ${expected} expected · ${probability}%`, so asserting the whole
+  // `${value}` then `${expected} expected` and `${probability}%`, so asserting the whole
   // string would break on a `formatMoney` change. The contract is
   // `STAGE_PROBABILITY.Qualified === 25`, and this is read *after* the reload,
   // so it is the server's value rather than the optimistic one.

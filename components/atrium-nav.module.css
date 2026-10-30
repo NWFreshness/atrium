@@ -1,3 +1,4 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Coral (deal 1/3) · redesign: full · system in app/globals.css */
 .atrium-nav-strip {
   position: sticky;
   top: 0;
@@ -5,47 +6,52 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.25rem;
-  min-height: 46px;
-  padding: 0 1.25rem;
-  border-bottom: 1px solid var(--line-strong);
-  /* opaque: the strip is a faceplate, the grid must not show through */
+  gap: var(--sp-lg);
+  min-height: 60px;
+  padding: 0 var(--sp-xl);
+  border-bottom: 1px solid var(--line);
   background: var(--bg-0);
 }
 
 .atrium-nav-left {
   display: flex;
   align-items: center;
-  gap: 1.75rem;
+  gap: var(--sp-xl);
   min-width: 0;
 }
 
+/* the wordmark: General Sans, sentence case, an ink seal beside it */
 .atrium-nav-brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--sp-xs);
+  min-height: 44px;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.8rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  font-weight: 600;
+  font-size: var(--text-h3);
+  letter-spacing: -0.02em;
   color: var(--ink);
   text-decoration: none;
   white-space: nowrap;
 }
 
+.atrium-nav-brand:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
 .atrium-nav-brand-mark {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
   background: var(--amber);
-  box-shadow: var(--led-glow) var(--amber);
 }
 
 .atrium-nav-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: var(--sp-2xs);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -54,29 +60,25 @@
 .atrium-nav-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border-radius: var(--r-sm);
-  font-family: var(--font-mono);
-  font-size: 10.5px;
+  gap: var(--sp-xs);
+  min-height: 36px;
+  padding: 0 var(--sp-sm);
+  border-radius: var(--r-md);
+  font-size: var(--text-small);
   font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--ink-faint);
   text-decoration: none;
-  transition:
-    color 0.2s,
-    background 0.2s;
+  transition: color var(--dur-short) var(--ease-out);
 }
 
 .atrium-nav-link svg {
-  width: 13px;
-  height: 13px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .atrium-nav-link:hover {
   color: var(--ink);
-  background: var(--bg-2);
 }
 
 .atrium-nav-link:focus-visible {
@@ -84,12 +86,12 @@
   outline-offset: 2px;
 }
 
-/* the one amber block on the strip: where you are */
+/* where you are: a cotton card raised off the paper, ink type */
 .atrium-nav-link-current,
 .atrium-nav-link-current:hover {
-  color: var(--on-amber);
-  background: var(--amber);
-  font-weight: 700;
+  color: var(--ink);
+  background: var(--bg-2);
+  box-shadow: var(--edge-stock);
 }
 
 .atrium-nav-glyph {
@@ -100,17 +102,17 @@
 .atrium-nav-end {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--sp-xs);
   min-width: 0;
 }
 
 .atrium-nav-identity {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
+  gap: var(--sp-xs);
+  min-height: 36px;
+  margin-right: var(--sp-xs);
+  font-size: var(--text-small);
   color: var(--ink-dim);
   white-space: nowrap;
   /* It is a <Link> now (6.3) and globals.css has no anchor reset, so the email
@@ -118,17 +120,23 @@
   text-decoration: none;
 }
 
-.atrium-nav-avatar {
-  width: 24px;
-  height: 24px;
+.atrium-nav-identity:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
   border-radius: var(--r-sm);
+}
+
+.atrium-nav-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: var(--text-label);
+  font-weight: 600;
   color: var(--ink);
-  border: 1px solid var(--line-strong);
   background: var(--bg-2);
+  box-shadow: var(--edge-stock);
 }
 
 .atrium-nav-email {
@@ -144,6 +152,7 @@
 
 .atrium-nav-identity:hover .atrium-nav-email {
   text-decoration: underline;
+  text-decoration-color: var(--brass);
   text-underline-offset: 3px;
 }
 
@@ -153,17 +162,29 @@
 
 /* Reset demo (used by ResetDemoButton, restyled with the shared .atrium-btn) */
 .atrium-nav-reset {
-  border-color: var(--line-strong);
   color: var(--ink-dim);
 }
 
 .atrium-nav-reset-form {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--sp-xs);
 }
 
 .atrium-nav-reset-status {
-  font-size: 12px;
+  font-size: var(--text-small);
   color: var(--ink-dim);
+}
+
+@media (max-width: 40rem) {
+  .atrium-nav-strip {
+    padding: 0 var(--sp-md);
+  }
+  .atrium-nav-left {
+    gap: var(--sp-md);
+    flex-wrap: wrap;
+  }
+  .atrium-nav-email {
+    display: none;
+  }
 }

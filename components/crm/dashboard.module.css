@@ -1,69 +1,49 @@
 /* ============================================================
-   CRM dashboard — PNW pass (10.3)
-   KPI tiles on `--bg-1`, one accent rule per tile from the four
-   semantic tones (`--moss` / `--brass` / `--clay-ink` / `--slate`),
-   figures in the display face at `--text-kpi` with tabular numerals,
-   labels in JetBrains Mono at `--text-label`. Golden (`--brass`) is spent
-   once per screen: here, on the tile whose value matters most.
+   CRM dashboard — Coral
+   Figures first: a ruled row of five, Geist Mono at --text-kpi
+   with tabular numerals, labels in the body face. Charts and
+   feeds are cotton sheets on the paper, each one record. Coral
+   is spent on the win and nowhere else on this screen.
    ============================================================ */
 
 .page {
   /* 5.3 zeroed <main>'s padding here, which left the tiles flush to the
-     viewport edge while the subnav above them kept its 2rem gutter. */
+     viewport edge while the subnav above them kept its gutter. */
   max-width: none;
 }
 
+/* the figure row: siblings part with a top hairline, no boxes */
 .tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: 0.85rem;
-  margin: 1.25rem 0;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0 var(--sp-lg);
+  margin: 0 0 var(--sp-xl);
 }
 
-/* KPI tile — the `.atrium-kpi` pattern, app-local so the tones stay here */
 .tile {
-  position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 15px 17px 13px;
-  background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel);
-}
-
-/* the readout's indicator lamp, tinted by the tile's one tone */
-.tile::before {
-  content: "";
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--tile-c, var(--line-strong));
-  box-shadow: var(--led-glow) var(--tile-c, var(--line-strong));
+  gap: var(--sp-2xs);
+  padding-top: var(--sp-sm);
+  border-top: 2px solid var(--tile-c, var(--line-strong));
+  min-width: 0;
 }
 
 .tileLabel {
-  font-family: var(--font-mono);
   font-size: var(--text-label);
-  font-weight: 400;
-  letter-spacing: var(--text-label-tracking);
-  text-transform: uppercase;
+  font-weight: 500;
   color: var(--ink-faint);
 }
 
 .tileValue {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   font-size: var(--text-kpi);
   font-weight: var(--text-kpi-weight);
   letter-spacing: var(--text-kpi-tracking);
   line-height: 1.1;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* If a figure wraps at 375px, drop the scale — never shrink the label. */
@@ -74,46 +54,44 @@
 }
 
 .tileSub {
-  margin-top: 0.1rem;
   font-size: var(--text-small);
   color: var(--ink-faint);
 }
 
-/* semantic tones — exactly one accent per tile, drawn from the PNW family */
+/* semantic tones: one rule colour per figure, the figure itself stays ink */
 .tileCount {
   --tile-c: var(--slate); /* neutral */
 }
 .tileOpen {
-  --tile-c: var(--moss); /* in pipeline */
+  --tile-c: var(--slate); /* in pipeline */
 }
 .tileForecast {
-  --tile-c: var(--moss); /* in pipeline, forward-looking */
+  --tile-c: var(--timber); /* forward-looking */
 }
 .tileWon {
-  --tile-c: var(--brass); /* golden — the win, the screen's one highlight */
+  --tile-c: var(--brass); /* coral: the win, the screen's one settled state */
 }
 .tileLate {
-  --tile-c: var(--clay-ink); /* late — cedar lifted, never the clay fill */
+  --tile-c: var(--clay-ink); /* late */
 }
 
 .charts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-  gap: 1rem;
-  margin: 1rem 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-lg);
+  margin: 0 0 var(--sp-lg);
 }
 
 .chart {
   min-width: 0;
-  background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel);
-  padding: 1.1rem 1.2rem 1rem;
+  background: var(--bg-2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--edge-stock), var(--cast-stock);
+  padding: var(--sp-lg);
 }
 
 .chartTitle {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--sp-md);
   font-family: var(--font-display);
   font-size: var(--text-h3);
   font-weight: var(--text-h3-weight);
@@ -124,6 +102,11 @@
 
 /* Recharts draws its grid in a fixed light gray; route it to the hairline. */
 .chartBody :global(.recharts-cartesian-grid line) {
+  stroke: var(--line);
+}
+
+.chartBody :global(.recharts-cartesian-axis-line),
+.chartBody :global(.recharts-cartesian-axis-tick-line) {
   stroke: var(--line-strong);
 }
 
@@ -131,39 +114,45 @@
   width: 100%;
   height: 16rem;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   /* Recharts SVG ticks/labels that opt into currentColor inherit themed ink. */
-  color: var(--ink-dim);
+  color: var(--ink-faint);
+}
+
+.chartBody :global(.recharts-legend-item-text) {
+  font-family: var(--font-sans);
 }
 
 .empty {
-  height: 16rem;
+  min-height: 8rem;
   display: grid;
   place-items: center;
+  text-align: center;
   color: var(--ink-faint);
-  font-family: var(--font-mono);
-  font-size: var(--text-data);
-  letter-spacing: 0.02em;
+  font-size: var(--text-small);
+}
+
+.chart .empty {
+  height: 16rem;
 }
 
 .feeds {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 1rem;
-  margin: 1rem 0;
+  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr));
+  gap: var(--sp-lg);
+  margin: 0;
 }
 
 .feed {
   min-width: 0;
-  background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-panel);
-  padding: 1.1rem 1.2rem 1rem;
+  background: var(--bg-2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--edge-stock), var(--cast-stock);
+  padding: var(--sp-lg);
 }
 
 .feedTitle {
-  margin: 0 0 0.6rem;
+  margin: 0 0 var(--sp-sm);
   font-family: var(--font-display);
   font-size: var(--text-h3);
   font-weight: var(--text-h3-weight);
@@ -172,6 +161,7 @@
   color: var(--ink);
 }
 
+/* late: the word and its rust tone together */
 .feedTitleLate {
   color: var(--clay-ink);
 }
@@ -180,41 +170,55 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
 }
 
+/* one record per ruled line, never a box inside the sheet */
 .feedItem {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: var(--sp-2xs);
+  padding: var(--sp-sm) 0;
   font-size: var(--text-small);
+  color: var(--ink);
+  border-top: 1px solid var(--line);
+}
+
+.feedItem:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.feedItem label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  min-height: 32px;
   color: var(--ink-dim);
-  /* 13.2: every activity reads as its own card — a full non-zero border on
-     each item (not just dividers) so adjacent activities never run together
-     and no last-child exception leaves an item boundary-less. */
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--bg-0);
-  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+}
+
+.feedItem input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--amber);
 }
 
 .feedMeta {
-  font-family: var(--font-mono);
-  font-size: var(--text-data);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2xs) var(--sp-sm);
+  font-size: var(--text-label);
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
 
-/* The follow-up "done" checkbox is the one focusable control the dashboard
-   owns; it takes the same 2px brass ring as every other interactive. */
 .feedItem input[type="checkbox"]:focus-visible {
   outline: 2px solid var(--brass);
   outline-offset: 2px;
 }
 
-/* Quiet links: golden stays reserved for the win, so a feed link is ink. */
+/* Quiet links: ink with a hairline underline that turns coral on hover. */
 .feedLink {
   color: var(--ink-dim);
   text-decoration: underline;
@@ -231,4 +235,37 @@
   outline: 2px solid var(--brass);
   outline-offset: 2px;
   border-radius: var(--r-sm);
+}
+
+@media (max-width: 75rem) {
+  .tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-lg);
+  }
+  .feeds {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .feeds > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 48rem) {
+  .tiles,
+  .charts,
+  .feeds {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tileValue {
+    font-size: var(--text-h2);
+  }
+}
+
+@media (max-width: 30rem) {
+  .tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

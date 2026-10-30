@@ -286,23 +286,23 @@ describe("both themes define the full Workroom token set", () => {
     return globals.slice(from, globals.indexOf("}", from));
   }
 
-  it("declares every colour token in the dark :root block", () => {
-    const dark = block(":root {");
-    for (const token of COLOR_TOKENS) {
-      expect(dark, `dark theme is missing ${token}`).toContain(`${token}:`);
-    }
-  });
-
-  it("overrides every colour token for the mist light theme", () => {
-    const light = block('[data-theme="light"] {');
+  it("declares every colour token in the light :root (paper) block", () => {
+    const light = block(":root {");
     for (const token of COLOR_TOKENS) {
       expect(light, `light theme is missing ${token}`).toContain(`${token}:`);
     }
   });
 
-  it("keeps dark basalt and light cream apart", () => {
-    expect(block(":root {")).toContain("--bg-0: #14171a");
-    expect(block('[data-theme="light"] {')).toContain("--bg-0: #e4dfd0");
+  it("overrides every colour token for the felt-board dark theme", () => {
+    const dark = block('[data-theme="dark"] {');
+    for (const token of COLOR_TOKENS) {
+      expect(dark, `dark theme is missing ${token}`).toContain(`${token}:`);
+    }
+  });
+
+  it("keeps light paper and dark board apart", () => {
+    expect(block(":root {")).toContain("--bg-0: #f4efec");
+    expect(block('[data-theme="dark"] {')).toContain("--bg-0: #130e0c");
   });
 });
 
@@ -317,6 +317,7 @@ describe("the retired palette does not come back", () => {
     "var(--clay-ink)",
     "var(--slate)",
     "var(--timber)",
+    "var(--ochre)",
     "var(--brass)",
   ];
 
@@ -443,7 +444,7 @@ describe("shared chrome interaction and responsive states (13.1 refresh)", () =>
     );
   });
 
-  it("keeps the shared primary a single amber fill with its paired ink (13.4, Phase 14 tokens)", () => {
+  it("keeps the shared primary a single board-ink fill with its paired paper (13.4, Coral tokens)", () => {
     const from = chrome.indexOf(".atrium-btn-primary {");
     expect(from, "missing .atrium-btn-primary").toBeGreaterThanOrEqual(0);
     const block = chrome.slice(from, chrome.indexOf("}", from));

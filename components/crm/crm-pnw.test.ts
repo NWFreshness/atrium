@@ -100,15 +100,16 @@ describe("PNW tokens in the CRM modules", () => {
     expect(pipelineCss).not.toContain("--violet");
   });
 
-  it("paints the dashboard from the PNW token set", () => {
+  it("paints the dashboard from the Coral token set", () => {
     for (const token of [
-      "var(--bg-1)",
+      "var(--bg-2)",
       "var(--line)",
-      "var(--r-md)",
-      "var(--shadow-panel)",
+      "var(--r-lg)",
+      "var(--edge-stock)",
+      "var(--cast-stock)",
       "var(--ink)",
       "var(--ink-faint)",
-      "var(--moss)",
+      "var(--timber)",
       "var(--brass)",
       "var(--clay-ink)",
       "var(--slate)",
@@ -128,18 +129,20 @@ describe("PNW tokens in the CRM modules", () => {
 });
 
 describe("KPI tiles", () => {
-  it("sets figures in the display face at the KPI scale with tabular numerals", () => {
+  it("sets figures in the mono face at the KPI scale with tabular numerals", () => {
     const value = rule(dashboardCss, ".tileValue");
-    expect(value).toContain("font-family: var(--font-display)");
+    expect(value).toContain("font-family: var(--font-mono)");
     expect(value).toContain("font-size: var(--text-kpi)");
     expect(value).toContain("font-variant-numeric: tabular-nums");
   });
 
-  it("sets labels in the mono face at the label scale, uppercase", () => {
+  it("sets labels in the body face at the label scale, sentence case, untracked", () => {
     const label = rule(dashboardCss, ".tileLabel");
-    expect(label).toContain("font-family: var(--font-mono)");
+    expect(label).not.toContain("font-family: var(--font-mono)");
     expect(label).toContain("font-size: var(--text-label)");
-    expect(label).toContain("uppercase");
+    expect(label).toContain("font-weight: 500");
+    expect(label).not.toContain("uppercase");
+    expect(label).not.toContain("letter-spacing");
   });
 
   it("gives every tile exactly one accent, drawn from the four semantic tones", () => {
@@ -148,15 +151,15 @@ describe("KPI tiles", () => {
       const block = rule(dashboardCss, `.${name}`);
       const vars = [...block.matchAll(/var\(--([a-z-]+)\)/g)].map((m) => m[1]);
       expect(vars, `.${name} must set one accent token`).toHaveLength(1);
-      expect(["slate", "moss", "brass", "clay-ink"], `.${name}`).toContain(
+      expect(["slate", "timber", "brass", "clay-ink"], `.${name}`).toContain(
         vars[0],
       );
       tones.push(vars[0]);
     }
-    // One golden element per screen: the most important tile is the only brass.
+    // One settled state per screen: the win is the only coral (brass) tone.
     expect(tones.filter((tone) => tone === "brass")).toHaveLength(1);
-    // open / in-pipeline reads moss; neutral reads slate.
-    expect(tones).toContain("moss");
+    // forecast reads timber; neutral and open read slate.
+    expect(tones).toContain("timber");
     expect(tones).toContain("slate");
   });
 
@@ -245,25 +248,26 @@ describe("tables, dialogs, and the board", () => {
     }
   });
 
-  it("steps the six pipeline stages through one PNW family", () => {
+  it("steps the six pipeline stages through one warm family", () => {
     const tones = STAGE_TONES.map((name) => {
       const block = rule(pipelineCss, `.${name}`);
       expect(block, `.${name} must set --stage-c`).toContain("--stage-c:");
       return block;
     });
     for (const token of [
+      "var(--line-strong)",
       "var(--slate)",
-      "var(--moss)",
       "var(--timber)",
+      "var(--ochre)",
       "var(--brass)",
       "var(--clay-ink)",
     ]) {
       expect(tones.join("\n"), token).toContain(token);
     }
-    // won = golden, lost = late cedar — the semantic ends of the family.
+    // won = coral, lost = rust: the semantic ends of the family.
     expect(rule(pipelineCss, ".stageWon")).toContain("var(--brass)");
     expect(rule(pipelineCss, ".stageLost")).toContain("var(--clay-ink)");
-    expect(rule(pipelineCss, ".stageNew")).toContain("var(--slate)");
+    expect(rule(pipelineCss, ".stageNew")).toContain("var(--line-strong)");
   });
 });
 

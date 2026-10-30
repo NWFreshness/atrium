@@ -61,7 +61,7 @@ export default async function ContactDetailPage({
   const lastContactedDays = daysSinceContacted(lastContactedDate);
 
   return (
-    <main>
+    <main className={styles["crm-record"]}>
       <div className={styles["crm-detail-title"]}>
         <div className="atrium-pagetitle">
           <h1>{contact.name}</h1>
