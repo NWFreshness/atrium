@@ -1,11 +1,11 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { eq, sql } from "drizzle-orm";
-import type { CrmRepository } from "../crm/queries";
+import type { CrmStore } from "../crm/queries";
 import { seedCrm } from "../crm/seed";
-import type { RolodexRepository } from "../rolodex/queries";
+import type { RolodexStore } from "../rolodex/queries";
 import { seedRolodex } from "../rolodex/seed";
-import type { SpaceRepository } from "../space/queries";
+import type { SpaceStore } from "../space/queries";
 import { seedSpace } from "../space/seed";
 import { getDb, type Database } from "./index";
 import { hashPassword } from "./password";
@@ -249,7 +249,7 @@ export async function seedDemoCrm(
   getTenantId: (
     name: string,
   ) => string | undefined | Promise<string | undefined>,
-  crmRepo?: CrmRepository,
+  crmRepo?: CrmStore,
 ): Promise<void> {
   const demoTenantId = await getTenantId("Demo");
   if (!demoTenantId) {
@@ -262,7 +262,7 @@ export async function seedDemoSpace(
   getTenantId: (
     name: string,
   ) => string | undefined | Promise<string | undefined>,
-  spaceRepo?: SpaceRepository,
+  spaceRepo?: SpaceStore,
 ): Promise<void> {
   const demoTenantId = await getTenantId("Demo");
   if (!demoTenantId) {
@@ -275,7 +275,7 @@ export async function seedDemoRolodex(
   getTenantId: (
     name: string,
   ) => string | undefined | Promise<string | undefined>,
-  rolodexRepo?: RolodexRepository,
+  rolodexRepo?: RolodexStore,
 ): Promise<void> {
   const demoTenantId = await getTenantId("Demo");
   if (!demoTenantId) {

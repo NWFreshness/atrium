@@ -20,13 +20,13 @@ export type GetSession = () => Promise<SessionLike>;
 
 function isUserRole(value: unknown): value is UserRole {
   return (
-    typeof value === "string" && (userRoles as readonly string[]).includes(value)
+    typeof value === "string" &&
+    (userRoles as readonly string[]).includes(value)
   );
 }
 
 export async function requireTenant(
   getSession: GetSession,
-  _client?: Record<string, unknown>,
 ): Promise<TenantContext> {
   const session = await getSession();
   const user = session?.user;
@@ -40,4 +40,22 @@ export async function requireTenant(
     tenantId: user.tenantId,
     role: user.role,
   };
+}
+
+/**
+ * The signed-in tenant: read from the Auth.js session and from nowhere else.
+ * Every server action resolves its tenant here, so no action has an input a
+ * caller could use to name a different one.
+ */
+export async function sessionTenant(): Promise<string> {
+  const { auth } = await import("@/auth");
+  return (await requireTenant(auth)).tenantId;
+}
+
+/** Guards every tenant-scoped query: a blank tenant id must never reach a predicate. */
+export function requireTenantId(tenantId: string): string {
+  if (typeof tenantId !== "string" || tenantId.trim() === "") {
+    throw new Error("tenantId is required");
+  }
+  return tenantId;
 }

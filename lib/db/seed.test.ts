@@ -1,14 +1,14 @@
 import type { SQL } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import {
-  createMemoryCrmRepository,
+  createMemoryCrmStore,
   listActivities,
   listContacts,
   listDeals,
   listOrganizations,
 } from "../crm/queries";
-import { createMemoryRolodexRepository, listPeople } from "../rolodex/queries";
-import { createMemorySpaceRepository, listPages } from "../space/queries";
+import { createMemoryRolodexStore, listPeople } from "../rolodex/queries";
+import { createMemorySpaceStore, listPages } from "../space/queries";
 import { createDb, type Database } from "./index";
 import { hashPassword } from "./password";
 import { users } from "./schema";
@@ -118,7 +118,7 @@ describe("applySeed", () => {
 describe("seedDemoCrm", () => {
   it("seeds CRM rows for Demo only and leaves Owner empty", async () => {
     const seedRepo = createMemorySeedRepository();
-    const crmRepo = createMemoryCrmRepository();
+    const crmRepo = createMemoryCrmStore();
     const plan = parseSeedEnv(seedEnv);
 
     await applySeed(seedRepo, plan, hashPassword);
@@ -148,7 +148,7 @@ describe("seedDemoCrm", () => {
   });
 
   it("throws when Demo tenant is missing", async () => {
-    const crmRepo = createMemoryCrmRepository();
+    const crmRepo = createMemoryCrmStore();
     await expect(seedDemoCrm(() => undefined, crmRepo)).rejects.toThrow(
       /Demo tenant/,
     );
@@ -158,7 +158,7 @@ describe("seedDemoCrm", () => {
 describe("seedDemoSpace", () => {
   it("seeds Space pages for Demo only and leaves Owner empty", async () => {
     const seedRepo = createMemorySeedRepository();
-    const spaceRepo = createMemorySpaceRepository();
+    const spaceRepo = createMemorySpaceStore();
     const plan = parseSeedEnv(seedEnv);
 
     await applySeed(seedRepo, plan, hashPassword);
@@ -179,7 +179,7 @@ describe("seedDemoSpace", () => {
   });
 
   it("throws when Demo tenant is missing", async () => {
-    const spaceRepo = createMemorySpaceRepository();
+    const spaceRepo = createMemorySpaceStore();
     await expect(seedDemoSpace(() => undefined, spaceRepo)).rejects.toThrow(
       /Demo tenant/,
     );
@@ -189,7 +189,7 @@ describe("seedDemoSpace", () => {
 describe("seedDemoRolodex", () => {
   it("seeds Rolodex people for Demo only and leaves Owner empty", async () => {
     const seedRepo = createMemorySeedRepository();
-    const rolodexRepo = createMemoryRolodexRepository();
+    const rolodexRepo = createMemoryRolodexStore();
     const plan = parseSeedEnv(seedEnv);
 
     await applySeed(seedRepo, plan, hashPassword);
@@ -210,7 +210,7 @@ describe("seedDemoRolodex", () => {
   });
 
   it("throws when Demo tenant is missing", async () => {
-    const rolodexRepo = createMemoryRolodexRepository();
+    const rolodexRepo = createMemoryRolodexStore();
     await expect(seedDemoRolodex(() => undefined, rolodexRepo)).rejects.toThrow(
       /Demo tenant/,
     );

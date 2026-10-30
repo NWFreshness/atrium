@@ -1,9 +1,9 @@
 import { auth, signOut } from "@/auth";
 import { AtriumNav } from "@/components/atrium-nav";
 import type { ResetDemoState } from "@/components/reset-demo-button";
-import "@/lib/crm/reset";
-import "@/lib/rolodex/reset";
-import "@/lib/space/reset";
+import { collectCrmReset } from "@/lib/crm/reset";
+import { collectRolodexReset } from "@/lib/rolodex/reset";
+import { collectSpaceReset } from "@/lib/space/reset";
 import { resetDemo } from "@/lib/tenancy/reset-demo";
 
 export default async function AuthenticatedLayout({
@@ -22,7 +22,11 @@ export default async function AuthenticatedLayout({
   ): Promise<ResetDemoState> {
     "use server";
     try {
-      await resetDemo(async () => auth());
+      // Groove has no tables, so it has nothing to reset.
+      await resetDemo(
+        async () => auth(),
+        [collectCrmReset, collectRolodexReset, collectSpaceReset],
+      );
       return { ok: true, message: "Demo reset." };
     } catch {
       return { ok: false, message: "Reset failed." };

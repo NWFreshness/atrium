@@ -359,6 +359,24 @@ export async function deletePropertyInMemory(
   return clone(removed);
 }
 
+/** No `databaseId` means no filter; otherwise the property must be the tenant's and in it. */
+function inDatabase(
+  repo: SpaceRepository,
+  tenantId: string,
+  propertyId: string,
+  databaseId?: string,
+): boolean {
+  return (
+    databaseId === undefined ||
+    repo.properties.some(
+      (property) =>
+        property.tenantId === tenantId &&
+        property.id === propertyId &&
+        property.databaseId === databaseId,
+    )
+  );
+}
+
 export async function listPropertyOptionsInMemory(
   repo: SpaceRepository,
   tenantId: string,
@@ -368,7 +386,9 @@ export async function listPropertyOptionsInMemory(
     .filter(
       (row) =>
         row.tenantId === tenantId &&
-        (opts?.propertyId === undefined || row.propertyId === opts.propertyId),
+        (opts?.propertyId === undefined ||
+          row.propertyId === opts.propertyId) &&
+        inDatabase(repo, tenantId, row.propertyId, opts?.databaseId),
     )
     .map(clone)
     .sort(compareByPositionThenId);
@@ -432,7 +452,9 @@ export async function listRowValuesInMemory(
       (row) =>
         row.tenantId === tenantId &&
         (opts?.rowId === undefined || row.rowId === opts.rowId) &&
-        (opts?.propertyId === undefined || row.propertyId === opts.propertyId),
+        (opts?.propertyId === undefined ||
+          row.propertyId === opts.propertyId) &&
+        inDatabase(repo, tenantId, row.propertyId, opts?.databaseId),
     )
     .map(clone);
 }

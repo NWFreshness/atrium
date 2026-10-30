@@ -14,7 +14,7 @@ import {
 import {
   createActivity,
   createDeal,
-  createMemoryCrmRepository,
+  createMemoryCrmStore,
   createOrganization,
   type Activity,
   type Deal,
@@ -477,7 +477,7 @@ describe("recentActivity", () => {
 
 describe("getDashboard", () => {
   it("does not include other tenant data when using a memory repo", async () => {
-    const repo = createMemoryCrmRepository();
+    const repo = createMemoryCrmStore();
     const acme = await createOrganization(tenantA, { name: "Acme" }, repo);
     await createOrganization("tenant-b", { name: "Other Co" }, repo);
     await createDeal(

@@ -3,31 +3,23 @@
 import {
   constructSortFn,
   createColumnHelper,
-  createSortedRowModel,
-  rowSortingFeature,
   sortFn_alphanumeric,
   sortFn_datetime,
-  tableFeatures,
   useTable,
 } from "@tanstack/react-table";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   dealCascadePreviewAction,
   deleteDealAction,
 } from "@/lib/crm/deal-actions";
-import { consequenceMessage } from "@/lib/crm/cascade-preview";
 import { formatDate, formatMoney } from "@/lib/crm/format";
 import type { Contact, Deal, Organization } from "@/lib/crm/queries";
 import { DealForm } from "./deal-form";
+import { CrmTable, features } from "./crm-table";
 import styles from "./org.module.css";
+import { useDeleteWithPreview } from "./use-delete-with-preview";
 
-/** 11.4 — v9 sorting; see `org-table.tsx` for why the feature precedes its slot. */
-const features = tableFeatures({
-  rowSortingFeature,
-  sortedRowModel: createSortedRowModel(),
-});
 const columnHelper = createColumnHelper<typeof features, Deal>();
 
 const sortText = sortFn_alphanumeric;
@@ -49,7 +41,8 @@ const sortText = sortFn_alphanumeric;
  * Ascending only; the sorted row model applies `desc` itself.
  */
 const sortNumber = constructSortFn({
-  sort: (a, b) => (Number(a) === Number(b) ? 0 : Number(a) > Number(b) ? 1 : -1),
+  sort: (a, b) =>
+    Number(a) === Number(b) ? 0 : Number(a) > Number(b) ? 1 : -1,
 });
 
 /**
@@ -83,7 +76,10 @@ export function DealTable({
   contacts: Contact[];
   filtered?: boolean;
 }) {
-  const router = useRouter();
+  const onDelete = useDeleteWithPreview(
+    dealCascadePreviewAction,
+    deleteDealAction,
+  );
   const [editing, setEditing] = useState<Deal | null>(null);
   const orgNames = useMemo(() => {
     const map = new Map<string, string>();
@@ -187,14 +183,7 @@ export function DealTable({
                 <button
                   type="button"
                   aria-label={`Delete ${deal.name}`}
-                  onClick={async () => {
-                    const preview = await dealCascadePreviewAction(deal.id);
-                    if (!confirm(consequenceMessage(deal.name, preview))) {
-                      return;
-                    }
-                    await deleteDealAction(deal.id);
-                    router.refresh();
-                  }}
+                  onClick={() => void onDelete(deal.id, deal.name)}
                 >
                   Delete
                 </button>
@@ -203,7 +192,7 @@ export function DealTable({
           },
         }),
       ]),
-    [contactNames, orgNames, router],
+    [contactNames, orgNames, onDelete],
   );
 
   const table = useTable({
@@ -215,78 +204,10 @@ export function DealTable({
 
   return (
     <>
-      {deals.length === 0 ? (
-        <p className={styles["crm-empty"]}>
-          {filtered ? "No deals match these filters." : "No deals"}
-        </p>
-      ) : (
-        <div className={styles["crm-table-wrap"]}>
-          <table className={styles["crm-table"]}>
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    const sorted = header.column.getIsSorted();
-                    const sortable = header.column.getCanSort();
-                    return (
-                      <th
-                        key={header.id}
-                        scope="col"
-                        // See `org-table.tsx`: `aria-sort` lives on the cell,
-                        // is always one of the three values on a sortable
-                        // column, and is absent on one that cannot sort.
-                        aria-sort={
-                          sortable
-                            ? sorted === "asc"
-                              ? "ascending"
-                              : sorted === "desc"
-                                ? "descending"
-                                : "none"
-                            : undefined
-                        }
-                      >
-                        {header.isPlaceholder ? null : sortable ? (
-                          <button
-                            type="button"
-                            className={styles["crm-sort-button"]}
-                            aria-label={String(header.column.columnDef.header)}
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            <table.FlexRender header={header} />
-                            <span
-                              className={styles["crm-sort-caret"]}
-                              aria-hidden="true"
-                            >
-                              {sorted === "asc"
-                                ? "▲"
-                                : sorted === "desc"
-                                  ? "▼"
-                                  : ""}
-                            </span>
-                          </button>
-                        ) : (
-                          <table.FlexRender header={header} />
-                        )}
-                      </th>
-                    );
-                  })}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id}>
-                  {row.getAllCells().map((cell) => (
-                    <td key={cell.id}>
-                      <table.FlexRender cell={cell} />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <CrmTable
+        table={table}
+        empty={filtered ? "No deals match these filters." : "No deals"}
+      />
       {editing ? (
         <DealForm
           deal={editing}

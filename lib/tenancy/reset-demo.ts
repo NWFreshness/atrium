@@ -1,27 +1,16 @@
-import { createBatchRunner } from "../db/batch-transaction";
+import { createBatchRunner, type WriteBatch } from "../db/batch-transaction";
 import { getDb } from "../db";
 import { requireTenant, type GetSession } from "./index";
 
-export type DemoResetter = (tx: unknown, tenantId: string) => Promise<void>;
-
-export type RunInTransaction = (
-  work: (tx: unknown) => Promise<void>,
+/** Collects one app's wipe and reseed for a tenant into the shared batch. */
+export type DemoResetter = (
+  batch: WriteBatch,
+  tenantId: string,
 ) => Promise<void>;
 
-export type ResetDemoExtra = {
-  tenantId?: string;
-  runInTransaction?: RunInTransaction;
-};
-
-const resetters: DemoResetter[] = [];
-
-export function registerDemoResetter(resetter: DemoResetter): void {
-  resetters.push(resetter);
-}
-
-export function clearDemoResetters(): void {
-  resetters.length = 0;
-}
+export type RunBatch = (
+  work: (batch: WriteBatch) => Promise<void>,
+) => Promise<void>;
 
 /**
  * Production reset: each resetter collects the statements it would write into
@@ -29,24 +18,29 @@ export function clearDemoResetters(): void {
  * failure anywhere — a wipe, an insert, the seed itself — rolls the whole thing
  * back, so the demo tenant cannot end up half-wiped.
  *
- * The database is resolved lazily, so a reset that collects nothing (an empty
- * registry, or the memory path tests use) never opens a connection.
+ * The database is resolved lazily, so a reset that collects nothing never
+ * opens a connection.
  */
-const defaultRunInTransaction: RunInTransaction = createBatchRunner(getDb);
+const defaultRun: RunBatch = createBatchRunner(getDb);
 
+/**
+ * Resets the signed-in demo tenant. The resetters are passed in, never
+ * registered by import: a caller that forgets one fails to compile its intent
+ * rather than silently resetting nothing. The tenant is the session's.
+ */
 export async function resetDemo(
   getSession: GetSession,
-  extra?: ResetDemoExtra,
+  resetters: readonly DemoResetter[],
+  run: RunBatch = defaultRun,
 ): Promise<void> {
-  const { role, tenantId } = await requireTenant(getSession, extra);
+  const { role, tenantId } = await requireTenant(getSession);
   if (role !== "demo") {
     throw new Error("Forbidden");
   }
 
-  const runInTransaction = extra?.runInTransaction ?? defaultRunInTransaction;
-  await runInTransaction(async (tx) => {
+  await run(async (batch) => {
     for (const reset of resetters) {
-      await reset(tx, tenantId);
+      await reset(batch, tenantId);
     }
   });
 }

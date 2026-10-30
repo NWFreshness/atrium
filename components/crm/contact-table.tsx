@@ -3,20 +3,15 @@
 import {
   constructSortFn,
   createColumnHelper,
-  createSortedRowModel,
-  rowSortingFeature,
   sortFn_alphanumeric,
-  tableFeatures,
   useTable,
 } from "@tanstack/react-table";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   contactCascadePreviewAction,
   deleteContactAction,
 } from "@/lib/crm/contact-actions";
-import { consequenceMessage } from "@/lib/crm/cascade-preview";
 import { formatDate } from "@/lib/crm/format";
 import {
   daysSinceContacted,
@@ -25,13 +20,10 @@ import {
 } from "@/lib/crm/last-contacted";
 import type { Activity, Contact, Organization } from "@/lib/crm/queries";
 import { ContactForm } from "./contact-form";
+import { CrmTable, features } from "./crm-table";
 import styles from "./org.module.css";
+import { useDeleteWithPreview } from "./use-delete-with-preview";
 
-/** 11.4 — v9 sorting; see `org-table.tsx` for why the feature precedes its slot. */
-const features = tableFeatures({
-  rowSortingFeature,
-  sortedRowModel: createSortedRowModel(),
-});
 const columnHelper = createColumnHelper<typeof features, Contact>();
 
 /**
@@ -109,7 +101,10 @@ export function ContactTable({
   activitiesByContactId?: Record<string, Activity[]>;
   filtered?: boolean;
 }) {
-  const router = useRouter();
+  const onDelete = useDeleteWithPreview(
+    contactCascadePreviewAction,
+    deleteContactAction,
+  );
   const [editing, setEditing] = useState<Contact | null>(null);
   const orgNames = useMemo(() => {
     const map = new Map<string, string>();
@@ -200,15 +195,7 @@ export function ContactTable({
                 <button
                   type="button"
                   aria-label={`Delete ${contact.name}`}
-                  onClick={async () => {
-                    const preview =
-                      await contactCascadePreviewAction(contact.id);
-                    if (!confirm(consequenceMessage(contact.name, preview))) {
-                      return;
-                    }
-                    await deleteContactAction(contact.id);
-                    router.refresh();
-                  }}
+                  onClick={() => void onDelete(contact.id, contact.name)}
                 >
                   Delete
                 </button>
@@ -217,7 +204,7 @@ export function ContactTable({
           },
         }),
       ]),
-    [orgNames, router, lastContactedByContactId],
+    [orgNames, onDelete, lastContactedByContactId],
   );
 
   const table = useTable({
@@ -229,78 +216,10 @@ export function ContactTable({
 
   return (
     <>
-      {contacts.length === 0 ? (
-        <p className={styles["crm-empty"]}>
-          {filtered ? "No contacts match these filters." : "No contacts"}
-        </p>
-      ) : (
-        <div className={styles["crm-table-wrap"]}>
-          <table className={styles["crm-table"]}>
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    const sorted = header.column.getIsSorted();
-                    const sortable = header.column.getCanSort();
-                    return (
-                      <th
-                        key={header.id}
-                        scope="col"
-                        // See `org-table.tsx`: `aria-sort` lives on the cell,
-                        // is always one of the three values on a sortable
-                        // column, and is absent on one that cannot sort.
-                        aria-sort={
-                          sortable
-                            ? sorted === "asc"
-                              ? "ascending"
-                              : sorted === "desc"
-                                ? "descending"
-                                : "none"
-                            : undefined
-                        }
-                      >
-                        {header.isPlaceholder ? null : sortable ? (
-                          <button
-                            type="button"
-                            className={styles["crm-sort-button"]}
-                            aria-label={String(header.column.columnDef.header)}
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            <table.FlexRender header={header} />
-                            <span
-                              className={styles["crm-sort-caret"]}
-                              aria-hidden="true"
-                            >
-                              {sorted === "asc"
-                                ? "▲"
-                                : sorted === "desc"
-                                  ? "▼"
-                                  : ""}
-                            </span>
-                          </button>
-                        ) : (
-                          <table.FlexRender header={header} />
-                        )}
-                      </th>
-                    );
-                  })}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id}>
-                  {row.getAllCells().map((cell) => (
-                    <td key={cell.id}>
-                      <table.FlexRender cell={cell} />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <CrmTable
+        table={table}
+        empty={filtered ? "No contacts match these filters." : "No contacts"}
+      />
       {editing ? (
         <ContactForm
           contact={editing}

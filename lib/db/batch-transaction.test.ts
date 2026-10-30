@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { organizations } from "../crm/schema";
-import { createRecordingDb, statementSql } from "./batch-test-helpers";
+import {
+  createRecordingDb,
+  statementSql,
+  statementsMissingTenant,
+} from "./batch-test-helpers";
 import {
   createBatchRunner,
   createWriteBatch,
-  isWriteBatch,
   type BatchStatement,
 } from "./batch-transaction";
 
@@ -127,28 +130,6 @@ describe("createBatchRunner", () => {
   });
 });
 
-describe("isWriteBatch", () => {
-  it("recognises a batch", () => {
-    const { db } = createRecordingDb();
-    expect(isWriteBatch(createWriteBatch(() => db))).toBe(true);
-  });
-
-  it("rejects the other things a resetter can be handed", () => {
-    expect(isWriteBatch(undefined)).toBe(false);
-    expect(isWriteBatch(null)).toBe(false);
-    expect(isWriteBatch("tx")).toBe(false);
-    expect(isWriteBatch(new Map())).toBe(false);
-    expect(
-      isWriteBatch({
-        organizations: [],
-        contacts: [],
-        deals: [],
-        activities: [],
-      }),
-    ).toBe(false);
-  });
-});
-
 describe("BatchStatement", () => {
   it("is what db.batch accepts, so the collected statements typecheck", () => {
     const { db } = createRecordingDb();
@@ -157,5 +138,62 @@ describe("BatchStatement", () => {
 
     const statements: BatchStatement[] = batch.statements;
     expect(statements).toHaveLength(1);
+  });
+});
+
+describe("statementsMissingTenant", () => {
+  const tenant = "tenant-a";
+
+  it("passes statements that filter on or insert the tenant", () => {
+    expect(
+      statementsMissingTenant(
+        [
+          {
+            sql: 'select "id" from "people" where ("people"."tenantId" = $1 and "people"."id" = $2)',
+            params: [tenant, "p1"],
+          },
+          {
+            sql: 'insert into "people" ("id", "tenantId") values ($1, $2)',
+            params: ["p1", tenant],
+          },
+        ],
+        tenant,
+      ),
+    ).toEqual([]);
+  });
+
+  it("flags a keyed statement with no tenant predicate, or another tenant bound", () => {
+    const unscoped = 'delete from "people" where "people"."id" = $1';
+    const scoped =
+      'update "people" set "name" = $1 where "people"."tenantId" = $2';
+    expect(
+      statementsMissingTenant(
+        [
+          { sql: unscoped, params: ["p1"] },
+          { sql: scoped, params: ["x", "tenant-b"] },
+          { sql: 'insert into "people" ("id") values ($1)', params: ["p1"] },
+        ],
+        tenant,
+      ),
+    ).toEqual([unscoped, scoped, 'insert into "people" ("id") values ($1)']);
+  });
+});
+
+describe("WriteBatch.update", () => {
+  it("collects a tenant-scoped update by id without running it", async () => {
+    const { db, batches, queries } = createRecordingDb();
+    const batch = createWriteBatch(() => db);
+
+    batch.update(organizations, "tenant-a", "o1", { name: "Renamed" });
+
+    expect(queries).toEqual([]);
+    expect(batches).toEqual([]);
+    const { sql, params } = statementSql(batch.statements[0]!);
+    expect(sql).toMatch(/^update "organizations" set "name" = \$1 where /);
+    expect(params).toEqual(["Renamed", "tenant-a", "o1"]);
+    expect(statementsMissingTenant([{ sql, params }], "tenant-a")).toEqual([]);
+
+    await batch.flush();
+    expect(batches).toHaveLength(1);
   });
 });

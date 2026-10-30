@@ -1,6 +1,15 @@
+import { recordInserts, type SeedRow } from "../db/batch-transaction";
+import {
+  pages,
+  blocks,
+  properties,
+  propertyOptions,
+  rowValues,
+  views,
+} from "./schema";
 import { DEMO_PAGES, READING_LIST_ROWS, type SeedPage } from "./seed-content";
 import {
-  createBlock,
+  createMemorySpaceStore,
   createPage,
   createProperty,
   createPropertyOption,
@@ -10,9 +19,8 @@ import {
   type CreatePageInput,
   type CreatePropertyInput,
   type CreatePropertyOptionInput,
-  type SpaceRepository,
+  type SpaceStore,
 } from "./queries";
-import type { WriteOpts } from "../db/batch-transaction";
 
 type PageTreeNode = {
   title: string;
@@ -95,8 +103,7 @@ async function seedTree(
   parentId: string | null,
   specs: PageTreeNode[],
   positions: SeedPositions,
-  repo?: SpaceRepository,
-  opts?: WriteOpts,
+  repo?: SpaceStore,
 ): Promise<PageIdsByTitle> {
   const ids: PageIdsByTitle = new Map();
 
@@ -109,24 +116,12 @@ async function seedTree(
         parentId,
         type: "page",
         position: nextPagePosition(positions, parentId),
+        // A page with no written blocks still opens with the default paragraph.
+        blocks: spec.blocks?.length ? spec.blocks : undefined,
       },
       repo,
-      opts,
     );
     ids.set(spec.title, page.id);
-    for (const blockSpec of spec.blocks ?? []) {
-      await createBlock(
-        tenantId,
-        {
-          pageId: page.id,
-          type: blockSpec.type,
-          content: blockSpec.content,
-          position: nextSeedPosition(positions, `block:${page.id}`),
-        },
-        repo,
-        opts,
-      );
-    }
     if (spec.children?.length) {
       for (const [title, id] of await seedTree(
         tenantId,
@@ -134,7 +129,6 @@ async function seedTree(
         spec.children,
         positions,
         repo,
-        opts,
       )) {
         ids.set(title, id);
       }
@@ -146,17 +140,12 @@ async function seedTree(
 
 export async function seedSpace(
   tenantId: string,
-  repo?: SpaceRepository,
-  opts?: WriteOpts,
+  repo?: SpaceStore,
 ): Promise<void> {
-  // A reset collects the wipe and this reseed into one batch, so the rows are
-  // still there to be found: the idempotence check only applies to a
-  // standalone seed (`npm run db:seed`), which runs immediately.
-  if (!opts?.batch) {
-    const existing = await listPages(tenantId, repo);
-    if (existing.length > 0) {
-      return;
-    }
+  // Idempotent: a tenant that already has rows is left alone.
+  const existing = await listPages(tenantId, repo);
+  if (existing.length > 0) {
+    return;
   }
   const positions: SeedPositions = new Map();
   const pageIds = await seedTree(
@@ -165,17 +154,15 @@ export async function seedSpace(
     buildDemoTree(DEMO_PAGES),
     positions,
     repo,
-    opts,
   );
-  await seedDemoDatabases(tenantId, pageIds, positions, repo, opts);
+  await seedDemoDatabases(tenantId, pageIds, positions, repo);
 }
 
 async function seedDemoDatabases(
   tenantId: string,
   pageIds: PageIdsByTitle,
   positions: SeedPositions,
-  repo?: SpaceRepository,
-  opts?: WriteOpts,
+  repo?: SpaceStore,
 ): Promise<void> {
   // Wrappers, not a second way to write: they add the position the seed would
   // otherwise have to read out of the database, and nothing else.
@@ -187,7 +174,6 @@ async function seedDemoDatabases(
         position: nextPagePosition(positions, input.parentId ?? null),
       },
       repo,
-      opts,
     );
   const addProperty = (input: CreatePropertyInput) =>
     createProperty(
@@ -197,7 +183,6 @@ async function seedDemoDatabases(
         position: nextSeedPosition(positions, `property:${input.databaseId}`),
       },
       repo,
-      opts,
     );
   const addOption = (input: CreatePropertyOptionInput) =>
     createPropertyOption(
@@ -207,7 +192,6 @@ async function seedDemoDatabases(
         position: nextSeedPosition(positions, `option:${input.propertyId}`),
       },
       repo,
-      opts,
     );
 
   const trip = await addPage({
@@ -312,7 +296,6 @@ async function seedDemoDatabases(
         tenantId,
         { rowId: row.id, propertyId, value },
         repo,
-        opts,
       );
     }
   }
@@ -365,7 +348,6 @@ async function seedDemoDatabases(
       config: { groupPropertyId: status.id },
     },
     repo,
-    opts,
   );
   await createView(
     tenantId,
@@ -375,7 +357,6 @@ async function seedDemoDatabases(
       config: { sort: { propertyId: budget.id, direction: "desc" } },
     },
     repo,
-    opts,
   );
   await createView(
     tenantId,
@@ -389,7 +370,6 @@ async function seedDemoDatabases(
       },
     },
     repo,
-    opts,
   );
 
   const reading = await addPage({
@@ -456,8 +436,20 @@ async function seedDemoDatabases(
               : value,
         },
         repo,
-        opts,
       );
     }
   }
+}
+
+/**
+ * The demo rows, in the order a reset must insert them, built without touching
+ * a database: the same seed runs against a throwaway memory store, so every
+ * row has passed the limits and reference checks the create functions enforce.
+ */
+export function spaceSeedRows(tenantId: string): Promise<SeedRow[]> {
+  return recordInserts(
+    createMemorySpaceStore(),
+    { pages, blocks, properties, propertyOptions, rowValues, views },
+    (store) => seedSpace(tenantId, store),
+  );
 }

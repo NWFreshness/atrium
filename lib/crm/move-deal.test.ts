@@ -3,6 +3,7 @@ import { moveDeal } from "./move-deal";
 import { sumExpected, sumValue } from "./pipeline-metrics";
 import {
   createDeal,
+  createMemoryCrmStore,
   createMemoryCrmRepository,
   getDeal,
   listDeals,
@@ -12,7 +13,7 @@ const tenantA = "tenant-a";
 const tenantB = "tenant-b";
 
 function repo() {
-  return createMemoryCrmRepository();
+  return createMemoryCrmStore();
 }
 
 describe("moveDeal", () => {
@@ -173,7 +174,8 @@ describe("moveDeal", () => {
   });
 
   it("does not write when stage and index are unchanged", async () => {
-    const memory = repo();
+    const rows = createMemoryCrmRepository();
+    const memory = createMemoryCrmStore(rows);
     const first = await createDeal(
       tenantA,
       { name: "First", stage: "New", value: 1, boardOrder: 0 },
@@ -184,7 +186,7 @@ describe("moveDeal", () => {
       { name: "Second", stage: "New", value: 1, boardOrder: 1 },
       memory,
     );
-    const before = memory.deals.map((row) => ({ ...row }));
+    const before = rows.deals.map((row) => ({ ...row }));
 
     const moved = await moveDeal(tenantA, second.id, "New", 1, memory);
     expect(moved).toMatchObject({
@@ -192,7 +194,7 @@ describe("moveDeal", () => {
       stage: "New",
       boardOrder: 1,
     });
-    expect(memory.deals).toEqual(before);
+    expect(rows.deals).toEqual(before);
     expect(await getDeal(tenantA, first.id, memory)).toMatchObject({
       boardOrder: 0,
     });
@@ -233,5 +235,50 @@ describe("moveDeal", () => {
     expect(await getDeal(tenantA, open.id, memory)).toMatchObject({
       stage: "New",
     });
+  });
+});
+
+describe("moveDeal writes once", () => {
+  it("hands the whole new column order to one reorder, never row-by-row updates", async () => {
+    const memory = createMemoryCrmStore();
+    const a = await createDeal(
+      tenantA,
+      { name: "A", stage: "New", value: 1, boardOrder: 0 },
+      memory,
+    );
+    const b = await createDeal(
+      tenantA,
+      { name: "B", stage: "New", value: 1, boardOrder: 1 },
+      memory,
+    );
+    const c = await createDeal(
+      tenantA,
+      { name: "C", stage: "Qualified", value: 1, boardOrder: 0 },
+      memory,
+    );
+    const reorders: unknown[] = [];
+    const reorder = memory.deals.reorder;
+    memory.deals.reorder = async (tenantId, rows) => {
+      reorders.push(rows);
+      return reorder(tenantId, rows);
+    };
+    memory.deals.update = async () => {
+      throw new Error("moveDeal must not update deals one at a time");
+    };
+
+    const moved = await moveDeal(tenantA, c.id, "New", 1, memory);
+
+    expect(moved).toMatchObject({
+      stage: "New",
+      boardOrder: 1,
+      probability: 10,
+    });
+    expect(reorders).toEqual([
+      [
+        { id: a.id, stage: "New", boardOrder: 0 },
+        { id: c.id, stage: "New", boardOrder: 1, probability: 10 },
+        { id: b.id, stage: "New", boardOrder: 2 },
+      ],
+    ]);
   });
 });

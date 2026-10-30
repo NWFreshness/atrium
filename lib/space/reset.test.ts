@@ -1,22 +1,14 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { createWriteBatch } from "../db/batch-transaction";
+import { describe, expect, it } from "vitest";
+import { createBatchRunner, createWriteBatch } from "../db/batch-transaction";
 import {
   createRecordingDb,
   statementShape,
   statementSql,
+  statementsMissingTenant,
 } from "../db/batch-test-helpers";
-import {
-  clearDemoResetters,
-  registerDemoResetter,
-  resetDemo,
-} from "../tenancy/reset-demo";
-import {
-  createMemorySpaceRepository,
-  createPage,
-  listPages,
-  type SpaceRepository,
-} from "./queries";
-import { registerSpaceDemoResetter, resetSpace } from "./reset";
+import { resetDemo } from "../tenancy/reset-demo";
+import { createMemorySpaceStore, listPages } from "./queries";
+import { collectSpaceReset } from "./reset";
 import { seedSpace } from "./seed";
 
 const demoTenant = "tenant-demo";
@@ -30,65 +22,62 @@ const demoSession = {
   },
 };
 
-function cloneRepo(repo: SpaceRepository): SpaceRepository {
-  return {
-    pages: repo.pages.map((row) => ({ ...row })),
-    blocks: repo.blocks.map((row) => ({ ...row })),
-    properties: repo.properties.map((row) => ({ ...row })),
-    propertyOptions: repo.propertyOptions.map((row) => ({ ...row })),
-    rowValues: repo.rowValues.map((row) => ({ ...row })),
-    views: repo.views.map((row) => ({ ...row })),
-  };
+/** The reset as it would be sent: collected against a database that records instead of running. */
+async function collected() {
+  const recorded = createRecordingDb();
+  const batch = createWriteBatch(() => recorded.db);
+  await collectSpaceReset(batch, demoTenant);
+  return { ...recorded, sent: batch.statements.map(statementSql) };
 }
 
-function commitRepo(target: SpaceRepository, source: SpaceRepository): void {
-  target.pages.splice(0, target.pages.length, ...source.pages);
-  target.blocks.splice(0, target.blocks.length, ...source.blocks);
-  target.properties.splice(0, target.properties.length, ...source.properties);
-  target.propertyOptions.splice(
-    0,
-    target.propertyOptions.length,
-    ...source.propertyOptions,
-  );
-  target.rowValues.splice(0, target.rowValues.length, ...source.rowValues);
-  target.views.splice(0, target.views.length, ...source.views);
-}
-
-describe("resetSpace", () => {
+describe("collectSpaceReset", () => {
   it("wipes then reseeds the demo tenant", async () => {
-    const repo = createMemorySpaceRepository();
-    await seedSpace(demoTenant, repo);
-    await createPage(demoTenant, { title: "Stale Scratch" }, repo);
-    const seededTitles = (await listPages(demoTenant, repo))
-      .filter((page) => page.title !== "Stale Scratch")
-      .map((page) => page.title)
+    const { sent } = await collected();
+    const seeded = createMemorySpaceStore();
+    await seedSpace(demoTenant, seeded);
+    const names = (await listPages(demoTenant, seeded))
+      .map((row) => row.title)
       .sort();
 
-    await resetSpace(undefined, demoTenant, repo);
-
-    const pages = await listPages(demoTenant, repo);
-    expect(pages.map((page) => page.title).sort()).toEqual(seededTitles);
-    expect(pages.some((page) => page.title === "Stale Scratch")).toBe(false);
+    // Every table is emptied for the tenant before the first row goes back,
+    // so a stale row cannot survive whatever it was called.
+    const firstInsert = sent.findIndex(({ sql }) => sql.startsWith("insert"));
+    expect(firstInsert).toBe(6);
+    for (const { sql, params } of sent.slice(0, firstInsert)) {
+      expect(sql).toMatch(/^delete from "\w+" where "\w+"\."tenantId" = \$1$/);
+      expect(params).toEqual([demoTenant]);
+    }
+    const reseeded = sent.filter(({ sql }) =>
+      sql.startsWith('insert into "pages"'),
+    );
+    expect(reseeded).toHaveLength(names.length);
+    for (const name of names) {
+      expect(
+        reseeded.some(({ params }) => params.includes(name)),
+        name,
+      ).toBe(true);
+    }
   });
 
   it("does not change the owner tenant", async () => {
-    const repo = createMemorySpaceRepository();
-    await seedSpace(demoTenant, repo);
-    await createPage(ownerTenant, { title: "Owner Notes" }, repo);
-
-    await resetSpace(undefined, demoTenant, repo);
-
-    const ownerPages = await listPages(ownerTenant, repo);
-    expect(ownerPages.map((page) => page.title)).toEqual(["Owner Notes"]);
+    const { sent } = await collected();
+    expect(statementsMissingTenant(sent, demoTenant)).toEqual([]);
+    expect(sent.some(({ params }) => params.includes(ownerTenant))).toBe(false);
   });
 
-  it("throws when no memory repo and no DATABASE_URL", async () => {
+  it("reads nothing and sends nothing while it collects", async () => {
+    const { queries, batches } = await collected();
+    expect(queries).toEqual([]);
+    expect(batches).toEqual([]);
+  });
+
+  it("fails without DATABASE_URL instead of reporting a reset that did nothing", async () => {
     const previous = process.env.DATABASE_URL;
     delete process.env.DATABASE_URL;
     try {
-      await expect(resetSpace(undefined, demoTenant)).rejects.toThrow(
-        "Space store required",
-      );
+      await expect(
+        resetDemo(async () => demoSession, [collectSpaceReset]),
+      ).rejects.toThrow("DATABASE_URL is required");
     } finally {
       if (previous === undefined) {
         delete process.env.DATABASE_URL;
@@ -99,48 +88,34 @@ describe("resetSpace", () => {
   });
 });
 
-describe("registerSpaceDemoResetter", () => {
-  beforeEach(() => {
-    clearDemoResetters();
-  });
-
-  it("rolls back when a resetter throws inside injected runInTransaction", async () => {
-    const committed = createMemorySpaceRepository();
-    await seedSpace(demoTenant, committed);
-    await createPage(demoTenant, { title: "Stale Scratch" }, committed);
-
-    async function runInTransaction(
-      work: (tx: SpaceRepository) => Promise<void>,
-    ): Promise<void> {
-      const tx = cloneRepo(committed);
-      try {
-        await work(tx);
-        commitRepo(committed, tx);
-      } catch (error) {
-        throw error;
-      }
-    }
-
-    registerSpaceDemoResetter(committed);
-    registerDemoResetter(async () => {
-      throw new Error("resetter failed");
-    });
+describe("collectSpaceReset inside resetDemo", () => {
+  it("sends nothing when a later resetter throws", async () => {
+    const { db, batches, queries } = createRecordingDb();
 
     await expect(
-      resetDemo(async () => demoSession, { runInTransaction }),
+      resetDemo(
+        async () => demoSession,
+        [
+          collectSpaceReset,
+          async () => {
+            throw new Error("resetter failed");
+          },
+        ],
+        createBatchRunner(() => db),
+      ),
     ).rejects.toThrow("resetter failed");
 
-    const pages = await listPages(demoTenant, committed);
-    expect(pages.some((page) => page.title === "Stale Scratch")).toBe(true);
+    expect(batches).toEqual([]);
+    expect(queries).toEqual([]);
   });
 });
 
-describe("resetSpace inside a reset batch", () => {
+describe("collectSpaceReset inside a reset batch", () => {
   it("collects the deletes in FK order, then the whole reseed, as one batch", async () => {
     const { db, batches } = createRecordingDb();
     const batch = createWriteBatch(() => db);
 
-    await resetSpace(batch, demoTenant);
+    await collectSpaceReset(batch, demoTenant);
 
     expect(batches).toHaveLength(0);
 

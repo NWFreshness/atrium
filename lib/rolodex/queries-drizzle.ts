@@ -1,6 +1,5 @@
 import { and, desc, eq, or } from "drizzle-orm";
-import { getDb } from "../db";
-import type { WriteOpts } from "../db/batch-transaction";
+import type { Database } from "../db";
 import { computeStatus } from "./cadence";
 import {
   connections,
@@ -27,14 +26,7 @@ import type {
   Reminder,
   UpdatePersonInput,
 } from "./queries-shared";
-import { applyPersonPatch, clone, personMatchesSearch } from "./queries-shared";
-
-function requireRolodexDb() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("Rolodex store required");
-  }
-  return getDb();
-}
+import { applyPersonPatch, personMatchesSearch } from "./queries-shared";
 
 function tenantRow(
   table:
@@ -53,10 +45,10 @@ function tenantRow(
 }
 
 export async function listPeopleInDrizzle(
+  db: Database,
   scoped: string,
   opts?: ListPeopleOpts,
 ): Promise<PersonComputed[]> {
-  const db = requireRolodexDb();
   const rows = await db
     .select()
     .from(people)
@@ -66,7 +58,7 @@ export async function listPeopleInDrizzle(
     if (!personMatchesSearch(row, opts)) {
       continue;
     }
-    const person = await getPersonInDrizzle(scoped, row.id);
+    const person = await getPersonInDrizzle(db, scoped, row.id);
     if (person) {
       result.push(person);
     }
@@ -75,10 +67,10 @@ export async function listPeopleInDrizzle(
 }
 
 export async function getPersonInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<PersonComputed | null> {
-  const db = requireRolodexDb();
   const [row] = await db
     .select()
     .from(people)
@@ -114,33 +106,23 @@ export async function getPersonInDrizzle(
   };
 }
 
-export async function insertPerson(
-  row: Person,
-  opts?: WriteOpts,
-): Promise<Person> {
-  if (opts?.batch) {
-    opts.batch.insert(people, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireRolodexDb()
-    .insert(people)
-    .values(row)
-    .returning();
+export async function insertPerson(db: Database, row: Person): Promise<Person> {
+  const [inserted] = await db.insert(people).values(row).returning();
   return inserted;
 }
 
 export async function updatePersonInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
   input: UpdatePersonInput,
 ): Promise<Person | null> {
-  const existing = await getPersonInDrizzle(scoped, id);
+  const existing = await getPersonInDrizzle(db, scoped, id);
   if (!existing) {
     return null;
   }
   applyPersonPatch(existing, input);
-  const [row] = await requireRolodexDb()
+  const [row] = await db
     .update(people)
     .set({
       name: existing.name,
@@ -167,10 +149,11 @@ export async function updatePersonInDrizzle(
 }
 
 export async function deletePersonInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<boolean> {
-  const deleted = await requireRolodexDb()
+  const deleted = await db
     .delete(people)
     .where(tenantRow(people, scoped, id))
     .returning({ id: people.id });
@@ -186,11 +169,11 @@ type ChildTable =
   | typeof gifts;
 
 async function listChildren<T extends { tenantId: string; personId: string }>(
+  db: Database,
   scoped: string,
   table: ChildTable,
   opts?: ListByPersonOpts,
 ): Promise<T[]> {
-  const db = requireRolodexDb();
   const where =
     opts?.personId != null
       ? and(eq(table.tenantId, scoped), eq(table.personId, opts.personId))
@@ -199,56 +182,43 @@ async function listChildren<T extends { tenantId: string; personId: string }>(
 }
 
 export async function listInteractionsInDrizzle(
+  db: Database,
   scoped: string,
   opts?: ListByPersonOpts,
 ): Promise<Interaction[]> {
-  return listChildren<Interaction>(scoped, interactions, opts);
+  return listChildren<Interaction>(db, scoped, interactions, opts);
 }
 
 export async function insertInteraction(
+  db: Database,
   row: Interaction,
-  opts?: WriteOpts,
 ): Promise<Interaction> {
-  if (opts?.batch) {
-    opts.batch.insert(interactions, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireRolodexDb()
-    .insert(interactions)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(interactions).values(row).returning();
   return inserted;
 }
 
 export async function listImportantDatesInDrizzle(
+  db: Database,
   scoped: string,
   opts?: ListByPersonOpts,
 ): Promise<ImportantDate[]> {
-  return listChildren<ImportantDate>(scoped, importantDates, opts);
+  return listChildren<ImportantDate>(db, scoped, importantDates, opts);
 }
 
 export async function insertImportantDate(
+  db: Database,
   row: ImportantDate,
-  opts?: WriteOpts,
 ): Promise<ImportantDate> {
-  if (opts?.batch) {
-    opts.batch.insert(importantDates, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireRolodexDb()
-    .insert(importantDates)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(importantDates).values(row).returning();
   return inserted;
 }
 
 export async function getImportantDateInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<ImportantDate | null> {
-  const [row] = await requireRolodexDb()
+  const [row] = await db
     .select()
     .from(importantDates)
     .where(tenantRow(importantDates, scoped, id))
@@ -257,11 +227,12 @@ export async function getImportantDateInDrizzle(
 }
 
 export async function updateImportantDateInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
   input: Partial<CreateImportantDateInput>,
 ): Promise<ImportantDate | null> {
-  const [row] = await requireRolodexDb()
+  const [row] = await db
     .update(importantDates)
     .set({
       ...(input.type !== undefined ? { type: input.type } : {}),
@@ -276,10 +247,11 @@ export async function updateImportantDateInDrizzle(
 }
 
 export async function deleteImportantDateInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<boolean> {
-  const deleted = await requireRolodexDb()
+  const deleted = await db
     .delete(importantDates)
     .where(tenantRow(importantDates, scoped, id))
     .returning({ id: importantDates.id });
@@ -287,76 +259,56 @@ export async function deleteImportantDateInDrizzle(
 }
 
 export async function listFactsInDrizzle(
+  db: Database,
   scoped: string,
   opts?: ListByPersonOpts,
 ): Promise<Fact[]> {
-  return listChildren<Fact>(scoped, facts, opts);
+  return listChildren<Fact>(db, scoped, facts, opts);
 }
 
-export async function insertFact(row: Fact, opts?: WriteOpts): Promise<Fact> {
-  if (opts?.batch) {
-    opts.batch.insert(facts, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireRolodexDb()
-    .insert(facts)
-    .values(row)
-    .returning();
+export async function insertFact(db: Database, row: Fact): Promise<Fact> {
+  const [inserted] = await db.insert(facts).values(row).returning();
   return inserted;
 }
 
 export async function listNewsInDrizzle(
+  db: Database,
   scoped: string,
   opts?: ListByPersonOpts,
 ): Promise<NewsItem[]> {
-  return listChildren<NewsItem>(scoped, news, opts);
+  return listChildren<NewsItem>(db, scoped, news, opts);
 }
 
 export async function insertNews(
+  db: Database,
   row: NewsItem,
-  opts?: WriteOpts,
 ): Promise<NewsItem> {
-  if (opts?.batch) {
-    opts.batch.insert(news, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireRolodexDb()
-    .insert(news)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(news).values(row).returning();
   return inserted;
 }
 
 export async function listRemindersInDrizzle(
+  db: Database,
   scoped: string,
   opts?: ListByPersonOpts,
 ): Promise<Reminder[]> {
-  return listChildren<Reminder>(scoped, reminders, opts);
+  return listChildren<Reminder>(db, scoped, reminders, opts);
 }
 
 export async function insertReminder(
+  db: Database,
   row: Reminder,
-  opts?: WriteOpts,
 ): Promise<Reminder> {
-  if (opts?.batch) {
-    opts.batch.insert(reminders, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireRolodexDb()
-    .insert(reminders)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(reminders).values(row).returning();
   return inserted;
 }
 
 export async function getReminderInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<Reminder | null> {
-  const [row] = await requireRolodexDb()
+  const [row] = await db
     .select()
     .from(reminders)
     .where(tenantRow(reminders, scoped, id))
@@ -365,11 +317,12 @@ export async function getReminderInDrizzle(
 }
 
 export async function updateReminderInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
   input: { done?: boolean; doneAt?: string | null; text?: string },
 ): Promise<Reminder | null> {
-  const [row] = await requireRolodexDb()
+  const [row] = await db
     .update(reminders)
     .set({
       ...(input.done !== undefined ? { done: input.done } : {}),
@@ -382,30 +335,24 @@ export async function updateReminderInDrizzle(
 }
 
 export async function listGiftsInDrizzle(
+  db: Database,
   scoped: string,
   opts?: ListByPersonOpts,
 ): Promise<Gift[]> {
-  return listChildren<Gift>(scoped, gifts, opts);
+  return listChildren<Gift>(db, scoped, gifts, opts);
 }
 
-export async function insertGift(row: Gift, opts?: WriteOpts): Promise<Gift> {
-  if (opts?.batch) {
-    opts.batch.insert(gifts, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireRolodexDb()
-    .insert(gifts)
-    .values(row)
-    .returning();
+export async function insertGift(db: Database, row: Gift): Promise<Gift> {
+  const [inserted] = await db.insert(gifts).values(row).returning();
   return inserted;
 }
 
 export async function deleteGiftInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<boolean> {
-  const deleted = await requireRolodexDb()
+  const deleted = await db
     .delete(gifts)
     .where(tenantRow(gifts, scoped, id))
     .returning({ id: gifts.id });
@@ -413,10 +360,10 @@ export async function deleteGiftInDrizzle(
 }
 
 export async function listConnectionsInDrizzle(
+  db: Database,
   scoped: string,
   opts?: { personId?: string },
 ): Promise<Connection[]> {
-  const db = requireRolodexDb();
   if (opts?.personId) {
     return db
       .select()
@@ -435,28 +382,36 @@ export async function listConnectionsInDrizzle(
 }
 
 export async function insertConnection(
+  db: Database,
   row: Connection,
-  opts?: WriteOpts,
 ): Promise<Connection> {
-  if (opts?.batch) {
-    opts.batch.insert(connections, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireRolodexDb()
-    .insert(connections)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(connections).values(row).returning();
   return inserted;
 }
 
 export async function deleteConnectionInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<boolean> {
-  const deleted = await requireRolodexDb()
+  const deleted = await db
     .delete(connections)
     .where(tenantRow(connections, scoped, id))
     .returning({ id: connections.id });
   return deleted.length > 0;
+}
+
+/** One Neon batch is one transaction (ADR-0002): the import lands whole or not at all. */
+export async function importPeopleInDrizzle(
+  db: Database,
+  rows: Person[],
+  dates: ImportantDate[],
+): Promise<void> {
+  const [first, ...rest] = [
+    ...rows.map((row) => db.insert(people).values(row)),
+    ...dates.map((row) => db.insert(importantDates).values(row)),
+  ];
+  if (first) {
+    await db.batch([first, ...rest]);
+  }
 }

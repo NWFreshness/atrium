@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  createMemorySpaceRepository,
-  createPage,
-} from "./queries";
+import { createMemorySpaceStore, createPage } from "./queries";
 import { searchPages } from "./search";
 
 const tenantA = "tenant-a";
@@ -10,13 +7,13 @@ const tenantB = "tenant-b";
 
 describe("searchPages", () => {
   it("throws when tenantId is missing or empty", async () => {
-    const memory = createMemorySpaceRepository();
+    const memory = createMemorySpaceStore();
     await expect(searchPages("", "home", memory)).rejects.toThrow(/tenantId/);
     await expect(searchPages("  ", "home", memory)).rejects.toThrow(/tenantId/);
   });
 
   it("returns [] for empty or whitespace queries", async () => {
-    const memory = createMemorySpaceRepository();
+    const memory = createMemorySpaceStore();
     await createPage(tenantA, { title: "Home" }, memory);
 
     expect(await searchPages(tenantA, "", memory)).toEqual([]);
@@ -24,7 +21,7 @@ describe("searchPages", () => {
   });
 
   it("matches titles case-insensitively by substring across page, database, and row", async () => {
-    const memory = createMemorySpaceRepository();
+    const memory = createMemorySpaceStore();
     const page = await createPage(
       tenantA,
       { title: "Home base", type: "page", icon: "🏠" },
@@ -64,7 +61,7 @@ describe("searchPages", () => {
   });
 
   it("never returns another tenant's pages", async () => {
-    const memory = createMemorySpaceRepository();
+    const memory = createMemorySpaceStore();
     await createPage(tenantB, { title: "Demo Home" }, memory);
     const own = await createPage(tenantA, { title: "Demo Home" }, memory);
 
@@ -75,7 +72,7 @@ describe("searchPages", () => {
   });
 
   it("sorts matches by title then id", async () => {
-    const memory = createMemorySpaceRepository();
+    const memory = createMemorySpaceStore();
     const zebra = await createPage(
       tenantA,
       { title: "Alpha", type: "page" },
@@ -109,6 +106,10 @@ describe("searchPages", () => {
     expectedIds.push(beta.id);
 
     expect(hits.map((hit) => hit.id)).toEqual(expectedIds);
-    expect(hits.map((hit) => hit.title)).toEqual(["Alpha", "Alpha", "Beta note"]);
+    expect(hits.map((hit) => hit.title)).toEqual([
+      "Alpha",
+      "Alpha",
+      "Beta note",
+    ]);
   });
 });

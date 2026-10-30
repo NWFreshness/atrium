@@ -113,13 +113,6 @@ export type CreateConnectionInput = {
 
 export type ListByPersonOpts = { personId?: string };
 
-export function requireTenantId(tenantId: string): string {
-  if (typeof tenantId !== "string" || tenantId.trim() === "") {
-    throw new Error("tenantId is required");
-  }
-  return tenantId;
-}
-
 export function newId(): string {
   return crypto.randomUUID();
 }

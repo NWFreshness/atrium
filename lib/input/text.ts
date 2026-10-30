@@ -1,3 +1,5 @@
+import { InputError } from "./result";
+
 export const MAX_SHORT_TEXT = 500;
 export const MAX_LONG_TEXT = 8_000;
 export const MAX_BLOCK_TEXT = 20_000;
@@ -14,10 +16,10 @@ export function assertText(
     return value;
   }
   if (typeof value !== "string") {
-    throw new Error("invalid text");
+    throw new InputError(undefined, "invalid text");
   }
   if (value.length > max) {
-    throw new Error("text too long");
+    throw new InputError(undefined, "text too long");
   }
   return value;
 }

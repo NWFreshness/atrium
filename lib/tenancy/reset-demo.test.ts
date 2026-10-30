@@ -1,20 +1,10 @@
 import { readFileSync } from "node:fs";
-import { beforeEach, describe, expect, it } from "vitest";
-import {
-  createMemoryCrmRepository,
-  createOrganization,
-  listOrganizations,
-} from "../crm/queries";
-import { registerCrmDemoResetter } from "../crm/reset";
+import { describe, expect, it } from "vitest";
+import { collectCrmReset } from "../crm/reset";
 import { organizations } from "../crm/schema";
-import { seedCrm } from "../crm/seed";
-import { createBatchRunner, type WriteBatch } from "../db/batch-transaction";
+import { createBatchRunner } from "../db/batch-transaction";
 import { createRecordingDb, statementSql } from "../db/batch-test-helpers";
-import {
-  clearDemoResetters,
-  registerDemoResetter,
-  resetDemo,
-} from "./reset-demo";
+import { resetDemo, type DemoResetter } from "./reset-demo";
 
 const ownerSession = {
   user: {
@@ -41,87 +31,74 @@ const memberSession = {
 };
 
 describe("resetDemo", () => {
-  beforeEach(() => {
-    clearDemoResetters();
-  });
-
   it("throws when the session role is owner and does not run resetters", async () => {
     let called = false;
-    registerDemoResetter(async () => {
+    const resetter: DemoResetter = async () => {
       called = true;
-    });
+    };
 
-    await expect(resetDemo(async () => ownerSession)).rejects.toThrow(
-      "Forbidden",
-    );
+    await expect(
+      resetDemo(async () => ownerSession, [resetter]),
+    ).rejects.toThrow("Forbidden");
     expect(called).toBe(false);
   });
 
   it("throws when the session role is member and does not run resetters", async () => {
     let called = false;
-    registerDemoResetter(async () => {
+    const resetter: DemoResetter = async () => {
       called = true;
-    });
+    };
 
-    await expect(resetDemo(async () => memberSession)).rejects.toThrow(
-      "Forbidden",
-    );
+    await expect(
+      resetDemo(async () => memberSession, [resetter]),
+    ).rejects.toThrow("Forbidden");
     expect(called).toBe(false);
   });
 
-  it("succeeds for a demo session with an empty registry", async () => {
-    await expect(resetDemo(async () => demoSession)).resolves.toBeUndefined();
+  it("succeeds for a demo session with no resetters", async () => {
+    await expect(
+      resetDemo(async () => demoSession, []),
+    ).resolves.toBeUndefined();
   });
 
-  it("uses session tenantId and ignores a client-supplied tenantId", async () => {
+  it("uses the session tenantId; no caller input can name another tenant", async () => {
     const seen: string[] = [];
-    registerDemoResetter(async (_tx, tenantId) => {
+    const resetter: DemoResetter = async (_batch, tenantId) => {
       seen.push(tenantId);
-    });
+    };
 
-    await resetDemo(async () => demoSession, {
-      tenantId: "attacker-tenant",
-    });
+    await resetDemo(async () => demoSession, [resetter]);
 
     expect(seen).toEqual(["tenant-demo"]);
+    // getSession, the resetters, the runner: nowhere to pass a tenant.
+    const source = readFileSync(new URL("./reset-demo.ts", import.meta.url), {
+      encoding: "utf8",
+    });
+    expect(source).toContain("await requireTenant(getSession)");
+    expect(source).not.toMatch(/tenantId\?: string/);
   });
 
-  it("rolls back when a resetter writes then throws", async () => {
-    const committed = new Map<string, string>();
-
-    async function runInTransaction(
-      work: (tx: Map<string, string>) => Promise<void>,
-    ): Promise<void> {
-      const tx = new Map(committed);
-      try {
-        await work(tx);
-        committed.clear();
-        for (const [key, value] of tx) {
-          committed.set(key, value);
-        }
-      } catch (error) {
-        throw error;
-      }
-    }
-
-    registerDemoResetter(async (tx) => {
-      (tx as Map<string, string>).set("row", "wiped");
+  it("sends nothing when a resetter writes then throws", async () => {
+    const { db, batches, queries } = createRecordingDb();
+    const resetter: DemoResetter = async (batch, tenantId) => {
+      batch.deleteTenantRows(organizations, tenantId);
       throw new Error("resetter failed");
-    });
+    };
 
     await expect(
-      resetDemo(async () => demoSession, { runInTransaction }),
+      resetDemo(
+        async () => demoSession,
+        [resetter],
+        createBatchRunner(() => db),
+      ),
     ).rejects.toThrow("resetter failed");
 
-    expect(committed.size).toBe(0);
+    expect(batches).toEqual([]);
+    expect(queries).toEqual([]);
   });
 });
 
 describe("resetDemo's production runner", () => {
-  beforeEach(() => {
-    clearDemoResetters();
-  });
-
   it("is a Neon batch, not a no-op", () => {
     const source = readFileSync(new URL("./reset-demo.ts", import.meta.url), {
       encoding: "utf8",
@@ -134,12 +111,12 @@ describe("resetDemo's production runner", () => {
   it("commits every resetter's writes as one batch, for the session's tenant only", async () => {
     const { db, batches } = createRecordingDb();
     const seen: string[] = [];
-    registerDemoResetter(async (tx, tenantId) => {
+    const wipe: DemoResetter = async (batch, tenantId) => {
       seen.push(tenantId);
-      (tx as WriteBatch).deleteTenantRows(organizations, tenantId);
-    });
-    registerDemoResetter(async (tx) => {
-      (tx as WriteBatch).insert(organizations, {
+      batch.deleteTenantRows(organizations, tenantId);
+    };
+    const reseed: DemoResetter = async (batch) => {
+      batch.insert(organizations, {
         id: "org-new",
         tenantId: "tenant-demo",
         name: "Northwind Logistics",
@@ -148,11 +125,13 @@ describe("resetDemo's production runner", () => {
         notes: null,
         createdAt: new Date(0),
       });
-    });
+    };
 
-    await resetDemo(async () => demoSession, {
-      runInTransaction: createBatchRunner(() => db),
-    });
+    await resetDemo(
+      async () => demoSession,
+      [wipe, reseed],
+      createBatchRunner(() => db),
+    );
 
     expect(seen).toEqual(["tenant-demo"]);
     expect(batches).toHaveLength(1);
@@ -169,15 +148,17 @@ describe("resetDemo's production runner", () => {
       throw new Error("batch failed");
     }) as typeof db.batch;
     let collected = 0;
-    registerDemoResetter(async (tx, tenantId) => {
-      (tx as WriteBatch).deleteTenantRows(organizations, tenantId);
+    const resetter: DemoResetter = async (batch, tenantId) => {
+      batch.deleteTenantRows(organizations, tenantId);
       collected += 1;
-    });
+    };
 
     await expect(
-      resetDemo(async () => demoSession, {
-        runInTransaction: createBatchRunner(() => db),
-      }),
+      resetDemo(
+        async () => demoSession,
+        [resetter],
+        createBatchRunner(() => db),
+      ),
     ).rejects.toThrow("batch failed");
 
     // Two things this can observe: the failure reaches the caller, and the
@@ -189,26 +170,49 @@ describe("resetDemo's production runner", () => {
     expect(collected).toBe(1);
   });
 
-  it("resets a memory-backed demo tenant without ever opening a database", async () => {
-    const repo = createMemoryCrmRepository();
-    const demoTenantId = demoSession.user.tenantId;
-    await seedCrm(demoTenantId, repo);
-    await createOrganization(demoTenantId, { name: "Stale Acme" }, repo);
-    registerCrmDemoResetter(repo);
+  it("resets the demo CRM in one batch without a single read", async () => {
+    const { db, batches, queries } = createRecordingDb();
 
-    // The default runner is the production one: it must not need DATABASE_URL
-    // when the resetter is bound to a memory store.
-    await resetDemo(async () => demoSession);
+    await resetDemo(
+      async () => demoSession,
+      [collectCrmReset],
+      createBatchRunner(() => db),
+    );
 
-    const orgs = await listOrganizations(demoTenantId, repo);
-    expect(orgs.map((org) => org.name).sort()).toEqual([
+    expect(queries).toEqual([]);
+    expect(batches).toHaveLength(1);
+    const names = (batches[0] ?? [])
+      .map(statementSql)
+      .filter(({ sql }) => sql.startsWith('insert into "organizations"'))
+      .map(({ params }) => params.find((param) => /^[A-Z]/.test(String(param))))
+      .sort();
+    expect(names).toEqual([
       "Bluepeak Software",
       "Harbor & Lane",
       "Northwind Logistics",
     ]);
   });
 
-  it("does not open a database for an empty registry", async () => {
-    await expect(resetDemo(async () => demoSession)).resolves.toBeUndefined();
+  it("does not open a database when there is nothing to reset", async () => {
+    await expect(
+      resetDemo(async () => demoSession, []),
+    ).resolves.toBeUndefined();
+  });
+});
+
+describe("the authenticated layout's reset", () => {
+  it("names every app that has tables, and only those", () => {
+    const layout = readFileSync(
+      new URL("../../app/(authenticated)/layout.tsx", import.meta.url),
+      { encoding: "utf8" },
+    );
+    for (const resetter of [
+      "collectCrmReset",
+      "collectRolodexReset",
+      "collectSpaceReset",
+    ]) {
+      expect(layout.match(new RegExp(resetter, "g"))).toHaveLength(2);
+    }
+    expect(layout).not.toContain("lib/groove");
   });
 });

@@ -1,24 +1,16 @@
 import { readFileSync } from "node:fs";
-import { beforeEach, describe, expect, it } from "vitest";
-import { createWriteBatch } from "../db/batch-transaction";
+import { describe, expect, it } from "vitest";
+import { createBatchRunner, createWriteBatch } from "../db/batch-transaction";
 import {
   createRecordingDb,
   statementShape,
   statementSql,
+  statementsMissingTenant,
 } from "../db/batch-test-helpers";
-import {
-  createMemoryCrmRepository,
-  createOrganization,
-  listOrganizations,
-  type CrmRepository,
-} from "./queries";
-import { registerCrmDemoResetter, resetCrm } from "./reset";
+import { resetDemo } from "../tenancy/reset-demo";
+import { createMemoryCrmStore, listOrganizations } from "./queries";
+import { collectCrmReset } from "./reset";
 import { seedCrm } from "./seed";
-import {
-  clearDemoResetters,
-  registerDemoResetter,
-  resetDemo,
-} from "../tenancy/reset-demo";
 
 const demoTenant = "tenant-demo";
 const ownerTenant = "tenant-owner";
@@ -37,57 +29,63 @@ const REFERENCE_ORGS = [
   "Northwind Logistics",
 ];
 
-function cloneRepo(repo: CrmRepository): CrmRepository {
-  return {
-    organizations: repo.organizations.map((row) => ({ ...row })),
-    contacts: repo.contacts.map((row) => ({ ...row })),
-    deals: repo.deals.map((row) => ({ ...row })),
-    activities: repo.activities.map((row) => ({ ...row })),
-  };
+/** The reset as it would be sent: collected against a database that records instead of running. */
+async function collected() {
+  const recorded = createRecordingDb();
+  const batch = createWriteBatch(() => recorded.db);
+  await collectCrmReset(batch, demoTenant);
+  return { ...recorded, sent: batch.statements.map(statementSql) };
 }
 
-function commitRepo(target: CrmRepository, source: CrmRepository): void {
-  target.organizations.splice(
-    0,
-    target.organizations.length,
-    ...source.organizations,
-  );
-  target.contacts.splice(0, target.contacts.length, ...source.contacts);
-  target.deals.splice(0, target.deals.length, ...source.deals);
-  target.activities.splice(0, target.activities.length, ...source.activities);
-}
-
-describe("resetCrm", () => {
+describe("collectCrmReset", () => {
   it("wipes then reseeds the demo tenant", async () => {
-    const repo = createMemoryCrmRepository();
-    await seedCrm(demoTenant, repo);
-    await createOrganization(demoTenant, { name: "Stale Acme" }, repo);
+    const { sent } = await collected();
+    const seeded = createMemoryCrmStore();
+    await seedCrm(demoTenant, seeded);
+    const names = (await listOrganizations(demoTenant, seeded))
+      .map((row) => row.name)
+      .sort();
+    expect(names).toEqual(REFERENCE_ORGS);
 
-    await resetCrm(undefined, demoTenant, repo);
-
-    const orgs = await listOrganizations(demoTenant, repo);
-    expect(orgs.map((org) => org.name).sort()).toEqual(REFERENCE_ORGS);
-    expect(orgs.some((org) => org.name === "Stale Acme")).toBe(false);
+    // Every table is emptied for the tenant before the first row goes back,
+    // so a stale row cannot survive whatever it was called.
+    const firstInsert = sent.findIndex(({ sql }) => sql.startsWith("insert"));
+    expect(firstInsert).toBe(4);
+    for (const { sql, params } of sent.slice(0, firstInsert)) {
+      expect(sql).toMatch(/^delete from "\w+" where "\w+"\."tenantId" = \$1$/);
+      expect(params).toEqual([demoTenant]);
+    }
+    const reseeded = sent.filter(({ sql }) =>
+      sql.startsWith('insert into "organizations"'),
+    );
+    expect(reseeded).toHaveLength(names.length);
+    for (const name of names) {
+      expect(
+        reseeded.some(({ params }) => params.includes(name)),
+        name,
+      ).toBe(true);
+    }
   });
 
   it("does not change the owner tenant", async () => {
-    const repo = createMemoryCrmRepository();
-    await seedCrm(demoTenant, repo);
-    await createOrganization(ownerTenant, { name: "Owner Co" }, repo);
-
-    await resetCrm(undefined, demoTenant, repo);
-
-    const ownerOrgs = await listOrganizations(ownerTenant, repo);
-    expect(ownerOrgs.map((org) => org.name)).toEqual(["Owner Co"]);
+    const { sent } = await collected();
+    expect(statementsMissingTenant(sent, demoTenant)).toEqual([]);
+    expect(sent.some(({ params }) => params.includes(ownerTenant))).toBe(false);
   });
 
-  it("throws when no memory repo and no DATABASE_URL", async () => {
+  it("reads nothing and sends nothing while it collects", async () => {
+    const { queries, batches } = await collected();
+    expect(queries).toEqual([]);
+    expect(batches).toEqual([]);
+  });
+
+  it("fails without DATABASE_URL instead of reporting a reset that did nothing", async () => {
     const previous = process.env.DATABASE_URL;
     delete process.env.DATABASE_URL;
     try {
-      await expect(resetCrm(undefined, demoTenant)).rejects.toThrow(
-        "CRM store required",
-      );
+      await expect(
+        resetDemo(async () => demoSession, [collectCrmReset]),
+      ).rejects.toThrow("DATABASE_URL is required");
     } finally {
       if (previous === undefined) {
         delete process.env.DATABASE_URL;
@@ -98,48 +96,34 @@ describe("resetCrm", () => {
   });
 });
 
-describe("registerCrmDemoResetter", () => {
-  beforeEach(() => {
-    clearDemoResetters();
-  });
-
-  it("rolls back when a resetter throws inside injected runInTransaction", async () => {
-    const committed = createMemoryCrmRepository();
-    await seedCrm(demoTenant, committed);
-    await createOrganization(demoTenant, { name: "Stale Acme" }, committed);
-
-    async function runInTransaction(
-      work: (tx: CrmRepository) => Promise<void>,
-    ): Promise<void> {
-      const tx = cloneRepo(committed);
-      try {
-        await work(tx);
-        commitRepo(committed, tx);
-      } catch (error) {
-        throw error;
-      }
-    }
-
-    registerCrmDemoResetter(committed);
-    registerDemoResetter(async () => {
-      throw new Error("resetter failed");
-    });
+describe("collectCrmReset inside resetDemo", () => {
+  it("sends nothing when a later resetter throws", async () => {
+    const { db, batches, queries } = createRecordingDb();
 
     await expect(
-      resetDemo(async () => demoSession, { runInTransaction }),
+      resetDemo(
+        async () => demoSession,
+        [
+          collectCrmReset,
+          async () => {
+            throw new Error("resetter failed");
+          },
+        ],
+        createBatchRunner(() => db),
+      ),
     ).rejects.toThrow("resetter failed");
 
-    const orgs = await listOrganizations(demoTenant, committed);
-    expect(orgs.some((org) => org.name === "Stale Acme")).toBe(true);
+    expect(batches).toEqual([]);
+    expect(queries).toEqual([]);
   });
 });
 
-describe("resetCrm inside a reset batch", () => {
+describe("collectCrmReset inside a reset batch", () => {
   it("collects the demo tenant's deletes and its reseed as one batch", async () => {
     const { db, batches } = createRecordingDb();
     const batch = createWriteBatch(() => db);
 
-    await resetCrm(batch, demoTenant);
+    await collectCrmReset(batch, demoTenant);
 
     // Collected, not executed: nothing reaches the database until the batch
     // the whole reset shares is flushed.

@@ -28,6 +28,7 @@ const calendarPage = read("app/(authenticated)/rolodex/calendar/page.tsx");
 const personPage = read("app/(authenticated)/rolodex/people/[id]/page.tsx");
 const initialsTsx = read("components/rolodex/initials.tsx");
 const subnavTsx = read("components/rolodex/rolodex-subnav.tsx");
+const sharedSubnavTsx = read("components/atrium-subnav.tsx");
 const personForm = read("components/rolodex/person-form.tsx");
 const importDialog = read("components/rolodex/import-dialog.tsx");
 const chrome = read("app/workroom.css");
@@ -335,9 +336,10 @@ describe("person page headings and panels", () => {
 
 describe("shared chrome, not a local copy (10.2/10.5 §7)", () => {
   it("keeps the subnav on the shared row with the amber active tab", () => {
-    expect(subnavTsx).toContain("atrium-subnav");
-    expect(subnavTsx).toContain("atrium-subtab");
-    expect(subnavTsx).toContain("atrium-subtab-active");
+    expect(subnavTsx).toContain("AtriumSubnav");
+    expect(sharedSubnavTsx).toContain("atrium-subnav");
+    expect(sharedSubnavTsx).toContain("atrium-subtab");
+    expect(sharedSubnavTsx).toContain("atrium-subtab-active");
     expect(chrome).toMatch(
       /\.atrium-subtab-active\s*\{[^}]*border-bottom-color:\s*var\(--amber\)/,
     );

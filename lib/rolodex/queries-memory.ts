@@ -354,3 +354,20 @@ export function deleteConnectionInMemory(
   repo.connections.splice(index, 1);
   return true;
 }
+
+/** All or nothing, like the batch it stands in for: a failed push leaves no rows. */
+export function importPeopleInMemory(
+  repo: RolodexRepository,
+  people: Person[],
+  dates: ImportantDate[],
+): void {
+  const before = [repo.people.length, repo.importantDates.length] as const;
+  try {
+    for (const row of people) repo.people.push(clone(row));
+    for (const row of dates) repo.importantDates.push(clone(row));
+  } catch (error) {
+    repo.people.length = before[0];
+    repo.importantDates.length = before[1];
+    throw error;
+  }
+}

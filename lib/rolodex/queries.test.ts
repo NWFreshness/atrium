@@ -14,7 +14,7 @@ import {
   createGift,
   createImportantDate,
   createInteraction,
-  createMemoryRolodexRepository,
+  createMemoryRolodexStore,
   createNews,
   createPerson,
   createReminder,
@@ -50,7 +50,7 @@ const tenantA = "tenant-a";
 const tenantB = "tenant-b";
 
 function repo() {
-  return createMemoryRolodexRepository();
+  return createMemoryRolodexStore();
 }
 
 function fkOnDelete(table: Parameters<typeof getTableConfig>[0]): string[] {
@@ -328,5 +328,104 @@ describe("people CRUD", () => {
         process.env.DATABASE_URL = previous;
       }
     }
+  });
+});
+
+describe("same-tenant references and enums are enforced at the barrel", () => {
+  it("rejects every child row that names another tenant's person", async () => {
+    const store = repo();
+    const foreign = await createPerson(tenantB, { name: "Theirs" }, store);
+    const own = await createPerson(tenantA, { name: "Ours" }, store);
+    const personId = foreign.id;
+
+    const attempts = [
+      () =>
+        createInteraction(
+          tenantA,
+          { personId, type: "call", date: "2026-01-02" },
+          store,
+        ),
+      () =>
+        createImportantDate(
+          tenantA,
+          { personId, type: "birthday", month: 1, day: 2 },
+          store,
+        ),
+      () => createFact(tenantA, { personId, text: "x" }, store),
+      () =>
+        createNews(tenantA, { personId, text: "x", date: "2026-01-02" }, store),
+      () =>
+        createReminder(
+          tenantA,
+          { personId, text: "x", dueDate: "2026-01-02" },
+          store,
+        ),
+      () =>
+        createGift(
+          tenantA,
+          { personId, name: "x", kind: "idea", date: "2026-01-02" },
+          store,
+        ),
+    ];
+    for (const attempt of attempts) {
+      await expect(attempt()).rejects.toMatchObject({ field: "personId" });
+    }
+    await expect(
+      createConnection(
+        tenantA,
+        { personA: own.id, personB: foreign.id, kind: "sibling" },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "personB" });
+
+    expect(await listInteractions(tenantA, store)).toEqual([]);
+    expect(await listImportantDates(tenantA, store)).toEqual([]);
+    expect(await listFacts(tenantA, store)).toEqual([]);
+    expect(await listNews(tenantA, store)).toEqual([]);
+    expect(await listReminders(tenantA, store)).toEqual([]);
+    expect(await listGifts(tenantA, store)).toEqual([]);
+    expect(await listConnections(tenantA, store)).toEqual([]);
+  });
+
+  it("rejects values outside the type and kind enums", async () => {
+    const store = repo();
+    const { id: personId } = await createPerson(tenantA, { name: "A" }, store);
+    const other = await createPerson(tenantA, { name: "B" }, store);
+
+    await expect(
+      createInteraction(
+        tenantA,
+        { personId, type: "fax" as never, date: "2026-01-02" },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "type" });
+    await expect(
+      createImportantDate(
+        tenantA,
+        { personId, type: "nameday" as never, month: 1, day: 2 },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "type" });
+    await expect(
+      createGift(
+        tenantA,
+        { personId, name: "x", kind: "stolen" as never, date: "2026-01-02" },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "kind" });
+    await expect(
+      createConnection(
+        tenantA,
+        { personA: personId, personB: other.id, kind: "rival" as never },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "kind" });
+    await expect(
+      createConnection(
+        tenantA,
+        { personA: personId, personB: personId, kind: "sibling" },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "personB" });
   });
 });

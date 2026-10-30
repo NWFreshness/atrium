@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { STEPS } from "../types";
-import type { MelodicStep } from "../types";
-import { gapToNext, sweepValue } from "./schedule";
+import { PATCHES } from "../patches";
+import { STEPS, SWEEP_BARS } from "../types";
+import type { MelodicStep, Patch } from "../types";
+import { gapToNext, nextSteps, sweepValue } from "./schedule";
 
 const rest = (on = false): MelodicStep => ({
   on,
@@ -59,5 +60,66 @@ describe("sweepValue", () => {
 
   it("rounds a non-integer shape index", () => {
     expect(sweepValue(0.5, 0.6)).toBeCloseTo(sweepValue(0.5, 1));
+  });
+});
+
+describe("nextSteps", () => {
+  // 120 bpm: one sixteenth is 15 / 120 = 0.125 s. Sweep off, filter at 0.5.
+  const patch = (swing = 0): Patch => ({
+    ...PATCHES[0],
+    bpm: 120,
+    swing,
+    master: { ...PATCHES[0].master, filter: 0.5, sweepDepth: 0 },
+  });
+  const at = (nextGridTime: number, step = 0, absStep = step) => ({
+    nextGridTime,
+    step,
+    absStep,
+  });
+
+  it("schedules only the grid times inside the 120 ms look-ahead", () => {
+    expect(nextSteps(1, at(1), patch()).map((s) => s.gridTime)).toEqual([1]);
+    expect(nextSteps(1.13, at(1), patch()).map((s) => s.gridTime)).toEqual([
+      1, 1.125,
+    ]);
+  });
+
+  it("schedules nothing while the next grid time is past the look-ahead", () => {
+    expect(nextSteps(1, at(1.2), patch())).toEqual([]);
+    expect(nextSteps(1, at(2), patch())).toEqual([]);
+  });
+
+  it("delays odd steps by swing and leaves even steps on the grid", () => {
+    // swing 0.5 pushes an off-beat by 0.5 * 0.66 * 0.125 = 0.04125 s.
+    const [even, odd] = nextSteps(1.13, at(1), patch(0.5));
+    expect(even.time).toBeCloseTo(1);
+    expect(odd.gridTime).toBeCloseTo(1.125);
+    expect(odd.time).toBeCloseTo(1.16625);
+  });
+
+  it("wraps the step at the bar while the absolute step keeps counting", () => {
+    const steps = nextSteps(1.13, at(1, STEPS - 1, 2 * STEPS - 1), patch());
+    expect(steps.map((s) => s.step)).toEqual([STEPS - 1, 0]);
+    expect(steps.map((s) => s.absStep)).toEqual([2 * STEPS - 1, 2 * STEPS]);
+  });
+
+  it("reports the plain filter position when the sweep is off", () => {
+    const [first] = nextSteps(1, at(1), patch());
+    expect(first.filter).toBe(0.5);
+    expect(first.phase).toBe(0);
+  });
+
+  it("closes the filter by the sweep depth at the start of a rising sweep", () => {
+    const base = patch();
+    const swept: Patch = {
+      ...base,
+      master: { ...base.master, sweepBars: 1, sweepShape: 0, sweepDepth: 0.4 },
+    };
+    const bars = SWEEP_BARS[1];
+    const [start] = nextSteps(1, at(1, 0, 0), swept);
+    expect(start.filter).toBeCloseTo(0.1);
+    const [half] = nextSteps(1, at(1, 0, (bars * STEPS) / 2), swept);
+    expect(half.phase).toBeCloseTo(0.5);
+    expect(half.filter).toBeCloseTo(0.3);
   });
 });

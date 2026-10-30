@@ -5,7 +5,7 @@ import {
   listDeals,
   listOrganizations,
   type Activity,
-  type CrmRepository,
+  type CrmStore,
   type Deal,
   type Organization,
 } from "./queries";
@@ -129,9 +129,7 @@ export function monthlyRevenue(
 }
 
 export function pipelineFunnel(deals: Deal[]): FunnelStage[] {
-  const live = deals.filter(
-    (deal) => isOpen(deal) || deal.stage === "Won",
-  );
+  const live = deals.filter((deal) => isOpen(deal) || deal.stage === "Won");
   return FUNNEL_STAGES.map((stage, index) => {
     const reached = live.filter(
       (deal) =>
@@ -248,7 +246,7 @@ export function buildDashboard(
 
 export async function getDashboard(
   tenantId: string,
-  repo?: CrmRepository,
+  repo?: CrmStore,
   now?: Date,
 ): Promise<Dashboard> {
   const [deals, activities, orgs] = await Promise.all([

@@ -23,9 +23,13 @@ function code(input: string): string {
 }
 
 const codeOnly = code(source);
-const thead = codeOnly.slice(
-  codeOnly.indexOf("<thead>"),
-  codeOnly.indexOf("</thead>"),
+/** The shared chrome the table renders through; its header lives there now. */
+const chrome = code(
+  readFileSync(new URL("./crm-table.tsx", import.meta.url), "utf8"),
+);
+const thead = chrome.slice(
+  chrome.indexOf("<thead>"),
+  chrome.indexOf("</thead>"),
 );
 
 /** See `org-table.test.ts` for why these are source greps. */
@@ -35,10 +39,10 @@ describe("contact-table", () => {
   });
 
   it("registers the sorting feature before its dependent row-model slot (AC1)", () => {
-    expect(codeOnly.indexOf("rowSortingFeature,")).toBeLessThan(
-      codeOnly.indexOf("sortedRowModel: createSortedRowModel()"),
+    expect(chrome.indexOf("rowSortingFeature,")).toBeLessThan(
+      chrome.indexOf("sortedRowModel: createSortedRowModel()"),
     );
-    expect(codeOnly).not.toContain("tableFeatures({})");
+    expect(chrome).not.toContain("tableFeatures({})");
   });
 
   it("carries no v8 sorting fossil (AC2)", () => {
@@ -51,7 +55,7 @@ describe("contact-table", () => {
     ]) {
       expect(codeOnly).not.toContain(fossil);
     }
-    expect(codeOnly).toContain("getRowModel()");
+    expect(chrome).toContain("getRowModel()");
   });
 
   it("resolves the org name inside the comparator, never in an accessorFn (AC6)", () => {
@@ -70,7 +74,7 @@ describe("contact-table", () => {
     // display column re-reads the derived per-contact values on every
     // re-render of the table.
     expect(codeOnly).toContain("sortFn: sortByOrgName(orgNames)");
-    expect(codeOnly).toContain("[orgNames, router, lastContactedByContactId]");
+    expect(codeOnly).toContain("[orgNames, onDelete, lastContactedByContactId]");
   });
 
   it("carries the aria-sort / Actions contracts (AC3, AC4, AC7)", () => {
@@ -83,8 +87,9 @@ describe("contact-table", () => {
     expect(codeOnly).toContain("enableSorting: false");
     expect(codeOnly).toContain("enableMultiSort: false");
     expect(codeOnly).toContain("No contacts");
-    expect(codeOnly.indexOf('className={styles["crm-empty"]}')).toBeLessThan(
-      codeOnly.indexOf("<table"),
+    expect(codeOnly).toContain("<CrmTable");
+    expect(chrome.indexOf('className={styles["crm-empty"]}')).toBeLessThan(
+      chrome.indexOf("<table"),
     );
   });
 

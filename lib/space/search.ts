@@ -1,4 +1,4 @@
-import { listPages, type Page, type SpaceRepository } from "./queries";
+import { listPages, type Page, type SpaceStore } from "./queries";
 import type { PageType } from "./constants";
 
 export type SearchPageHit = {
@@ -27,7 +27,7 @@ function compareTitleThenId(a: SearchPageHit, b: SearchPageHit): number {
 export async function searchPages(
   tenantId: string,
   q: string,
-  repo?: SpaceRepository,
+  repo?: SpaceStore,
 ): Promise<SearchPageHit[]> {
   const pages = await listPages(tenantId, repo);
   const needle = q.trim().toLowerCase();

@@ -15,23 +15,9 @@ import {
   type DealStage,
 } from "@/lib/crm/constants";
 import { createDealAction, updateDealAction } from "@/lib/crm/deal-actions";
+import { dealFormInput, type DealFormValues } from "@/lib/crm/form-input";
 import type { Contact, Deal, Organization } from "@/lib/crm/queries";
 import styles from "./org.module.css";
-
-type DealFormValues = {
-  name: string;
-  value: string;
-  stage: DealStage;
-  probability: string;
-  closeDate: string;
-  organizationId: string;
-  contactId: string;
-};
-
-function emptyToNull(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed === "" ? null : trimmed;
-}
 
 function dateToInputValue(date: Date | string | null | undefined): string {
   if (!date) {
@@ -42,14 +28,6 @@ function dateToInputValue(date: Date | string | null | undefined): string {
     return "";
   }
   return parsed.toISOString().slice(0, 10);
-}
-
-function inputValueToDate(value: string): Date | null {
-  const trimmed = value.trim();
-  if (trimmed === "") {
-    return null;
-  }
-  return new Date(`${trimmed}T00:00:00.000Z`);
 }
 
 function initialValues(deal?: Deal | null): DealFormValues {
@@ -78,6 +56,7 @@ export function DealForm({
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
   const [values, setValues] = useState<DealFormValues>(() =>
     initialValues(deal),
   );
@@ -100,33 +79,24 @@ export function DealForm({
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const name = values.name.trim();
-    if (!name) {
+    const input = dealFormInput(values);
+    if (!input) {
       return;
     }
-    const value = Number(values.value);
-    const probability = Number(values.probability);
-    if (!Number.isFinite(value) || !Number.isFinite(probability)) {
-      return;
-    }
-    const input = {
-      name,
-      value,
-      stage: values.stage,
-      probability,
-      closeDate: inputValueToDate(values.closeDate),
-      organizationId: emptyToNull(values.organizationId),
-      contactId: emptyToNull(values.contactId),
-    };
     setPending(true);
+    setSaveFailed(false);
     try {
-      if (deal) {
-        await updateDealAction(deal.id, input);
-      } else {
-        await createDealAction(input);
+      const saved = deal
+        ? await updateDealAction(deal.id, input)
+        : await createDealAction(input);
+      if (saved.ok) {
+        router.refresh();
+        onClose();
+        return;
       }
-      router.refresh();
-      onClose();
+      setSaveFailed(true);
+    } catch {
+      setSaveFailed(true);
     } finally {
       setPending(false);
     }
@@ -142,6 +112,9 @@ export function DealForm({
         onKeyDown={onDialogKeyDown}
       >
         <h2 id={titleId}>{title}</h2>
+        {saveFailed ? (
+          <p role="alert">Could not save that deal. Check it and try again.</p>
+        ) : null}
         <form onSubmit={onSubmit}>
           <div className={styles["crm-field"]}>
             <label htmlFor="deal-name">Name</label>

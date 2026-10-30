@@ -6,6 +6,7 @@ const read = (p: string) => readFileSync(`${root}/${p}`, "utf8");
 
 const subnav = read("components/rolodex/rolodex-subnav.tsx");
 const subnavCss = read("components/rolodex/rolodex-subnav.module.css");
+const sharedSubnav = read("components/atrium-subnav.tsx");
 const todayCss = read("components/rolodex/today.module.css");
 const todayTsx = read("components/rolodex/today-dashboard.tsx");
 const peopleCss = read("components/rolodex/people.module.css");
@@ -18,8 +19,9 @@ const calendarMonth = read("components/rolodex/calendar-month.tsx");
 describe("Rolodex subnav", () => {
   it("uses inline SVG glyphs and the shared subtab classes", () => {
     expect(subnav).toContain("<svg");
-    expect(subnav).toContain("atrium-subtab");
-    expect(subnav).toContain('aria-label="Rolodex"');
+    expect(sharedSubnav).toContain("atrium-subtab");
+    expect(sharedSubnav).toContain("aria-label={label}");
+    expect(subnav).toContain('label="Rolodex"');
   });
 
   it("drops the unicode glyph literals", () => {

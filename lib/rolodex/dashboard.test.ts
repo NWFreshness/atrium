@@ -3,7 +3,7 @@ import { getDashboard, upcomingDates } from "./dashboard";
 import {
   createImportantDate,
   createInteraction,
-  createMemoryRolodexRepository,
+  createMemoryRolodexStore,
   createNews,
   createPerson,
   createReminder,
@@ -17,7 +17,7 @@ const today = "2026-03-20";
 
 describe("whoToContact", () => {
   it("lists due and overdue, most overdue first, excluding off and snoozed", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const never = await createPerson(
       tenantA,
       { name: "Never", circle: "inner" },
@@ -79,7 +79,7 @@ describe("whoToContact", () => {
 
 describe("upcomingDates", () => {
   it("includes next occurrences within 30 days and lands 29 Feb on 28 in a common year", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const sam = await createPerson(tenantA, { name: "Sam Rivera" }, memory);
     await createImportantDate(
       tenantA,
@@ -137,7 +137,7 @@ describe("upcomingDates", () => {
 
 describe("dueReminders", () => {
   it("lists open due and overdue reminders only", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const sam = await createPerson(tenantA, { name: "Sam Rivera" }, memory);
     await createReminder(
       tenantA,
@@ -178,7 +178,7 @@ describe("dueReminders", () => {
 
 describe("interactionsPerMonth and peoplePerCircle", () => {
   it("fills twelve months and counts overdue per circle", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const inner = await createPerson(
       tenantA,
       { name: "Inner", circle: "inner" },
@@ -225,7 +225,7 @@ describe("interactionsPerMonth and peoplePerCircle", () => {
 
 describe("getDashboard", () => {
   it("does not mix owner and demo rows", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const sam = await createPerson(tenantA, { name: "Sam Rivera" }, memory);
     await createPerson(tenantB, { name: "Other Tenant" }, memory);
     await createNews(
@@ -243,7 +243,7 @@ describe("getDashboard", () => {
   });
 
   it("drops a person from who-to-contact after logging an interaction", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const sam = await createPerson(tenantA, { name: "Sam Rivera" }, memory);
     const before = await getDashboard(tenantA, memory, today);
     expect(before.whoToContact.map((row) => row.name)).toEqual(["Sam Rivera"]);
@@ -258,7 +258,7 @@ describe("getDashboard", () => {
   });
 
   it("reflects a completed reminder, news, and circle change", async () => {
-    const memory = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore();
     const sam = await createPerson(tenantA, { name: "Sam Rivera" }, memory);
     const reminder = await createReminder(
       tenantA,

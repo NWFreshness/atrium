@@ -1,118 +1,60 @@
 "use server";
 
-import { requireTenant, type GetSession } from "../tenancy";
+import { toResult, type ActionResult } from "../input/result";
+import { sessionTenant } from "../tenancy";
 import {
-  createOrganization,
-  deleteOrganization,
-  getOrganization,
-  listOrganizations,
-  organizationCascadePreview,
-  updateOrganization,
   type CascadePreview,
   type CreateOrganizationInput,
-  type CrmRepository,
   type Organization,
   type UpdateOrganizationInput,
 } from "./queries";
 
-type ClientTenantInput = {
-  tenantId?: string;
-};
-
-export async function listOrganizationsForSession(
-  getSession: GetSession,
-  input: { q?: string } & ClientTenantInput = {},
-  repo?: CrmRepository,
-): Promise<Organization[]> {
-  const { tenantId } = await requireTenant(getSession, input);
-  return listOrganizations(tenantId, repo, input.q);
-}
-
-export async function getOrganizationForSession(
-  getSession: GetSession,
-  id: string,
-  repo?: CrmRepository,
-): Promise<Organization | null> {
-  const { tenantId } = await requireTenant(getSession);
-  return getOrganization(tenantId, id, repo);
-}
-
-export async function createOrganizationForSession(
-  getSession: GetSession,
-  input: CreateOrganizationInput & ClientTenantInput,
-  repo?: CrmRepository,
-): Promise<Organization> {
-  const { tenantId } = await requireTenant(getSession, input);
-  return createOrganization(tenantId, input, repo);
-}
-
-export async function updateOrganizationForSession(
-  getSession: GetSession,
-  id: string,
-  input: UpdateOrganizationInput & ClientTenantInput,
-  repo?: CrmRepository,
-): Promise<Organization | null> {
-  const { tenantId } = await requireTenant(getSession, input);
-  return updateOrganization(tenantId, id, input, repo);
-}
-
-export async function deleteOrganizationForSession(
-  getSession: GetSession,
-  id: string,
-  repo?: CrmRepository,
-): Promise<Organization | null> {
-  const { tenantId } = await requireTenant(getSession);
-  return deleteOrganization(tenantId, id, repo);
-}
-
-export async function organizationCascadePreviewForSession(
-  getSession: GetSession,
-  id: string,
-  repo?: CrmRepository,
-): Promise<CascadePreview> {
-  const { tenantId } = await requireTenant(getSession);
-  return organizationCascadePreview(tenantId, id, repo);
-}
+import {
+  listOrganizationsIn,
+  getOrganizationIn,
+  createOrganizationIn,
+  updateOrganizationIn,
+  deleteOrganizationIn,
+  organizationCascadePreviewIn,
+} from "./org-ops";
 
 export async function listOrganizationsAction(
   q?: string,
 ): Promise<Organization[]> {
-  const { auth } = await import("@/auth");
-  return listOrganizationsForSession(auth, { q });
+  return listOrganizationsIn(await sessionTenant(), { q });
 }
 
 export async function getOrganizationAction(
   id: string,
 ): Promise<Organization | null> {
-  const { auth } = await import("@/auth");
-  return getOrganizationForSession(auth, id);
+  return getOrganizationIn(await sessionTenant(), id);
 }
 
 export async function createOrganizationAction(
   input: CreateOrganizationInput,
-): Promise<Organization> {
-  const { auth } = await import("@/auth");
-  return createOrganizationForSession(auth, input);
+): Promise<ActionResult<Organization>> {
+  return toResult(async () =>
+    createOrganizationIn(await sessionTenant(), input),
+  );
 }
 
 export async function updateOrganizationAction(
   id: string,
   input: UpdateOrganizationInput,
-): Promise<Organization | null> {
-  const { auth } = await import("@/auth");
-  return updateOrganizationForSession(auth, id, input);
+): Promise<ActionResult<Organization>> {
+  return toResult(async () =>
+    updateOrganizationIn(await sessionTenant(), id, input),
+  );
 }
 
 export async function deleteOrganizationAction(
   id: string,
-): Promise<Organization | null> {
-  const { auth } = await import("@/auth");
-  return deleteOrganizationForSession(auth, id);
+): Promise<ActionResult<Organization>> {
+  return toResult(async () => deleteOrganizationIn(await sessionTenant(), id));
 }
 
 export async function organizationCascadePreviewAction(
   id: string,
 ): Promise<CascadePreview> {
-  const { auth } = await import("@/auth");
-  return organizationCascadePreviewForSession(auth, id);
+  return organizationCascadePreviewIn(await sessionTenant(), id);
 }

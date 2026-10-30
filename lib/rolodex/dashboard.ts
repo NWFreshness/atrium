@@ -17,7 +17,7 @@ import {
   type NewsItem,
   type PersonComputed,
   type Reminder,
-  type RolodexRepository,
+  type RolodexStore,
 } from "./queries";
 import { buildTimeline, type TimelineEntry } from "./timeline";
 
@@ -275,7 +275,7 @@ export function buildDashboard(
 
 export async function getDashboard(
   tenantId: string,
-  repo?: RolodexRepository,
+  repo?: RolodexStore,
   today: string = todayISO(),
 ): Promise<RolodexDashboard> {
   const [people, dates, reminders, interactions, news] = await Promise.all([

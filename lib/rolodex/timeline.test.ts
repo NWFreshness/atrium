@@ -3,6 +3,7 @@ import {
   createFact,
   createInteraction,
   createMemoryRolodexRepository,
+  createMemoryRolodexStore,
   createNews,
   createPerson,
   createReminder,
@@ -17,7 +18,8 @@ const tenantB = "tenant-b";
 
 describe("buildTimeline", () => {
   it("merges interactions, news, and completed reminders newest first", async () => {
-    const memory = createMemoryRolodexRepository();
+    const rows = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore(rows);
     const maya = await createPerson(tenantA, { name: "Maya Chen" }, memory);
     await createInteraction(
       tenantA,
@@ -53,9 +55,9 @@ describe("buildTimeline", () => {
     void open;
 
     const entries = buildTimeline([maya], {
-      interactions: memory.interactions,
-      news: memory.news,
-      reminders: memory.reminders,
+      interactions: rows.interactions,
+      news: rows.news,
+      reminders: rows.reminders,
     });
     expect(entries.map((row) => row.kind)).toEqual([
       "reminder_done",
@@ -68,7 +70,8 @@ describe("buildTimeline", () => {
   });
 
   it("filters by person and kind", async () => {
-    const memory = createMemoryRolodexRepository();
+    const rows = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore(rows);
     const maya = await createPerson(tenantA, { name: "Maya Chen" }, memory);
     const sam = await createPerson(tenantA, { name: "Sam Okoye" }, memory);
     await createNews(
@@ -84,9 +87,9 @@ describe("buildTimeline", () => {
     const onlyMaya = buildTimeline(
       [maya, sam],
       {
-        interactions: memory.interactions,
-        news: memory.news,
-        reminders: memory.reminders,
+        interactions: rows.interactions,
+        news: rows.news,
+        reminders: rows.reminders,
       },
       { personId: maya.id },
     );
@@ -94,9 +97,9 @@ describe("buildTimeline", () => {
     const onlyNews = buildTimeline(
       [maya, sam],
       {
-        interactions: memory.interactions,
-        news: memory.news,
-        reminders: memory.reminders,
+        interactions: rows.interactions,
+        news: rows.news,
+        reminders: rows.reminders,
       },
       { kind: "news" },
     );
@@ -106,7 +109,8 @@ describe("buildTimeline", () => {
 
 describe("logging updates last contacted and latest news", () => {
   it("derives last contacted from the newest interaction", async () => {
-    const memory = createMemoryRolodexRepository();
+    const rows = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore(rows);
     const person = await createPerson(tenantA, { name: "Maya Chen" }, memory);
     await createInteraction(
       tenantA,
@@ -127,7 +131,8 @@ describe("logging updates last contacted and latest news", () => {
   });
 
   it("uses the newest news as latestNews and keeps facts separate", async () => {
-    const memory = createMemoryRolodexRepository();
+    const rows = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore(rows);
     const person = await createPerson(
       tenantA,
       { name: "Maya Chen", notes: "Freeform notes" },
@@ -159,7 +164,8 @@ describe("logging updates last contacted and latest news", () => {
   });
 
   it("toggles reminder done in the same tenant only", async () => {
-    const memory = createMemoryRolodexRepository();
+    const rows = createMemoryRolodexRepository();
+    const memory = createMemoryRolodexStore(rows);
     const person = await createPerson(tenantA, { name: "Maya Chen" }, memory);
     const reminder = await createReminder(
       tenantA,

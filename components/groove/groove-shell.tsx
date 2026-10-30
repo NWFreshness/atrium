@@ -47,6 +47,12 @@ export function GrooveShell() {
   });
 
   const engineRef = useRef<Engine | null>(null);
+  // Render reads these, never the ref: the analyser once the engine exists, and
+  // the filter position of the step that just sounded (null while stopped).
+  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+  const [meter, setMeter] = useState<{ filter: number; phase: number } | null>(
+    null,
+  );
 
   const patch = patches[index];
 
@@ -60,8 +66,12 @@ export function GrooveShell() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const engine = new Engine(() => stateRef.current);
-    engine.onStep = setCurrent;
+    engine.onStep = (step) => {
+      setCurrent(step);
+      setMeter(step < 0 ? null : engine.meter);
+    };
     engineRef.current = engine;
+    setAnalyser(engine.analyser);
     return () => {
       engine.stop();
       engineRef.current = null;
@@ -89,13 +99,11 @@ export function GrooveShell() {
   const togglePlay = async () => {
     const engine = engineRef.current;
     if (!engine) return;
-    if (engine.ctx.state !== "running") {
-      try {
-        await engine.resume();
-      } catch {
-        // Browser autoplay policies can reject until a gesture — ignore here
-        // because the click itself qualifies as a gesture.
-      }
+    try {
+      await engine.resume();
+    } catch {
+      // Browser autoplay policies can reject until a gesture — ignore here
+      // because the click itself qualifies as a gesture.
     }
     if (playing) {
       engine.stop();
@@ -205,12 +213,12 @@ export function GrooveShell() {
             onVolume={() => {
               // Volume lands in 4.7 (live wiring).
             }}
-            analyser={engineRef.current?.analyser ?? null}
+            analyser={analyser}
             getFilter={() => {
               const engine = engineRef.current;
-              if (playing && engine) {
+              if (engine?.running) {
                 return {
-                  macro: engine.filterMacro,
+                  macro: engine.meter.filter,
                   reso: patch.master.filterReso,
                 };
               }
@@ -219,8 +227,8 @@ export function GrooveShell() {
                 reso: patch.master.filterReso,
               };
             }}
-            liveFilter={engineRef.current?.filterMacro ?? patch.master.filter}
-            sweepPhase={engineRef.current?.sweepPhase ?? 0}
+            liveFilter={meter?.filter ?? patch.master.filter}
+            sweepPhase={meter?.phase ?? 0}
           />
           <LedStrip current={current} />
         </div>

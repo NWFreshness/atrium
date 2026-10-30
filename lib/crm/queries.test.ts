@@ -12,6 +12,7 @@ import {
   createActivity,
   createContact,
   createDeal,
+  createMemoryCrmStore,
   createMemoryCrmRepository,
   createOrganization,
   dealCascadePreview,
@@ -43,18 +44,13 @@ import {
   deals,
   organizations,
 } from "./schema";
-import { createWriteBatch } from "../db/batch-transaction";
-import { createRecordingDb } from "../db/batch-test-helpers";
-import {
-  contactEmailPrecheck,
-  isUniqueViolation,
-} from "./queries-drizzle";
+import { contactEmailPrecheck, isUniqueViolation } from "./queries-drizzle";
 
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
 
 function repo() {
-  return createMemoryCrmRepository();
+  return createMemoryCrmStore();
 }
 
 describe("CRM schema", () => {
@@ -687,7 +683,12 @@ describe("listDeals stage and close-date filters", () => {
   it("filters by stage equality within the tenant", async () => {
     const memory = repo();
     await deal(tenantA, "Early", { stage: "New" }, memory);
-    const qualified = await deal(tenantA, "Middle", { stage: "Qualified" }, memory);
+    const qualified = await deal(
+      tenantA,
+      "Middle",
+      { stage: "Qualified" },
+      memory,
+    );
     await deal(tenantB, "Other", { stage: "Qualified" }, memory);
 
     expect(await listDeals(tenantA, memory, { stage: "Qualified" })).toEqual([
@@ -717,12 +718,14 @@ describe("listDeals stage and close-date filters", () => {
       memory,
     );
 
-    expect(
-      await listDeals(tenantA, memory, { closeAfter: after }),
-    ).toEqual([inside, late]);
-    expect(
-      await listDeals(tenantA, memory, { closeBefore: before }),
-    ).toEqual([early, inside]);
+    expect(await listDeals(tenantA, memory, { closeAfter: after })).toEqual([
+      inside,
+      late,
+    ]);
+    expect(await listDeals(tenantA, memory, { closeBefore: before })).toEqual([
+      early,
+      inside,
+    ]);
     expect(
       await listDeals(tenantA, memory, {
         closeAfter: after,
@@ -733,7 +736,12 @@ describe("listDeals stage and close-date filters", () => {
 
   it("pins the half-open bound by id, not by index", async () => {
     const memory = repo();
-    const onAfter = await deal(tenantA, "On after", { closeDate: after }, memory);
+    const onAfter = await deal(
+      tenantA,
+      "On after",
+      { closeDate: after },
+      memory,
+    );
     const onBefore = await deal(
       tenantA,
       "On before",
@@ -766,12 +774,12 @@ describe("listDeals stage and close-date filters", () => {
     );
 
     expect(await listDeals(tenantA, memory)).toEqual([undated, dated]);
-    expect(
-      await listDeals(tenantA, memory, { closeAfter: after }),
-    ).toEqual([dated]);
-    expect(
-      await listDeals(tenantA, memory, { closeBefore: before }),
-    ).toEqual([dated]);
+    expect(await listDeals(tenantA, memory, { closeAfter: after })).toEqual([
+      dated,
+    ]);
+    expect(await listDeals(tenantA, memory, { closeBefore: before })).toEqual([
+      dated,
+    ]);
     expect(
       await listDeals(tenantA, memory, {
         closeAfter: after,
@@ -1106,7 +1114,8 @@ describe("activities CRUD", () => {
   });
 
   it("sorts newest first: occurredAt desc, null last, then createdAt desc, then id", async () => {
-    const memory = repo();
+    const rows = createMemoryCrmRepository();
+    const memory = createMemoryCrmStore(rows);
     const oldest = await createActivity(
       tenantA,
       {
@@ -1152,7 +1161,7 @@ describe("activities CRUD", () => {
       },
       memory,
     );
-    for (const row of memory.activities) {
+    for (const row of rows.activities) {
       if (row.id === oldest.id) {
         row.createdAt = new Date("2026-01-01T00:00:00.000Z");
       } else if (row.id === newest.id) {
@@ -1383,7 +1392,12 @@ describe("cascadePreview", () => {
     );
     await createActivity(
       tenantA,
-      { type: "note", contactId: contact.id, description: "hello", done: false },
+      {
+        type: "note",
+        contactId: contact.id,
+        description: "hello",
+        done: false,
+      },
       memory,
     );
     const other = await createContact(
@@ -1489,25 +1503,6 @@ describe("cascadePreview", () => {
       dealCascadePreview(tenantA, otherDeal.id, memory),
     ).resolves.toEqual(zero);
     await expect(deleteDeal(tenantA, "missing", memory)).resolves.toBeNull();
-  });
-});
-
-describe("a batched createDeal", () => {
-  const tenant = "tenant-batch-board-order";
-
-  it("refuses a deal whose board order the database would have to answer", async () => {
-    const { db, batches } = createRecordingDb();
-    const batch = createWriteBatch(() => db);
-
-    await expect(
-      createDeal(
-        tenant,
-        { name: "No board order", stage: "New", value: 1000 },
-        undefined,
-        { batch },
-      ),
-    ).rejects.toThrow(/explicit `boardOrder`/);
-    expect(batches).toHaveLength(0);
   });
 });
 
@@ -1693,9 +1688,10 @@ describe("contact email uniqueness", () => {
     await expect(attempt).rejects.toMatchObject({ code: "duplicate_email" });
     const error: unknown = await attempt.catch((cause) => cause);
     expect(error).toBeInstanceOf(DuplicateContactEmailError);
-    expect(
-      (error as DuplicateContactEmailError).existing,
-    ).toMatchObject({ id: ana.id, name: "Ana Ruiz" });
+    expect((error as DuplicateContactEmailError).existing).toMatchObject({
+      id: ana.id,
+      name: "Ana Ruiz",
+    });
     expect(await listContacts(tenantA, memory)).toHaveLength(1);
   });
 
@@ -1819,5 +1815,151 @@ describe("isUniqueViolation", () => {
     ).toBe(false);
     expect(isUniqueViolation(null)).toBe(false);
     expect(isUniqueViolation(new Error("nope"))).toBe(false);
+  });
+});
+
+describe("same-tenant references and enums are enforced at the barrel", () => {
+  it("rejects a contact pointing at another tenant's organization", async () => {
+    const store = repo();
+    const foreign = await createOrganization(
+      tenantB,
+      { name: "Theirs" },
+      store,
+    );
+    const own = await createOrganization(tenantA, { name: "Ours" }, store);
+
+    await expect(
+      createContact(
+        tenantA,
+        { name: "Ada", status: "lead", organizationId: foreign.id },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "organizationId" });
+
+    const ada = await createContact(
+      tenantA,
+      { name: "Ada", status: "lead", organizationId: own.id },
+      store,
+    );
+    await expect(
+      updateContact(tenantA, ada.id, { organizationId: foreign.id }, store),
+    ).rejects.toMatchObject({ field: "organizationId" });
+    expect((await getContact(tenantA, ada.id, store))?.organizationId).toBe(
+      own.id,
+    );
+  });
+
+  it("rejects a deal pointing at another tenant's organization or contact", async () => {
+    const store = repo();
+    const foreignOrg = await createOrganization(
+      tenantB,
+      { name: "Theirs" },
+      store,
+    );
+    const foreignContact = await createContact(
+      tenantB,
+      { name: "Bob", status: "lead" },
+      store,
+    );
+
+    await expect(
+      createDeal(
+        tenantA,
+        { name: "D", stage: "New", value: 1, organizationId: foreignOrg.id },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "organizationId" });
+    await expect(
+      createDeal(
+        tenantA,
+        { name: "D", stage: "New", value: 1, contactId: foreignContact.id },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "contactId" });
+
+    const deal = await createDeal(
+      tenantA,
+      { name: "D", stage: "New", value: 1 },
+      store,
+    );
+    await expect(
+      updateDeal(tenantA, deal.id, { contactId: foreignContact.id }, store),
+    ).rejects.toMatchObject({ field: "contactId" });
+    expect(await listDeals(tenantA, store)).toHaveLength(1);
+  });
+
+  it("rejects an activity pointing at another tenant's contact or deal", async () => {
+    const store = repo();
+    const foreignContact = await createContact(
+      tenantB,
+      { name: "Bob", status: "lead" },
+      store,
+    );
+    const foreignDeal = await createDeal(
+      tenantB,
+      { name: "D", stage: "New", value: 1 },
+      store,
+    );
+
+    await expect(
+      createActivity(
+        tenantA,
+        {
+          type: "note",
+          description: "x",
+          done: false,
+          contactId: foreignContact.id,
+        },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "contactId" });
+    await expect(
+      createActivity(
+        tenantA,
+        { type: "note", description: "x", done: false, dealId: foreignDeal.id },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "dealId" });
+
+    const note = await createActivity(
+      tenantA,
+      { type: "note", description: "x", done: false },
+      store,
+    );
+    await expect(
+      updateActivity(tenantA, note.id, { dealId: foreignDeal.id }, store),
+    ).rejects.toMatchObject({ field: "dealId" });
+    expect(await listActivities(tenantA, store)).toHaveLength(1);
+  });
+
+  it("rejects values outside the status, stage and type enums", async () => {
+    const store = repo();
+    await expect(
+      createContact(tenantA, { name: "Ada", status: "vip" as never }, store),
+    ).rejects.toMatchObject({ field: "status" });
+    await expect(
+      createDeal(
+        tenantA,
+        { name: "D", stage: "Stalled" as never, value: 1 },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "stage" });
+    await expect(
+      createActivity(
+        tenantA,
+        { type: "fax" as never, description: "x", done: false },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "type" });
+
+    const deal = await createDeal(
+      tenantA,
+      { name: "D", stage: "New", value: 1 },
+      store,
+    );
+    await expect(
+      updateDeal(tenantA, deal.id, { stage: "Stalled" as never }, store),
+    ).rejects.toMatchObject({ field: "stage" });
+    expect((await getDeal(tenantA, deal.id, store))?.stage).toBe("New");
   });
 });

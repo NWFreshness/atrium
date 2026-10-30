@@ -3,14 +3,14 @@ import {
   getPerson,
   updatePerson,
   type PersonComputed,
-  type RolodexRepository,
+  type RolodexStore,
 } from "./queries";
 
 export async function movePersonCircle(
   tenantId: string,
   id: string,
   circle: Circle,
-  repo?: RolodexRepository,
+  repo?: RolodexStore,
 ): Promise<PersonComputed | null> {
   const person = await getPerson(tenantId, id, repo);
   if (!person) {

@@ -9,7 +9,7 @@ import {
 } from "./constants";
 import {
   createBlock,
-  createMemorySpaceRepository,
+  createMemorySpaceStore,
   createPage,
   createProperty,
   createPropertyOption,
@@ -52,14 +52,12 @@ import {
   viewKindEnum,
   views,
 } from "./schema";
-import { createWriteBatch } from "../db/batch-transaction";
-import { createRecordingDb, statementSql } from "../db/batch-test-helpers";
 
 const tenantA = "tenant-a";
 const tenantB = "tenant-b";
 
 function repo() {
-  return createMemorySpaceRepository();
+  return createMemorySpaceStore();
 }
 
 function fkOnDelete(table: Parameters<typeof getTableConfig>[0]): string[] {
@@ -269,15 +267,19 @@ describe("pages CRUD", () => {
 describe("page delete cascade", () => {
   it("removes nested pages, blocks, properties, options, row values, and views in memory", async () => {
     const memory = repo();
-    const root = await createPage(tenantA, { title: "Projects" }, memory);
+    const root = await createPage(
+      tenantA,
+      { title: "Projects", blocks: [] },
+      memory,
+    );
     const child = await createPage(
       tenantA,
-      { title: "Garden", parentId: root.id },
+      { title: "Garden", parentId: root.id, blocks: [] },
       memory,
     );
     const grandchild = await createPage(
       tenantA,
-      { title: "Calendar", parentId: child.id },
+      { title: "Calendar", parentId: child.id, blocks: [] },
       memory,
     );
     const database = await createPage(
@@ -287,11 +289,19 @@ describe("page delete cascade", () => {
     );
     const row = await createPage(
       tenantA,
-      { title: "Row", type: "row", parentId: database.id },
+      { title: "Row", type: "row", parentId: database.id, blocks: [] },
       memory,
     );
-    const other = await createPage(tenantA, { title: "Keep" }, memory);
-    const otherTenant = await createPage(tenantB, { title: "Beta" }, memory);
+    const other = await createPage(
+      tenantA,
+      { title: "Keep", blocks: [] },
+      memory,
+    );
+    const otherTenant = await createPage(
+      tenantB,
+      { title: "Beta", blocks: [] },
+      memory,
+    );
 
     await createBlock(
       tenantA,
@@ -343,7 +353,12 @@ describe("page delete cascade", () => {
 describe("tenant isolation", () => {
   it("prevents tenant A from reading or writing tenant B rows", async () => {
     const memory = repo();
-    const pageB = await createPage(tenantB, { title: "Beta Home" }, memory);
+    // A database page: properties and views may only hang off one.
+    const pageB = await createPage(
+      tenantB,
+      { title: "Beta Home", type: "database" },
+      memory,
+    );
     const blockB = await createBlock(
       tenantB,
       { pageId: pageB.id, type: "paragraph" },
@@ -448,36 +463,6 @@ describe("tenant isolation", () => {
   });
 });
 
-describe("a batched createPage", () => {
-  const tenant = "tenant-batch-position";
-
-  it("refuses a row whose position the database would have to answer", async () => {
-    const { db, batches } = createRecordingDb();
-    const batch = createWriteBatch(() => db);
-
-    await expect(
-      createPage(tenant, { title: "No position" }, undefined, { batch }),
-    ).rejects.toThrow(/explicit `position`/);
-    expect(batches).toHaveLength(0);
-  });
-
-  it("collects the insert when the caller brings a position", async () => {
-    const { db } = createRecordingDb();
-    const batch = createWriteBatch(() => db);
-
-    const page = await createPage(
-      tenant,
-      { title: "Planted", position: 7 },
-      undefined,
-      { batch },
-    );
-
-    expect(page.position).toBe(7);
-    expect(batch.statements).toHaveLength(1);
-    expect(statementSql(batch.statements[0]!).params).toContain(7);
-  });
-});
-
 describe("text ceilings", () => {
   it("rejects a 20001-character block in the memory repo", async () => {
     const memory = repo();
@@ -493,5 +478,84 @@ describe("text ceilings", () => {
         memory,
       ),
     ).rejects.toThrow("text too long");
+  });
+});
+
+describe("same-tenant references and enums are enforced at the barrel", () => {
+  it("rejects blocks, child pages, properties and views under another tenant's page", async () => {
+    const store = createMemorySpaceStore();
+    const foreign = await createPage(
+      "tenant-b",
+      { title: "Theirs", type: "database" },
+      store,
+    );
+
+    await expect(
+      createBlock("tenant-a", { pageId: foreign.id, type: "paragraph" }, store),
+    ).rejects.toMatchObject({ field: "pageId" });
+    await expect(
+      createPage("tenant-a", { title: "Child", parentId: foreign.id }, store),
+    ).rejects.toMatchObject({ field: "parentId" });
+    await expect(
+      createProperty(
+        "tenant-a",
+        { databaseId: foreign.id, name: "P", type: "text" },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "databaseId" });
+    await expect(
+      createView("tenant-a", { databaseId: foreign.id, kind: "table" }, store),
+    ).rejects.toMatchObject({ field: "databaseId" });
+
+    expect(await listPages("tenant-a", store)).toEqual([]);
+    expect(await listBlocks("tenant-a", store)).toEqual([]);
+    expect(await listProperties("tenant-a", store)).toEqual([]);
+    expect(await listViews("tenant-a", store)).toEqual([]);
+  });
+
+  it("rejects a property on a page that is not a database", async () => {
+    const store = createMemorySpaceStore();
+    const page = await createPage("tenant-a", { title: "Doc" }, store);
+    await expect(
+      createProperty(
+        "tenant-a",
+        { databaseId: page.id, name: "P", type: "text" },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "databaseId" });
+  });
+
+  it("rejects block and property types outside their enums", async () => {
+    const store = createMemorySpaceStore();
+    const page = await createPage("tenant-a", { title: "Doc" }, store);
+    const database = await createPage(
+      "tenant-a",
+      { title: "Db", type: "database" },
+      store,
+    );
+
+    await expect(
+      createBlock(
+        "tenant-a",
+        { pageId: page.id, type: "iframe" as never },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "type" });
+    const block = await createBlock(
+      "tenant-a",
+      { pageId: page.id, type: "paragraph" },
+      store,
+    );
+    await expect(
+      updateBlock("tenant-a", block.id, { type: "iframe" as never }, store),
+    ).rejects.toMatchObject({ field: "type" });
+    expect((await listBlocks("tenant-a", store))[0]?.type).toBe("paragraph");
+    await expect(
+      createProperty(
+        "tenant-a",
+        { databaseId: database.id, name: "P", type: "blob" as never },
+        store,
+      ),
+    ).rejects.toMatchObject({ field: "type" });
   });
 });

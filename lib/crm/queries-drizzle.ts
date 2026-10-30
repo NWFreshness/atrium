@@ -1,7 +1,18 @@
-import { and, count, desc, eq, getTableColumns, gte, lt, max, ne, or, sql } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  gte,
+  lt,
+  max,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
-import { getDb } from "../db";
-import type { WriteOpts } from "../db/batch-transaction";
+import type { Database } from "../db";
 import { type DealStage } from "./constants";
 import {
   type Activity,
@@ -16,19 +27,11 @@ import {
   type UpdateContactInput,
   type UpdateDealInput,
   type UpdateOrganizationInput,
-  clone,
   nextProbabilityOnStageChange,
   organizationSearchTerm,
 } from "./queries-shared";
 import { activities, contacts, deals, organizations } from "./schema";
 import { escapeIlike } from "../input/text";
-
-function requireCrmDb() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("CRM store required");
-  }
-  return getDb();
-}
 
 function tenantRow(
   table:
@@ -95,11 +98,12 @@ function dealSearchSql(q?: string) {
 }
 
 export async function listOrganizationsInDrizzle(
+  db: Database,
   scoped: string,
   q?: string,
 ): Promise<Organization[]> {
   const search = organizationSearchSql(q);
-  return requireCrmDb()
+  return db
     .select()
     .from(organizations)
     .where(
@@ -110,10 +114,11 @@ export async function listOrganizationsInDrizzle(
 }
 
 export async function getOrganizationInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<Organization | null> {
-  const [row] = await requireCrmDb()
+  const [row] = await db
     .select()
     .from(organizations)
     .where(tenantRow(organizations, scoped, id))
@@ -122,27 +127,20 @@ export async function getOrganizationInDrizzle(
 }
 
 export async function insertOrganization(
+  db: Database,
   row: Organization,
-  opts?: WriteOpts,
 ): Promise<Organization> {
-  if (opts?.batch) {
-    opts.batch.insert(organizations, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireCrmDb()
-    .insert(organizations)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(organizations).values(row).returning();
   return inserted;
 }
 
 export async function updateOrganizationInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
   input: UpdateOrganizationInput,
 ): Promise<Organization | null> {
-  const [row] = await requireCrmDb()
+  const [row] = await db
     .update(organizations)
     .set({
       ...(input.name !== undefined ? { name: input.name } : {}),
@@ -156,10 +154,11 @@ export async function updateOrganizationInDrizzle(
 }
 
 export async function deleteOrganizationInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<Organization | null> {
-  const [removed] = await requireCrmDb()
+  const [removed] = await db
     .delete(organizations)
     .where(tenantRow(organizations, scoped, id))
     .returning();
@@ -167,6 +166,7 @@ export async function deleteOrganizationInDrizzle(
 }
 
 export async function listContactsInDrizzle(
+  db: Database,
   scoped: string,
   opts?: ListContactsOpts,
 ): Promise<Contact[]> {
@@ -179,17 +179,18 @@ export async function listContactsInDrizzle(
       ? [eq(contacts.organizationId, opts.organizationId)]
       : []),
   ];
-  return requireCrmDb()
+  return db
     .select()
     .from(contacts)
     .where(and(...filters));
 }
 
 export async function getContactInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<Contact | null> {
-  const [row] = await requireCrmDb()
+  const [row] = await db
     .select()
     .from(contacts)
     .where(tenantRow(contacts, scoped, id))
@@ -198,18 +199,10 @@ export async function getContactInDrizzle(
 }
 
 export async function insertContact(
+  db: Database,
   row: Contact,
-  opts?: WriteOpts,
 ): Promise<Contact> {
-  if (opts?.batch) {
-    opts.batch.insert(contacts, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireCrmDb()
-    .insert(contacts)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(contacts).values(row).returning();
   return inserted;
 }
 
@@ -257,6 +250,7 @@ export function contactEmailPrecheck(
 }
 
 export async function findContactByEmailInDrizzle(
+  db: Database,
   tenantId: string,
   email: string | null,
   excludeId?: string,
@@ -264,7 +258,7 @@ export async function findContactByEmailInDrizzle(
   if (email == null || email.trim() === "") {
     return null;
   }
-  const [row] = await requireCrmDb()
+  const [row] = await db
     .select()
     .from(contacts)
     .where(contactEmailPrecheck(tenantId, email, excludeId))
@@ -273,11 +267,12 @@ export async function findContactByEmailInDrizzle(
 }
 
 export async function updateContactInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
   input: UpdateContactInput,
 ): Promise<Contact | null> {
-  const [row] = await requireCrmDb()
+  const [row] = await db
     .update(contacts)
     .set({
       ...(input.name !== undefined ? { name: input.name } : {}),
@@ -295,10 +290,11 @@ export async function updateContactInDrizzle(
 }
 
 export async function deleteContactInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<Contact | null> {
-  const [removed] = await requireCrmDb()
+  const [removed] = await db
     .delete(contacts)
     .where(tenantRow(contacts, scoped, id))
     .returning();
@@ -306,10 +302,11 @@ export async function deleteContactInDrizzle(
 }
 
 export async function nextBoardOrderInDrizzle(
+  db: Database,
   tenantId: string,
   stage: DealStage,
 ): Promise<number> {
-  const [agg] = await requireCrmDb()
+  const [agg] = await db
     .select({ maxOrder: max(deals.boardOrder) })
     .from(deals)
     .where(and(eq(deals.tenantId, tenantId), eq(deals.stage, stage)));
@@ -317,6 +314,7 @@ export async function nextBoardOrderInDrizzle(
 }
 
 export async function listDealsInDrizzle(
+  db: Database,
   scoped: string,
   opts?: ListDealsOpts,
 ): Promise<Deal[]> {
@@ -339,12 +337,12 @@ export async function listDealsInDrizzle(
       : []),
   ];
   if (!search) {
-    return requireCrmDb()
+    return db
       .select()
       .from(deals)
       .where(and(...filters));
   }
-  return requireCrmDb()
+  return db
     .select(getTableColumns(deals))
     .from(deals)
     .leftJoin(
@@ -362,10 +360,11 @@ export async function listDealsInDrizzle(
 }
 
 export async function getDealInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<Deal | null> {
-  const [row] = await requireCrmDb()
+  const [row] = await db
     .select()
     .from(deals)
     .where(tenantRow(deals, scoped, id))
@@ -373,27 +372,23 @@ export async function getDealInDrizzle(
   return row ?? null;
 }
 
-export async function insertDeal(row: Deal, opts?: WriteOpts): Promise<Deal> {
-  if (opts?.batch) {
-    opts.batch.insert(deals, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireCrmDb().insert(deals).values(row).returning();
+export async function insertDeal(db: Database, row: Deal): Promise<Deal> {
+  const [inserted] = await db.insert(deals).values(row).returning();
   return inserted;
 }
 
 export async function updateDealInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
   input: UpdateDealInput,
 ): Promise<Deal | null> {
-  const current = await getDealInDrizzle(scoped, id);
+  const current = await getDealInDrizzle(db, scoped, id);
   if (!current) {
     return null;
   }
   const probability = nextProbabilityOnStageChange(current.stage, input);
-  const [row] = await requireCrmDb()
+  const [row] = await db
     .update(deals)
     .set({
       ...(input.name !== undefined ? { name: input.name } : {}),
@@ -415,10 +410,11 @@ export async function updateDealInDrizzle(
 }
 
 export async function deleteDealInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<Deal | null> {
-  const [removed] = await requireCrmDb()
+  const [removed] = await db
     .delete(deals)
     .where(tenantRow(deals, scoped, id))
     .returning();
@@ -426,6 +422,7 @@ export async function deleteDealInDrizzle(
 }
 
 export async function listActivitiesInDrizzle(
+  db: Database,
   scoped: string,
   opts?: ListActivitiesOpts,
 ): Promise<Activity[]> {
@@ -436,7 +433,7 @@ export async function listActivitiesInDrizzle(
       : []),
     ...(opts?.dealId !== undefined ? [eq(activities.dealId, opts.dealId)] : []),
   ];
-  return requireCrmDb()
+  return db
     .select()
     .from(activities)
     .where(and(...filters))
@@ -448,10 +445,11 @@ export async function listActivitiesInDrizzle(
 }
 
 export async function getActivityInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<Activity | null> {
-  const [row] = await requireCrmDb()
+  const [row] = await db
     .select()
     .from(activities)
     .where(tenantRow(activities, scoped, id))
@@ -460,27 +458,20 @@ export async function getActivityInDrizzle(
 }
 
 export async function insertActivity(
+  db: Database,
   row: Activity,
-  opts?: WriteOpts,
 ): Promise<Activity> {
-  if (opts?.batch) {
-    opts.batch.insert(activities, row);
-    return clone(row);
-  }
-
-  const [inserted] = await requireCrmDb()
-    .insert(activities)
-    .values(row)
-    .returning();
+  const [inserted] = await db.insert(activities).values(row).returning();
   return inserted;
 }
 
 export async function updateActivityInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
   input: UpdateActivityInput,
 ): Promise<Activity | null> {
-  const [row] = await requireCrmDb()
+  const [row] = await db
     .update(activities)
     .set({
       ...(input.type !== undefined ? { type: input.type } : {}),
@@ -501,10 +492,11 @@ export async function updateActivityInDrizzle(
 }
 
 export async function deleteActivityInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<Activity | null> {
-  const [removed] = await requireCrmDb()
+  const [removed] = await db
     .delete(activities)
     .where(tenantRow(activities, scoped, id))
     .returning();
@@ -512,16 +504,15 @@ export async function deleteActivityInDrizzle(
 }
 
 export async function organizationCascadePreviewInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<CascadePreview> {
-  const [contactRows] = await requireCrmDb()
+  const [contactRows] = await db
     .select({ n: count() })
     .from(contacts)
-    .where(
-      and(eq(contacts.tenantId, scoped), eq(contacts.organizationId, id)),
-    );
-  const [dealRows] = await requireCrmDb()
+    .where(and(eq(contacts.tenantId, scoped), eq(contacts.organizationId, id)));
+  const [dealRows] = await db
     .select({ n: count() })
     .from(deals)
     .where(and(eq(deals.tenantId, scoped), eq(deals.organizationId, id)));
@@ -533,19 +524,18 @@ export async function organizationCascadePreviewInDrizzle(
 }
 
 export async function contactCascadePreviewInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<CascadePreview> {
-  const [dealRows] = await requireCrmDb()
+  const [dealRows] = await db
     .select({ n: count() })
     .from(deals)
     .where(and(eq(deals.tenantId, scoped), eq(deals.contactId, id)));
-  const [activityRows] = await requireCrmDb()
+  const [activityRows] = await db
     .select({ n: count() })
     .from(activities)
-    .where(
-      and(eq(activities.tenantId, scoped), eq(activities.contactId, id)),
-    );
+    .where(and(eq(activities.tenantId, scoped), eq(activities.contactId, id)));
   return {
     contacts: 0,
     deals: dealRows?.n ?? 0,
@@ -554,10 +544,11 @@ export async function contactCascadePreviewInDrizzle(
 }
 
 export async function dealCascadePreviewInDrizzle(
+  db: Database,
   scoped: string,
   id: string,
 ): Promise<CascadePreview> {
-  const [activityRows] = await requireCrmDb()
+  const [activityRows] = await db
     .select({ n: count() })
     .from(activities)
     .where(and(eq(activities.tenantId, scoped), eq(activities.dealId, id)));
