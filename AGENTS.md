@@ -5,7 +5,7 @@ login, as a Next.js App Router deploy on Neon Postgres with no shared UI framewo
 
 ## Stack
 
-Next.js 16.3.4 App Router (root `app/`, no `src/`), React 19.2.8, TypeScript 5, npm. Neon
+Next.js 16.4.3 App Router (root `app/`, no `src/`), React 19.2.8, TypeScript 5, npm. Neon
 Postgres through `drizzle-orm/neon-http` + `@neondatabase/serverless` — that driver has no
 `db.transaction()`, so multi-statement writes go through `db.batch` (see ADR-0002). Auth.js
 credentials + JWT. Vitest for units, Playwright for flows, ESLint + Prettier. No Express, no
